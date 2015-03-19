@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1503015313
+ cssREV:1503195314
 */
 
 /**
@@ -1469,6 +1469,9 @@ ul {
     height: 7px;
     pointer-events: none;
     transition: all 0.2s linear;
+    background: -webkit-linear-gradient(rgba(0,0,0,.2),transparent);
+    background: -moz-linear-gradient(rgba(0,0,0,.1),transparent);
+    -webkit-mask-box-image: -webkit-linear-gradient(left,rgba(0,0,0,.1),rgba(0,0,0,.8),rgba(0,0,0,.1));
     &.active {
       opacity: 1;
     }
