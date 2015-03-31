@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.1.4
+// @version        5.3.1.5
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1504015314
-// @timestamp      1427827211090
+// @dtversion      1504015315
+// @timestamp      1427832016030
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -32,15 +32,18 @@
 //
 // -!--latestupdate
 //
+// v5.3.1.5 - 2015-04-01 . 1427832016030
+//   GitHub repolink on settings::about
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.1.4 - 2015-04-01 . 1427827211090
 //   Patch submission on group-discusstion. Thx:[nostafu]
 //   Fix finding .main-content element on group-discusstion
 //   Patch adjust entry-body width, mismatch width on single post on page;
 //   Adjusting migration code to github
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.1.3 - 2015-03-01 . 1425170995166
 //   GF link of what's this? (custom smiley);
 //   Filter purpose: add subject ticket mail;
@@ -60,28 +63,6 @@
 //   Avoid focus editor on autoshow smilies;
 //   Split General Settings, group for Smilies
 //   Missing form-title while edit (post #1, field is mandatory). Thanks:[Drupalorg]
-// 
-// v5.3.1.1 - 2015-02-05 . 1423149612562
-//   redirect link not found (on new post) Thanks:[Drupalorg]
-//   responsive uploader wrapper
-//   Fix markIt BBCode [img, url, media]
-//   Fix scrollTop issues (canceling prompt)
-// 
-// v5.3.1 - 2015-02-05 . 1423080719879
-//   Parse input text for BBCode media embed
-//   Adjust entry-body width on kaskus-switchview+cssFixups
-//   Clean run partialy outside included url;
-//   Patch fetch quote; Init active tab smiley; Identify locked thread; Groupee;
-//   QuickPatch finding last_postwrap
-//   Rewrite/adapting new kaskus theme 3.1 (bootstrap 3.0.1)
-//   Intervene global hotkeys onfocus editor
-//   +global hotkey QuickQuote (Alt+C)
-//   +elastic editor
-//   +fixed toolbar
-//   +fixup styles select [wide, minimus]. Thanks: [S4nji, .ceo.]
-//   +markItUp tool: [vimeo, soundcloud]
-//   deprecated unsimplicity/unreliable uploader hosts
-// 
 //
 //
 // v0.1 - 2010-06-29
@@ -97,11 +78,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.1.4';
+gvar.sversion = 'v' + '5.3.1.5';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1427827211090 // version.timestamp
-  ,dtversion: 1504015314 // version.date
+   timestamp: 1427832016030 // version.timestamp
+  ,dtversion: 1504015315 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
