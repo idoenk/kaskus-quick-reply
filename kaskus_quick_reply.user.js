@@ -8,8 +8,8 @@
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1503195314
-// @timestamp      1426720742700
+// @dtversion      1504015314
+// @timestamp      1427827211090
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -32,9 +32,11 @@
 //
 // -!--latestupdate
 //
-// v5.3.1.4 - 2015-03-19 . 1426720742700
-//   Adjusting migration code to github
+// v5.3.1.4 - 2015-04-01 . 1427827211090
+//   Patch submission on group-discusstion. Thx:[nostafu]
+//   Fix finding .main-content element on group-discusstion
 //   Patch adjust entry-body width, mismatch width on single post on page;
+//   Adjusting migration code to github
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -98,8 +100,8 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.1.4';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1426720742700 // version.timestamp
-  ,dtversion: 1503195314 // version.date
+   timestamp: 1427827211090 // version.timestamp
+  ,dtversion: 1504015314 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -1787,6 +1789,12 @@ var _BOX = {
       $('#qr-recaptcha_response_field').val( $('#recaptcha_response_field').val() );
       $('#qr-recaptcha_challenge_field').val( $('#recaptcha_challenge_field').val() );
     }
+
+    /**
+    * identify & parse text if it's real json formated
+    * expected output:
+    * {message:'', error:(Boolean), error_recapctha:(Boolean), securitytoken:'', redirect:''}
+    */
     var parse_json_object = function(text){
       if( !("undefined" != typeof text && text) || "string" != typeof text ) {
         clog("already object or a blank");
@@ -1795,8 +1803,6 @@ var _BOX = {
       text = trimStr( text );
 
       var json_obj, pos, ctext, tmptext;
-      var doctype = '<!DOCTYPE';
-
       var clean_html = function(dtext){
 
         var $div = $('<div />').html( dtext );
@@ -1814,21 +1820,54 @@ var _BOX = {
           json_obj = JSON.parse(tmptext)
         }catch(e){ clog(e.message )}
       }else{
-        clog("json bad, cleaning doctype...");
+        var doctype = '<!DOCTYPE';
+        clog("BAD-JSON..");
 
-        pos = text.indexOf(doctype);
-        if( pos !== -1 ){
-          ctext = text.substring(0, pos);
+        if( gvar.thread_type == 'group' ){
+          clog("group-discusstion detected, parsing html..");
 
-          if( ctext && is_good_json(ctext) ){
-            clog("is_good_json, level2");
+          var $redirect, $div, nojstext = text;
+          nojstext = nojstext.replace(/\r|\n/gi,'');
+          nojstext = nojstext.replace(/<\/?script[^>]>/gi,'');
+          $div = $('<div />').html( nojstext );
 
-            tmptext = clean_html(ctext);
-            clog("tmptext lv2="+tmptext);
-            if( tmptext )
-            try{
-              json_obj = JSON.parse(tmptext)
-            }catch(e){ clog(e.message )}
+          json_obj = {error:!1, message:'', redirect:''};
+          if( text.indexOf('ank you for posti') !== -1 ){
+            // posted
+            
+            $redirect = $div.find('a[href*="/group/discussion/"]').first();
+            if( $redirect.length ){
+              json_obj.message = 'Thank you for posting!';
+              json_obj.redirect = $redirect.attr("href");
+            }
+            else{
+              json_obj.error = true;
+              json_obj.message = 'Error, redirect link not found.';
+            }
+          }
+          else{
+            json_obj.message = $div.find(".message").text();
+            json_obj.error = true;
+            json_obj.redirect = !1;
+          }
+        }
+        else{
+          clog("cleaning doctype...");
+
+          pos = text.indexOf(doctype);
+          if( pos !== -1 ){
+            ctext = text.substring(0, pos);
+
+            if( ctext && is_good_json(ctext) ){
+              clog("is_good_json, level2");
+
+              tmptext = clean_html(ctext);
+              clog("tmptext lv2="+tmptext);
+              if( tmptext )
+              try{
+                json_obj = JSON.parse(tmptext)
+              }catch(e){ clog(e.message )}
+            }
           }
         }
       }
@@ -4457,7 +4496,7 @@ function set_theme_fixups(){
 
   clog("adjusting entry-body..");
   var css, cbodyWidth = (function(){
-    var trh=0, mcW, sbaW, $sbauthor, $mc = $(".main-content");
+    var trh=0, mcW, sbaW, $sbauthor, $mc = $('*[class^="main-content"]').first();
     mcW = $mc.outerWidth();
     if( mcW == 860 ) return null;
     if( mcW == 1097 ) trh = -3;
@@ -4473,7 +4512,7 @@ function set_theme_fixups(){
       clog("second post found in page, sbaW="+sbaW);
     }
 
-    clog('".main-content" width='+mcW);
+    clog('".main-content*" width='+mcW);
     return mcW - sbaW - 2 + trh;
   })();
 
@@ -7127,7 +7166,7 @@ function toggleTitle(){
 }
 
 function resize_popup_container(force_width){
-  var $mc = $('#main .main-content').first();
+  var $mc = $('*[class^="main-content"]').first()
   var $md = $(".modal-dialog-main");
   var mW  = $mc.width();
   var bW, bH = parseInt( getHeight() ), mxH, cTop = 0, capcapdialog=null;
