@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.1.5
+// @version        5.3.1.6
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1504015315
-// @timestamp      1427832016030
+// @dtversion      1504175316
+// @timestamp      1429211411791
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -20,6 +20,7 @@
 // @include        /^https?://www.kaskus.co.id/post/*/
 // @include        /^https?://www.kaskus.co.id/group/discussion/*/
 // @include        /^https?://www.kaskus.co.id/show_post/*/
+// @include        /^https?://fjb.kaskus.co.id/(thread|product|post)/*/
 // @author         Idx
 // @exclude        /^https?://www.kaskus.co.id/post_reply/*/
 // @contributor    S4nJi, riza_kasela, p1nk3d_books, b3g0, fazar, bagosbanget, eric., bedjho, Piluze, intruder.master, Rh354, gr0, hermawan64, slifer2006, gzt, Duljondul, reongkacun, otnaibef, ketang8keting, farin, drupalorg, .Shana, t0g3, & all-kaskuser@t=3170414
@@ -32,12 +33,16 @@
 //
 // -!--latestupdate
 //
-// v5.3.1.5 - 2015-04-01 . 1427832016030
-//   GitHub repolink on settings::about
+// v5.3.1.6 - 2015-04-17 . 1429211411791
+//   Add include fjb: [thread,product,post]
+//   Patches: [preview post, fixed BBCode toolbar] on fjb
 // 
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.1.5 - 2015-04-01 . 1427832016030
+//   GitHub repolink on settings::about
+// 
 // v5.3.1.4 - 2015-04-01 . 1427827211090
 //   Patch submission on group-discusstion. Thx:[nostafu]
 //   Fix finding .main-content element on group-discusstion
@@ -78,11 +83,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.1.5';
+gvar.sversion = 'v' + '5.3.1.6';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1427832016030 // version.timestamp
-  ,dtversion: 1504015315 // version.date
+   timestamp: 1429211411791 // version.timestamp
+  ,dtversion: 1504175316 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -1150,6 +1155,7 @@ var rSRC = {
     return ""
     +'#box_preview {max-height:' + (parseInt( getHeight() ) - gvar.offsetMaxHeight - gvar.offsetLayer) + 'px;}'
     +'body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"], .ghost{ display:none; }'
+    +'.modal.kaskus-modal-large{z-index:99993}'
   },
   getCSS_Fixups: function(mode){
     var css='', i='!important';
@@ -1699,7 +1705,7 @@ var _BOX = {
       }
       try{
         
-        _BOX.e.boxaction = 'http://www.kaskus.co.id/misc/preview_post_ajax';
+        _BOX.e.boxaction = location.protocol+'//'+location.hostname+'/misc/preview_post_ajax';
 
         if( query!="" )
         gvar.sTryRequest = $.post( _BOX.e.boxaction, query, function(data) {
@@ -6166,11 +6172,11 @@ function fixed_markItUp(){
     $XK.find(".markItUpContainer").css("width", "auto");
   };
 
-  // clog("tick eH="+eH+'; treshold_minHeight_editor='+treshold_minHeight_editor);
+  clog("tick eH="+eH+'; treshold_minHeight_editor='+treshold_minHeight_editor);
   if( eH >= treshold_minHeight_editor ){
 
     var $ustick = $(".user-control-stick").first(),
-      isus = $ustick.is(":visible"),
+      isus = ($ustick.is(":visible") && $ustick.css("position") == 'fixed'),
       ustickFixPos = {top:0}, ustickH = 0,
       tgtH, sTop, tgtTop;
     
