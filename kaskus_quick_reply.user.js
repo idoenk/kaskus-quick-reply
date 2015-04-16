@@ -36,6 +36,7 @@
 // v5.3.1.6 - 2015-04-17 . 1429211411791
 //   Add include fjb: [thread,product,post]
 //   Patches: [preview post, fixed BBCode toolbar] on fjb
+//   Patch get_quotefrom TS using QQ on fjb
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -4680,13 +4681,21 @@ var _QQparse = {
     this.start();
   },
   start:function(){
-    var ret, buff, entrycontent, post_id, _QQ = this;
+    var ret, buff, $entry, entrycontent, post_id, _QQ = this;
     $.each( _QQ.mqs_id, function(){
       post_id = this;
-      entrycontent = $('#'+post_id).find('.entry');
-      if( $(entrycontent).get(0) ){
+      $entry = $('#'+post_id).find('.entry');
+      if( $entry.length ){
         
-        buff = String( $(entrycontent).html() ).replace(/(\r\n|\n|\r|\t|\s{2,})+/gm, "");
+        // entrycontent = ($entry.hasClass("product-detail") ? $entry.find() )
+        if( $entry.hasClass("product-detail") ){
+          $entry = $entry.find(".tab-pane.active").clone();
+          $entry.find(".row").first().remove();
+          $entry.find("h3").first().remove();
+        }
+        entrycontent = $entry.html();
+
+        buff = String( entrycontent ).replace(/(\r\n|\n|\r|\t|\s{2,})+/gm, "");
         buff = buff.replace(/(?:<\!-{2,}reason\s?[^>]+.)+/gi, '');
         
         ret = _QQ.parseMSG( buff );
@@ -4703,7 +4712,15 @@ var _QQparse = {
     return $('.spoiler', $html).length
   },
   get_quotefrom: function(pid){
-    var nameStr, el = createEl('div', {}, $('#'+pid).find('.nickname').html() );
+    var nameStr, thename, el;
+    thename = $('#'+pid).find('.nickname').html();
+    
+    if( !thename ){
+      // guessing on fjb thread-v2
+      thename = $('.seller-detail-info').find('.username > a').html();
+    }
+    el = createEl('div', {}, thename);
+
     nameStr = trimStr($(el).text().toString()).replace(/\[\$\]$/, '');
     $(el).remove();
     return trimStr( nameStr ) + (gvar.thread_type == 'group' ? '' : ';'+pid.replace(/^post/i, ''));
@@ -6172,14 +6189,13 @@ function fixed_markItUp(){
     $XK.find(".markItUpContainer").css("width", "auto");
   };
 
-  clog("tick eH="+eH+'; treshold_minHeight_editor='+treshold_minHeight_editor);
+  // clog("tick eH="+eH+'; treshold_minHeight_editor='+treshold_minHeight_editor);
   if( eH >= treshold_minHeight_editor ){
 
     var $ustick = $(".user-control-stick").first(),
       isus = ($ustick.is(":visible") && $ustick.css("position") == 'fixed'),
       ustickFixPos = {top:0}, ustickH = 0,
       tgtH, sTop, tgtTop;
-    
     
     sTop = $(window).scrollTop();
     $target = $XK.find("#markItUpReply-messsage");
