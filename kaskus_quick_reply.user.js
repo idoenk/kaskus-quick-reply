@@ -8,8 +8,8 @@
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1504175316
-// @timestamp      1429211411791
+// @dtversion      1504235316
+// @timestamp      1429727071841
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -33,7 +33,8 @@
 //
 // -!--latestupdate
 //
-// v5.3.1.6 - 2015-04-17 . 1429211411791
+// v5.3.1.6 - 2015-04-23 . 1429727071841
+//   Adapting existing public quickreply; Patch broken recaptcha;
 //   Add include fjb: [thread,product,post]
 //   Patches: [preview post, fixed BBCode toolbar] on fjb
 //   Patch get_quotefrom TS using QQ on fjb
@@ -87,13 +88,13 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.1.6';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1429211411791 // version.timestamp
-  ,dtversion: 1504175316 // version.date
+   timestamp: 1429727071841 // version.timestamp
+  ,dtversion: 1504235316 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1503195314 // css revision date; only change this when you change your external css
+  ,cssREV: 1504235316 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 /*
 window.alert(new Date().getTime());
@@ -690,7 +691,7 @@ var rSRC = {
         //activate-disabled | activated 
     +   '<div id="box_progress_posting" class="activate-disabled"></div>'
         // recaptcha_is_building_widget
-    +   '<div class="RCw " id="recaptcha_widget">'+rSRC._BOX_RC_Widget()+'</div>'
+    +   '<div class="RCw" id="recaptcha_widget">'+rSRC._BOX_RC_Widget()+'</div>'
     + '</div>'
     + '<div id="cont_button" class="modal-dialog-buttons" '+(gvar.edit_mode ? ' style="visibility:hidden;"':'')+'>'
     +  '<span class="qr_current_user"></span>'
@@ -708,6 +709,7 @@ var rSRC = {
     +'<label style="width:100%!important">'
     + '<strong><span id="recaptcha_instructions_image">Please Insert ReCapcay:</span></strong>'
     + '<input type="text" name="recaptcha_response_field" id="recaptcha_response_field" autocomplete="off"/>'
+    + '<input type="hidden" name="recaptcha_challenge_field" id="recaptcha_challenge_field" />'
     +'</label>'
     +'<div class="recaptcha-buttons">'
      +'<a title="Get a new challenge" href="javascript:Recaptcha.reload()" id="recaptcha_reload_btn"><span>Reload reCapcay</span></a>'
@@ -1156,7 +1158,6 @@ var rSRC = {
     return ""
     +'#box_preview {max-height:' + (parseInt( getHeight() ) - gvar.offsetMaxHeight - gvar.offsetLayer) + 'px;}'
     +'body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"], .ghost{ display:none; }'
-    +'.modal.kaskus-modal-large{z-index:99993}'
   },
   getCSS_Fixups: function(mode){
     var css='', i='!important';
@@ -1195,22 +1196,33 @@ var rSRC = {
     return ''
     +'var $ = $||jQuery.noConflict();'
     +'var prfx = "";'
+
     +'function showRecaptcha(element){'
+    + 'if( $("#quick-reply").length )'
+    +   '$("#quick-reply").remove();'
+
     + 'if( typeof(Recaptcha)!="object" ){'
     +   'window.setTimeout(function () { showRecaptcha() }, 200);'
     +   'return;'
     + '}else{'
+    +   'Recaptcha.destroy("recaptcha_wrapper");'
     +   'Recaptcha.create("6Lc7C9gSAAAAAMAoh4_tF_uGHXnvyNJ6tf9j9ndI", '
-    +   'element, {theme:"custom", lang:"en", custom_theme_widget:"recaptcha_widget"});'
+    +   ' element, {theme:"custom", lang:"en", custom_theme_widget:"recaptcha_widget", callback: tamperRecaptcha});'
     + '}'
     +'}'
+
+    +'function tamperRecaptcha() {'
+    + 'var $par = $("#wraper-hidden-thing");'
+    + '$par.find(".recaptcha_input_area").append("<div class=\'recaptcha-buttons\'><a title=\'Get a new challenge\' href=\'javascript:Recaptcha.reload()\' id=\'recaptcha_reload_btn\'><span>Reload reCapcay</span></a><a title=\'Help\' href=\'javascript:Recaptcha.showhelp()\' id=\'recaptcha_whatsthis_btn\'><span>Help</span></a></div>");'
+    + '$par.find("#recaptcha_area").addClass("RCw");'
+    +'}'
     +'function SimulateMouse(elem,event,preventDef) {'
-    +'  if("object" != typeof elem) return;'
-    +'  var evObj = document.createEvent("MouseEvents");'
-    +'  preventDef = ("undefined" != typeof preventDef && preventDef ? true : false);'
-    +'  evObj.initEvent(event, preventDef, true);'
-    +'  try{ elem.dispatchEvent(evObj) }'
-    +'  catch(e){ console && console.log && console.log("Error. elem.dispatchEvent is not function."+e) }'
+    +  'if("object" != typeof elem) return;'
+    +  'var evObj = document.createEvent("MouseEvents");'
+    +  'preventDef = ("undefined" != typeof preventDef && preventDef ? true : false);'
+    +  'evObj.initEvent(event, preventDef, true);'
+    +  'try{ elem.dispatchEvent(evObj) }'
+    +  'catch(e){ console && console.log && console.log("Error. elem.dispatchEvent is not function."+e) }'
     +'}'
     // no-needed for a moment
     +'function jq_cookie(){jQuery.cookie=function(d,e,b){if(arguments.length>1&&(e===null||typeof e!=="object")){b=jQuery.extend({},b);if(e===null){b.expires=-1}if(typeof b.expires==="number"){var g=b.expires,c=b.expires=new Date();c.setDate(c.getDate()+g)}return(document.cookie=[encodeURIComponent(d),"=",b.raw?String(e):encodeURIComponent(String(e)),b.expires?"; expires="+b.expires.toUTCString():"",b.path?"; path="+b.path:"",b.domain?"; domain="+b.domain:"",b.secure?"; secure":""].join(""))}b=e||{};var a,f=b.raw?function(h){return h}:decodeURIComponent;return(a=new RegExp("(?:^|; )"+encodeURIComponent(d)+"=([^;]*)").exec(document.cookie))?f(a[1]):null};$=jQuery}'
@@ -2035,7 +2047,7 @@ var _BOX = {
       
       gvar.sITryFocusOnLoad = gvar.$w.setInterval(function() {
         var field = $('#recaptcha_response_field');
-        if( field.length == 1 ){
+        if( field.length ){
           clearInterval(gvar.sITryFocusOnLoad);
           $('#recaptcha_response_field').addClass('twt-glow');
           $('#recaptcha_response_field').focus();
@@ -7004,7 +7016,8 @@ function get_userdetail($sparent) {
      id: (b && "undefined" != typeof b[1] ? b[1] : false)
     ,name: trimStr( String($p.find('>.dropdown-toggle').text()).replace(/^Hi,\s/,'') )
     ,photo: (d && "undefined" != typeof d[1] ? d[1] : '')
-    ,isDonatur: ($('#quick-reply').get(0) ? true : false)
+    // ,isDonatur: ($('#quick-reply').get(0) ? true : false)
+    ,isDonatur: ($('#quick-reply .capctha').length ? false : true)
   };
   clog(a);
   return a
@@ -7244,7 +7257,7 @@ function finalizeTPL(){
   );
   
   if( !gvar.user.isDonatur ){
-    GM_addGlobalScript(location.protocol+ '\/\/www.google.com\/recaptcha\/api\/js\/recaptcha_ajax.js', 'recap', true);
+    // GM_addGlobalScript(location.protocol+ '\/\/www.google.com\/recaptcha\/api\/js\/recaptcha_ajax.js', 'recap', true);
     $('#wraper-hidden-thing').append( rSRC.getDialog("BOX_RCDialog") );
   }
 }
@@ -7448,7 +7461,10 @@ function start_Main(){
         }
 
 
-        $('#quick-reply').remove();
+        // remove quickreply original dom
+        // this routine will run, on Recapcay trigger
+        // $('#quick-reply').remove();
+
         var isInGroup = (gvar.thread_type == 'group');
 
         clog("Injecting getTPL");
@@ -7599,6 +7615,9 @@ function start_Main(){
           window.setTimeout(function(){
             do_click($('#hidrecap_btn').get(0));
           }, 100);
+
+        if( gvar.user.isDonatur )
+          $('#quick-reply').remove();
 
         if( !gvar.noCrossDomain && gvar.settings.updates ){
           window.setTimeout(function(){
