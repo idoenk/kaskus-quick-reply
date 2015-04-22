@@ -1734,24 +1734,23 @@ ul {
   #recaptcha_whatsthis_btn {
     background: $url_recaptcha!important;
   }
-}
 
-/*capcay-hacky*/
-#recaptcha_table tbody > tr {
-  &:first-child td, &:last-child td:last-child {
-    display: none;
-  }
-  &:first-child td.recaptcha_image_cell {
-    display: block;
-    width: 100%;
-  }
-  &:last-child td:first-child {
-    padding: 0 7px !important;
-  }
-}
-#box_recaptcha_container {
+  /*capcay-hacky*/
   table.recaptchatable {
     border: 0;
+    width: 100%;
+    tbody > tr {
+      &:first-child td, &:last-child td:last-child {
+        display: none;
+      }
+      &:first-child td.recaptcha_image_cell {
+        display: block;
+        width: 100%;
+      }
+      &:last-child td:first-child {
+        padding: 0 7px !important;
+      }
+    }
   }
   .recaptchatable {
     img#recaptcha_challenge_image {
