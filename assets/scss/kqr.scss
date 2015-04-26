@@ -1670,17 +1670,6 @@ ul {
 }
 
 .RCw {
-  #recaptcha_image {
-    height: 65px !important;
-    width: 100% !important;
-    text-align: center;
-    border-bottom: 1px solid #e5e5e5;
-    overflow: hidden;
-    padding: 5px;
-    img {
-      width: 100%;
-    }
-  }
   .recaptcha-main {
     position: relative;
     text-align: left;
@@ -1737,7 +1726,7 @@ ul {
 
   /*capcay-hacky*/
   table.recaptchatable {
-    border: 0;
+    border: 0!important;
     width: 100%;
     tbody > tr {
       &:first-child td, &:last-child td:last-child {
@@ -1746,6 +1735,7 @@ ul {
       &:first-child td.recaptcha_image_cell {
         display: block;
         width: 100%;
+        padding: 0!important;
       }
       &:last-child td:first-child {
         padding: 0 7px !important;
@@ -1760,6 +1750,8 @@ ul {
     #recaptcha_image {
       width: 100% !important;
       height: 100% !important;
+      border:0 !important;
+      background-color: #e1e1e1;
     }
     #recaptcha_response_field {
       border: 1px solid #ccc !important;
