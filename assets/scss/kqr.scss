@@ -2150,6 +2150,12 @@ ul.qrset_mnu li {
 ul.settingmnu li.qrt div {
   padding: 2px 8px;
   line-height: 22px;
+  > .num{
+    float: left;
+    margin: 0 2px 0 -5px;
+    min-width: 15px;
+    text-align: center;
+  }
 }
 
 .fg-kbd .itemtabcon {
