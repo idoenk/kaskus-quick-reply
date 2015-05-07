@@ -415,6 +415,11 @@ ul.qrset_mnu li.qrt.curent {
               opacity: .87;
             }
           }
+          &.goog-btn-primary{
+            .icon-rc2{
+              display: none!important;
+            }
+          }
         }
       }
     }
