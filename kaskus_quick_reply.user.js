@@ -2021,6 +2021,7 @@ var _BOX = {
         .html('Posting');
       $parent.find(".ycapcay label").hide();
     }
+    $parent.find("#box_response_msg").html('').hide();
     $baseparent.removeClass("ghost");
     $parent.show();
 
