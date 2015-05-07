@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.1.6
+// @version        5.3.2
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1504235316
-// @timestamp      1429727071841
+// @dtversion      1505075320
+// @timestamp      1430978938772
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -33,15 +33,18 @@
 //
 // -!--latestupdate
 //
+// v5.3.2 - 2015-05-07 . 1430978938772
+//   Options always notify
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.1.6 - 2015-04-23 . 1429727071841
 //   Adapting existing public quickreply; Patch broken recaptcha;
 //   Add include fjb: [thread,product,post]
 //   Patches: [preview post, fixed BBCode toolbar] on fjb
 //   Patch get_quotefrom TS using QQ on fjb
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.1.5 - 2015-04-01 . 1427832016030
 //   GitHub repolink on settings::about
 // 
@@ -85,11 +88,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.1.6';
+gvar.sversion = 'v' + '5.3.2';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1429727071841 // version.timestamp
-  ,dtversion: 1504235316 // version.date
+   timestamp: 1430978938772 // version.timestamp
+  ,dtversion: 1505075320 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -102,7 +105,7 @@ window.alert(new Date().getTime());
 //=-=-=-=--=
 //========-=-=-=-=--=========
 gvar.__DEBUG__ = !1; // development debug, author purpose
-gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
+gvar.__CLIENTDEBUG__ = 1; // client debug, w/o using local assets
 gvar.$w = window;
 //========-=-=-=-=--=========
 //=-=-=-=--=
@@ -608,6 +611,8 @@ var rSRC = {
       +   '<input id="qr_chkcookie" type="button" class="ghost" value="cq" onclick="try{chkMultiQuote()}catch(e){console && console.log && console.log(e)}" />'
           // remote button to delete-mQ
       +   '<input id="qr_remoteDC" type="button" class="ghost" value="dc" onclick="try{deleteMultiQuote()}catch(e){console && console.log && console.log(e)}" />'
+          // remote button to inject-mQ
+      +   '<input id="qr_remoteIC" type="button" class="ghost" value="ic" onclick="try{injectMultiQuote()}catch(e){console && console.log && console.log(e)}" />'
       + '</div>' // .form-group.fg-button-bottom
 
 
@@ -1198,6 +1203,7 @@ var rSRC = {
     +'var prfx = "";'
 
     +'function showRecaptcha(element){'
+    + 'console.log("inside showRecaptcha");'
     + 'if( $("#quick-reply").length )'
     +   '$("#quick-reply").remove();'
 
@@ -1231,6 +1237,8 @@ var rSRC = {
     +'function deleteMultiQuote(){!$[prfx+"cookie"] && jq_cookie(); $[prfx+"cookie"](__mq,null, { expires: null, path: "/", secure: false }); $("#"+__tmp).val("")}'
     +'function chkMultiQuote(){ !($ && $[prfx+"cookie"]) && jq_cookie(); var mqs=$[prfx+"cookie"](__mq)||""; $("#"+__tmp).val(mqs ? mqs.replace(/\s/g,"") : ""); SimulateMouse($("#qr_chkval").get(0), "click", true); }'
     +'try{chkMultiQuote()}catch(e){console && console.log && console.log(e)};'
+    +'function injectMultiQuote(){!($ && $[prfx+"cookie"]) && jq_cookie(); var store_id=$("#"+__tmp).val(); if(store_id) $[prfx+"cookie"](__mq, store_id, {expired:null,path:"/",secure:false})'
+    +'};'
 
     +'function ifrdone(el){'
     +'$("#ifr_content").val( $(el).contents().find("textarea[name=message]").first().val() );'
@@ -1874,6 +1882,16 @@ var _BOX = {
       return "undefined" != typeof json_obj && json_obj ? json_obj : false;
     };
 
+
+    // DEBUG-NEW-FEATURE
+    clog("inside submit");
+    _BOX.check_usernotify();
+
+    clog("submit-halted");
+    return !1;
+
+
+
     var query = _BOX.buildQuery(true);
     if( gvar.thread_type == 'group' )
       query["sbutton"] = encodeURI( 'Post+Message' );
@@ -2081,6 +2099,70 @@ var _BOX = {
     }else{
       _BOX.submit();
     }
+  },
+
+  check_usernotify: function(){
+    clog("inside check_usernotify");
+
+    /**
+    * check upon 
+    */ 
+    // collect all post_ids
+    var editortext = $("#"+gvar.tID).val();
+    clog(editortext);
+    var cucok, post_ids = [];
+    var parts = editortext.split("[QUOTE=");
+    var fetch_toget_token = function(ids){
+      if( !ids ) return;
+      var action_url = $('#formform').attr("action");
+      var $tmpck = $("#tmp_chkVal");
+      var $btn_remoteInjectCk = $("#qr_remoteIC");
+      var tmp_selected_quote = null;
+      tmp_selected_quote = $tmpck.val();
+
+      // remove inject to cookie
+      $tmpck.val(ids);
+      $btn_remoteInjectCk.trigger("click");
+
+      
+      clog("fetching="+action_url);
+      $.get($('#formform').attr("action"), function(ret){
+        if( tmp_selected_quote ){
+          // returning back selected quote cookie
+          $tmpck.val(tmp_selected_quote);
+          $btn_remoteInjectCk.trigger("click");
+        }
+        clog(ret);
+      });
+    };
+
+    clog(parts);
+    clog(parts.length);
+    if( parts.length ){
+
+      //laruku005;554b0bac108b468f138b456b]
+      for(var i=0, iL=parts.length; i<iL; i++){
+        if( cucok = /[^;]+.(\w{24})\]/i.exec(parts[i]) ){
+          clog(cucok);
+          post_ids.push( cucok[1] );
+        }
+        else{
+          clog("nope")
+        }
+      }
+      if( post_ids.length )
+        post_ids.sort();
+
+      clog("alldone post-ids");
+      clog(post_ids);
+      fetch_toget_token(post_ids);
+    }
+    else{
+      clog("nops");
+    }
+
+
+    // 
   },
   attach_userphoto: function(target, dt_ori){
     var neim = gvar.user.name + (gvar.user.isDonatur ? ' [$]' : '');
@@ -5729,8 +5811,10 @@ function show_alert(msg, force) {
 }
 function clog(msg) {
   if( !gvar.__DEBUG__ ) return;
-  msg = (["string", "number"].indexOf(typeof msg) !== -1 ? '[QR:dbg] '+msg : msg);
-  if( ["string", "number"].indexOf(typeof msg) === -1 )
+  var is_plaintext =  (["string", "number"].indexOf(typeof msg) !== -1);
+  msg = (is_plaintext ? '[QR:dbg] '+msg : msg);
+
+  if( is_plaintext )
     try{
       msg = '[QR:dbg] '+JSON.stringify( msg );
     }catch(e){ msg = '[QR:dbg] '+msg; }
@@ -5936,10 +6020,14 @@ function close_popup(){
     else if(document.execCommand !== undefined){document.execCommand("Stop", false)}
   } catch (e) {}
   
-  if( !gvar.user.isDonatur && $('body > #modal_capcay_box').get(0) ){
-    var tgt = $('#wraper-hidden-thing #modal_capcay_box'), live=$('body > #modal_capcay_box'), ri='#recaptcha_image', rcf='#recaptcha_challenge_field';
-    $(tgt).find(ri).replaceWith( $(live).find(ri) );
-    $(tgt).find(rcf).replaceWith( $(live).find(rcf) );
+  if( !gvar.user.isDonatur && $('body #modal_capcay_box').length ){
+    var $hidbox = $('#wraper-hidden-thing #modal_capcay_box'),
+      $live = $('body #modal_capcay_box'),
+      ri = '#recaptcha_image',
+      rcf = '#recaptcha_challenge_field';
+
+    $hidbox.find(ri).replaceWith( $live.find(ri) );
+    $hidbox.find(rcf).replaceWith( $live.find(rcf) );
   }
     
   $('#'+_BOX.e.dialogname).css('visibility', 'hidden');
@@ -7398,8 +7486,10 @@ function start_Main(){
       // setting done? lets roll..
       clog(gvar.settings);
 
-      // if( gvar.settings.theme_fixups )
-        set_theme_fixups();
+      // bypass options value
+      gvar.settings.always_notify = true;
+
+      set_theme_fixups();
 
       if( gvar.settings.hide_greylink )
         $('body').addClass('kqr-nogreylink');
