@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.1.6
+// @version        5.3.1.7
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1504235316
-// @timestamp      1429727071841
+// @dtversion      1505085317
+// @timestamp      1431021220570
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -33,15 +33,18 @@
 //
 // -!--latestupdate
 //
+// v5.3.1.7 - 2015-05-08 . 1431021220570
+//   [draft] adapting reCAPTCHA v2
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.1.6 - 2015-04-23 . 1429727071841
 //   Adapting existing public quickreply; Patch broken recaptcha;
 //   Add include fjb: [thread,product,post]
 //   Patches: [preview post, fixed BBCode toolbar] on fjb
 //   Patch get_quotefrom TS using QQ on fjb
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.1.5 - 2015-04-01 . 1427832016030
 //   GitHub repolink on settings::about
 // 
@@ -85,23 +88,23 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.1.6';
+gvar.sversion = 'v' + '5.3.1.7';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1429727071841 // version.timestamp
-  ,dtversion: 1504235316 // version.date
+   timestamp: 1431021220570 // version.timestamp
+  ,dtversion: 1505085317 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1504235316 // css revision date; only change this when you change your external css
+  ,cssREV: 1505085317 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 /*
 window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = !1; // development debug, author purpose
+gvar.__DEBUG__ = 1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 //========-=-=-=-=--=========
@@ -371,8 +374,9 @@ var rSRC = {
       + '<form method="post" id="formform" role="form" name="qr_form" action="#">'
         // hidden-values
       + '<input type="hidden" value="" name="securitytoken" id="qr-securitytoken"/>' 
-      + '<input type="hidden" value="" name="recaptcha_challenge_field" id="qr-recaptcha_challenge_field"/>'
-      + '<input type="hidden" value="" name="recaptcha_response_field" id="qr-recaptcha_response_field"/>'
+      // + '<input type="hidden" value="" name="recaptcha_challenge_field" id="qr-recaptcha_challenge_field"/>'
+      // + '<input type="hidden" value="" name="recaptcha_response_field" id="qr-recaptcha_response_field"/>'
+      + '<input type="hidden" value="" name="g-recaptcha-response" id="qr-g-recaptcha-response"/>'
 
       + (gvar.thread_type == 'group' ? ''
         +'<input type="hidden" value="" name="discussionid" id="qr-discussionid" />'
@@ -676,14 +680,14 @@ var rSRC = {
     
     // helper fake-elements
     // remote make Recaptcha
-    +'<input type="button" class="ghost" id="hidrecap_btn" value="reCAPTCHA" style="display:" onclick="showRecaptcha(\'box_recaptcha_container\');" />' 
+    +'<input type="button" class="ghost" id="hidrecap_btn" value="reCAPTCHA" style="display:" onclick="showRecaptcha2();" />' 
     // remote reload Recaptcha
     +'<input type="button" class="ghost" id="hidrecap_reload_btn" value="reload_reCAPTCHA" style="display:" onclick="Recaptcha.reload();" />'
 
     +'<div id="box_wrap" class="ycapcay">'
     +(gvar.edit_mode ? ''
       : '<div><label for="recaptcha_response_field" style="width:100%!important; float:none!important;">'
-        +(gvar.user.isDonatur ? 'Submit post...' : 'Prove you\'re not a robot')
+        +(gvar.user.isDonatur ? 'Submit post...' : '&nbsp;')
         +'</label></div>'
      )
     + '<div id="box_response_msg" class="ghost"></div>'
@@ -703,6 +707,12 @@ var rSRC = {
     ;
   },
   _BOX_RC_Widget: function(){
+    return ''
+      // +'<div class="g-recaptcha" data-sitekey="6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ"></div>'
+      +'<div id="kqr_recaptcha2"></div>'
+    ;
+  },
+  _BOX_RC_Widget_OLD: function(){
     return ''
     +'<div id="recaptcha_image"><img height="57" src="'+gvar.B.nocache_png+'" /></div>'
     +'<div class="recaptcha-main">'
@@ -1158,6 +1168,11 @@ var rSRC = {
     return ""
     +'#box_preview {max-height:' + (parseInt( getHeight() ) - gvar.offsetMaxHeight - gvar.offsetLayer) + 'px;}'
     +'body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"], .ghost{ display:none; }'
+
+    // patches
+    // +'#kqr_recaptcha2{padding: 20px 8px;}'
+    // +'#box_wrap{margin-top:0;}'
+    // +'.modal-dialog-title{border-top-left-radius:0!important; border-top-right-radius: 0;}'
   },
   getCSS_Fixups: function(mode){
     var css='', i='!important';
@@ -1197,25 +1212,29 @@ var rSRC = {
     +'var $ = $||jQuery.noConflict();'
     +'var prfx = "";'
 
-    +'function showRecaptcha(element){'
-    + 'if( $("#quick-reply").length )'
-    +   '$("#quick-reply").remove();'
-
-    + 'if( typeof(Recaptcha)!="object" ){'
-    +   'window.setTimeout(function () { showRecaptcha() }, 200);'
-    +   'return;'
-    + '}else{'
-    +   'Recaptcha.destroy("recaptcha_wrapper");'
-    +   'Recaptcha.create("6Lc7C9gSAAAAAMAoh4_tF_uGHXnvyNJ6tf9j9ndI", '
-    +   ' element, {theme:"custom", lang:"en", custom_theme_widget:"recaptcha_widget", callback: tamperRecaptcha});'
-    + '}'
+    // +'<div class="g-recaptcha" data-sitekey="6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ"></div>'
+    +'function showRecaptcha2(){'
+    + 'grecaptcha.render("kqr_recaptcha2", {"sitekey": "6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ"});'
     +'}'
+    // +'function showRecaptcha(element){'
+    // + 'if( $("#quick-reply").length )'
+    // +   '$("#quick-reply").remove();'
 
-    +'function tamperRecaptcha() {'
-    + 'var $par = $("#wraper-hidden-thing");'
-    + '$par.find(".recaptcha_input_area").append("<div class=\'recaptcha-buttons\'><a title=\'Get a new challenge\' href=\'javascript:Recaptcha.reload()\' id=\'recaptcha_reload_btn\'><span>Reload reCapcay</span></a><a title=\'Help\' href=\'javascript:Recaptcha.showhelp()\' id=\'recaptcha_whatsthis_btn\'><span>Help</span></a></div>");'
-    + '$par.find("#recaptcha_area").addClass("RCw");'
-    +'}'
+    // + 'if( typeof(Recaptcha)!="object" ){'
+    // +   'window.setTimeout(function () { showRecaptcha() }, 200);'
+    // +   'return;'
+    // + '}else{'
+    // +   'Recaptcha.destroy("recaptcha_wrapper");'
+    // +   'Recaptcha.create("6Lc7C9gSAAAAAMAoh4_tF_uGHXnvyNJ6tf9j9ndI", '
+    // +   ' element, {theme:"custom", lang:"en", custom_theme_widget:"recaptcha_widget", callback: tamperRecaptcha});'
+    // + '}'
+    // +'}'
+
+    // +'function tamperRecaptcha() {'
+    // + 'var $par = $("#wraper-hidden-thing");'
+    // + '$par.find(".recaptcha_input_area").append("<div class=\'recaptcha-buttons\'><a title=\'Get a new challenge\' href=\'javascript:Recaptcha.reload()\' id=\'recaptcha_reload_btn\'><span>Reload reCapcay</span></a><a title=\'Help\' href=\'javascript:Recaptcha.showhelp()\' id=\'recaptcha_whatsthis_btn\'><span>Help</span></a></div>");'
+    // + '$par.find("#recaptcha_area").addClass("RCw");'
+    // +'}'
     +'function SimulateMouse(elem,event,preventDef) {'
     +  'if("object" != typeof elem) return;'
     +  'var evObj = document.createEvent("MouseEvents");'
@@ -1224,7 +1243,7 @@ var rSRC = {
     +  'try{ elem.dispatchEvent(evObj) }'
     +  'catch(e){ console && console.log && console.log("Error. elem.dispatchEvent is not function."+e) }'
     +'}'
-    // no-needed for a moment
+    // jQuery.cookie handler
     +'function jq_cookie(){jQuery.cookie=function(d,e,b){if(arguments.length>1&&(e===null||typeof e!=="object")){b=jQuery.extend({},b);if(e===null){b.expires=-1}if(typeof b.expires==="number"){var g=b.expires,c=b.expires=new Date();c.setDate(c.getDate()+g)}return(document.cookie=[encodeURIComponent(d),"=",b.raw?String(e):encodeURIComponent(String(e)),b.expires?"; expires="+b.expires.toUTCString():"",b.path?"; path="+b.path:"",b.domain?"; domain="+b.domain:"",b.secure?"; secure":""].join(""))}b=e||{};var a,f=b.raw?function(h){return h}:decodeURIComponent;return(a=new RegExp("(?:^|; )"+encodeURIComponent(d)+"=([^;]*)").exec(document.cookie))?f(a[1]):null};$=jQuery}'
 
     +'var __mq="kaskus_multiquote", __tmp="tmp_chkVal";'
@@ -1645,7 +1664,11 @@ var _BOX = {
   },
   buildQuery: function(topost){
     //,"emailupdate","folderid","rating", 
-    var fields = ["securitytoken", "title", "message", "iconid", "parseurl", "recaptcha_response_field", "recaptcha_challenge_field", "discussionid", "groupid"];
+    var fields = ["securitytoken", "title", "message", "iconid", "parseurl",
+      // "recaptcha_response_field", "recaptcha_challenge_field",
+      "g-recaptcha-response",
+      "discussionid", "groupid"
+    ];
     var url, name, val, query='', arquery={};
 
     if( gvar.edit_mode == 1 )
@@ -1786,8 +1809,9 @@ var _BOX = {
   },
   submit: function(){
     if(!gvar.user.isDonatur && !gvar.edit_mode && gvar.thread_type!='group'){
-      $('#qr-recaptcha_response_field').val( $('#recaptcha_response_field').val() );
-      $('#qr-recaptcha_challenge_field').val( $('#recaptcha_challenge_field').val() );
+      // $('#qr-recaptcha_response_field').val( $('#recaptcha_response_field').val() );
+      // $('#qr-recaptcha_challenge_field').val( $('#recaptcha_challenge_field').val() );
+      $('#qr-g-recaptcha-response').val( $('#kqr_recaptcha2').find("[name=g-recaptcha-response]").val() );
     }
 
     /**
@@ -1998,6 +2022,63 @@ var _BOX = {
     }
   },
   presubmit: function(){
+    if(_BOX.e.ishalted) return;
+    // init preview
+    $('#'+_BOX.e.dialogname).css('visibility', 'visible');
+    var $judulbox, $baseparent, $parent, $box_post;
+    clog("INSIDE presubmit");
+
+    //modal_capcay_box
+    $baseparent = $("#wrap-recaptcha_dialog");
+    $parent = $("#modal_capcay_box");
+    $judulbox = $parent.find(".modal-dialog-title-text");
+    $box_post = $parent.find("#box_post");
+
+    if( gvar.user.isDonatur || gvar.thread_type == 'group' )
+      $judulbox.text('Posting....');
+
+    if( gvar.edit_mode ){
+      
+      $judulbox.text('Saving Changes');
+      $parent.find("#recaptcha_widget").hide();
+      
+      $parent.find("#box_progress_posting")
+        .removeClass('activate-disabled')
+        .addClass('activated')
+        .addClass('mf-spinner')
+      ;
+      $box_post
+        .addClass('goog-btn-disabled')
+        .html('Posting');
+      $parent.find(".ycapcay label").hide();
+    }
+    $baseparent.removeClass("ghost");
+    $parent.show();
+
+    resize_popup_container();
+    $parent.find('.kqr-icon-close').click(function(){
+      close_popup()
+    });
+
+    myfadeIn( $('#'+_BOX.e.boxcapcay), 50 );
+
+    if( false === gvar.user.isDonatur && !gvar.edit_mode && gvar.thread_type != 'group' ){
+      // plis cek capcay
+
+      $box_post.click(function(){
+        _BOX.submit()
+      });
+
+      gvar.$w.setTimeout(function(){
+        $box_post.focus();
+      }, 234)
+    }
+    else{
+      // donat
+      _BOX.submit();
+    }
+  },
+  presubmit_OLD: function(){
     if(_BOX.e.ishalted) return;
     
     // init preview
@@ -5936,14 +6017,17 @@ function close_popup(){
     else if(document.execCommand !== undefined){document.execCommand("Stop", false)}
   } catch (e) {}
   
-  if( !gvar.user.isDonatur && $('body > #modal_capcay_box').get(0) ){
-    var tgt = $('#wraper-hidden-thing #modal_capcay_box'), live=$('body > #modal_capcay_box'), ri='#recaptcha_image', rcf='#recaptcha_challenge_field';
-    $(tgt).find(ri).replaceWith( $(live).find(ri) );
-    $(tgt).find(rcf).replaceWith( $(live).find(rcf) );
-  }
+  // if( !gvar.user.isDonatur && $('body > #modal_capcay_box').get(0) ){
+  //   var tgt = $('#wraper-hidden-thing #modal_capcay_box'), live=$('body > #modal_capcay_box'), ri='#recaptcha_image', rcf='#recaptcha_challenge_field';
+  //   $(tgt).find(ri).replaceWith( $(live).find(ri) );
+  //   $(tgt).find(rcf).replaceWith( $(live).find(rcf) );
+  // }
     
   $('#'+_BOX.e.dialogname).css('visibility', 'hidden');
-  $('body > .kqr-dialog-base').remove();
+  $('body > .kqr-dialog-base:not(#wrap-recaptcha_dialog)').remove();
+  // hide recaptcha dialog, instead of destroy it
+  $('#wrap-recaptcha_dialog').addClass("ghost");
+
   $('body').removeClass('hideflow');
   $('#'+gvar.tID).focus();
 }
@@ -7182,10 +7266,12 @@ function toggleTitle(){
 }
 
 function resize_popup_container(force_width){
-  var $mc = $('*[class^="main-content"]').first()
-  var $md = $(".modal-dialog-main");
-  var mW  = $mc.width();
   var bW, bH = parseInt( getHeight() ), mxH, cTop = 0, capcapdialog=null;
+  capcapdialog = $('#wrap-recaptcha_dialog').is(":visible");
+
+  var $mc = $('*[class^="main-content"]').first();
+  var $md = (capcapdialog ? $('.capcay-dialog') : $(".modal-dialog-main"));
+  var mW  = $mc.width();
   
   if( force_width )
     bW = force_width;
@@ -7197,18 +7283,24 @@ function resize_popup_container(force_width){
 
   if( $md.length ){
     // capcay-dialog
-    if( $('body > .kqr-dialog-base #modal_capcay_box').length ){
-      capcapdialog = true;
-      cTop = (bH / 2) - ($md.height() / 2) - 50;
+    // if( $('body > .kqr-dialog-base #modal_capcay_box').length ){
+    if( capcapdialog ){
+      clog("capcapdialog");
+      clog("bH="+bH+'; mH='+$md.height());
+
+      // capcapdialog = true;
+      cTop = (bH / 2) - ($md.height() / 2) - 0;
+
+      clog("cTop="+cTop);
       if( cTop < 0 ) 
         cTop = 0;
 
-      bW = 310;
+      bW = 320;
     }
 
     // (common) modal-dialog-main
     $md
-      .css('top', (capcapdialog ? cTop : gvar.offsetLayer) + 'px')
+      .css(!capcapdialog ? 'top':'margin-top', (capcapdialog ? cTop : gvar.offsetLayer) + 'px')
       .css('width', bW + 'px')
     ;
     mxH = ( bH - gvar.offsetMaxHeight - gvar.offsetLayer );
@@ -7252,14 +7344,19 @@ function finalizeTPL(){
   }
 
   $('body').prepend(''
+    // dark-backdrop
     +'<div id="qr-modalBoxFaderLayer" class="modal-dialog-backdrop"></div>'
-    +'<div id="wraper-hidden-thing" class="ghost demon"></div>'
+
+    // +'<div id="wraper-hidden-thing" class="ghost demon"></div>'
+    +(!gvar.user.isDonatur ? ''
+    +'<div id="wrap-recaptcha_dialog" class="kqr-dialog-base ghost">'+rSRC.getBOX_RCDialog()+'</div>'
+    :'')
   );
   
-  if( !gvar.user.isDonatur ){
+  // if( !gvar.user.isDonatur ){
     // GM_addGlobalScript(location.protocol+ '\/\/www.google.com\/recaptcha\/api\/js\/recaptcha_ajax.js', 'recap', true);
-    $('#wraper-hidden-thing').append( rSRC.getDialog("BOX_RCDialog") );
-  }
+    // $('#wraper-hidden-thing').append( rSRC.getDialog("BOX_RCDialog") );
+  // }
 }
 
 
@@ -7462,8 +7559,8 @@ function start_Main(){
 
 
         // remove quickreply original dom
-        // this routine will run, on Recapcay trigger
-        // $('#quick-reply').remove();
+        $('#quick-reply').remove();
+
 
         var isInGroup = (gvar.thread_type == 'group');
 
@@ -7616,8 +7713,8 @@ function start_Main(){
             do_click($('#hidrecap_btn').get(0));
           }, 100);
 
-        if( gvar.user.isDonatur )
-          $('#quick-reply').remove();
+        // if( gvar.user.isDonatur )
+        //   $('#quick-reply').remove();
 
         if( !gvar.noCrossDomain && gvar.settings.updates ){
           window.setTimeout(function(){
@@ -7727,7 +7824,7 @@ function init(){
   }
 
   gvar.kqr_static = 'http://' + (!gvar.force_live_css && gvar.__DEBUG__ ? 
-    'localhost/GITs/dev-kqr/kqr/assets/css/' : 
+    '127.0.0.1:8010/GITs/dev-kqr/kaskus-quick-reply/assets/css/' : 
     'raw.githubusercontent.com/idoenk/kaskus-quick-reply/master/assets/css/'
   );
 
