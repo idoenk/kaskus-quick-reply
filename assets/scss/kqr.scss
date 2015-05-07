@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1505085317
+ cssREV:1505085317.1
 */
 
 /**
@@ -36,6 +36,7 @@ $data_uri_kaskus_throbber: "data:image/gif;base64,R0lGODlhIAAgAPEDAPeUHvmyXPzZr/
 */
 $url_close: url(http://ssl.gstatic.com/ui/v1/dialog/close-x.png);
 $url_recaptcha:  url(http://ssl.gstatic.com/accounts/recaptcha-sprite.png);
+$url_iconrecaptcha2:  url(https://www.gstatic.com/recaptcha/api2/logo_48.png);
 
 body{
   &.hideflow {
@@ -398,6 +399,22 @@ ul.qrset_mnu li.qrt.curent {
         text-align: center;
         > .goog-btn {
           margin: 0 2px;
+          &.goog-btn-red{
+            position: relative;
+            padding-left: 36px;
+            .icon-rc2{
+              background: $url_iconrecaptcha2;
+              background-repeat: no-repeat;
+              background-size: 20px;
+              height: 20px;
+              width: 20px;
+              position: absolute;
+              left: 0;
+              top: 2px;
+              margin-left: 8px;
+              opacity: .87;
+            }
+          }
         }
       }
     }
