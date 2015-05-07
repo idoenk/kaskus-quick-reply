@@ -97,7 +97,7 @@ gvar.scriptMeta = {
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1505085317 // css revision date; only change this when you change your external css
+  ,cssREV: 15050853170 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 /*
 window.alert(new Date().getTime());
@@ -617,7 +617,8 @@ var rSRC = {
           // text-counter
       +  '<span class="counter" style="'+(gvar.settings.txtcount ? '':'none')+'"><i>Characters left:</i> <tt class="numero">' + (gvar.thread_type == 'group' ? '1000' : '20000') + '</tt> <b class="qr_preload" style="display:none" title="Est. layout-template"></b></span>'
       +  '<div class="col-xs-6 col-xs-offset-3 wrap-button-submit">'
-      +    '<input type="submit" tabindex="1" value="'+gvar.inner.reply.submit+'" name="sbutton" id="sbutton" class="goog-btn '+ (gvar.user.isDonatur ? 'goog-btn-primary' : 'goog-btn-red') +(gvar.readonly ? ' goog-btn-disabled':'')+'" />'
+      // +    '<input type="submit" tabindex="1" value="'+gvar.inner.reply.submit+'" name="sbutton" id="sbutton" class="goog-btn '+ (gvar.user.isDonatur ? 'goog-btn-primary' : 'goog-btn-red') +(gvar.readonly ? ' goog-btn-disabled':'')+'" />'
+      +    '<button type="submit" tabindex="1" name="sbutton" id="sbutton" class="goog-btn '+ (gvar.user.isDonatur ? 'goog-btn-primary' : 'goog-btn-red') +(gvar.readonly ? ' goog-btn-disabled':'')+'">'+(gvar.user.isDonatur ? '':'<i class="icon-rc2"></i>')+gvar.inner.reply.submit+'</button>'
       +    '<input type="submit" tabindex="2" value="Preview Post" name="spreview" id="spreview" class="goog-btn goog-btn-default'+(gvar.readonly ? ' goog-btn-disabled':'')+'"/>'
       +    '<input type="submit" tabindex="3" value="Go Advanced" name="sadvanced" id="sadvanced" class="goog-btn goog-btn-default'+(gvar.readonly ? ' goog-btn-disabled':'')+'"/>'
       +  '</div>' // .col
@@ -662,7 +663,7 @@ var rSRC = {
     
     +'<div id="cont_button" class="modal-dialog-buttons preview_bottom" style="display:none; width:400px">'
     + '<span class="qr_current_user"></span>'
-    + '<button id="box_prepost" class="goog-btn goog-btn-md '+(gvar.user.isDonatur ? 'goog-btn-primary':'goog-btn-red') +'">'+(gvar.edit_mode ? gvar.inner.edit.submit : 'Post')+'</button>'
+    + '<button id="box_prepost" class="goog-btn goog-btn-md '+(gvar.user.isDonatur || gvar.is_solvedrobot ? 'goog-btn-primary':'goog-btn-red') +'">'+(gvar.edit_mode ? gvar.inner.edit.submit : 'Post')+'</button>'
     + '<button id="box_cancel" class="goog-btn goog-btn-md goog-btn-default">Cancel</button>'
     +'</div>'
     +'</div>' // modal_dialog_box
@@ -1760,7 +1761,7 @@ var _BOX = {
           _BOX.attach_userphoto('#cont_button .qr_current_user', 'Signed in as ');
 
           if( !gvar.user.isDonatur ){
-            if(gvar.edit_mode == 1)
+            if(gvar.edit_mode == 1 || gvar.is_solvedrobot)
               $btn_prepost.addClass('goog-btn-primary').removeClass('goog-btn-red');
             else
               $btn_prepost.removeClass('goog-btn-primary').addClass('goog-btn-red');
@@ -2038,9 +2039,12 @@ var _BOX = {
         _BOX.submit()
       });
 
+      if( gvar.is_solvedrobot )
+        _BOX.submit()
+
       gvar.$w.setTimeout(function(){
         $box_post.focus();
-      }, 234)
+      }, 234);
     }
     else{
       // donat
@@ -5901,11 +5905,11 @@ function close_popup(){
     else if(document.execCommand !== undefined){document.execCommand("Stop", false)}
   } catch (e) {}
   
-  // if( !gvar.user.isDonatur && $('body > #modal_capcay_box').get(0) ){
-  //   var tgt = $('#wraper-hidden-thing #modal_capcay_box'), live=$('body > #modal_capcay_box'), ri='#recaptcha_image', rcf='#recaptcha_challenge_field';
-  //   $(tgt).find(ri).replaceWith( $(live).find(ri) );
-  //   $(tgt).find(rcf).replaceWith( $(live).find(rcf) );
-  // }
+
+  if( !gvar.user.isDonatur ){
+    if( gvar.is_solvedrobot = ($('#kqr_recaptcha2').find("[name=g-recaptcha-response]").val() ? true : false) )
+      $("#sbutton").removeClass("goog-btn-red").addClass("goog-btn-primary");
+  }
     
   $('#'+_BOX.e.dialogname).css('visibility', 'hidden');
   $('body > .kqr-dialog-base:not(#wrap-recaptcha_dialog)').remove();
@@ -7720,6 +7724,8 @@ function init(){
   gvar.ajax_pid = {}; // each ajax performed {preview: timestamp, post: timestamp, edit: timestamp }
   gvar.edit_mode = gvar.pID = gvar.maxH_editor = 0;
   gvar.upload_tipe = gvar.last_postwrap = "";
+
+  gvar.is_solvedrobot = null;
   
   
   gvar.offsetEditorHeight = 160; // buat margin top Layer
