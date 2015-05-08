@@ -2075,23 +2075,18 @@ var _BOX = {
   },
   event_recaptcha_watch_handler: function(ev){
     clog("inside event_recaptcha_watch_handler");
-    var $el, $elparent, touched, params = _BOX.e.watch_params;
-    // var $target = $(ev.target);
-    // clog($target.get(0).nodeName+'; style='+$target.attr("style")+'; class='+$target.attr("class"));
-
-    clog(ev.type);
+    var $el, $elparent, params = _BOX.e.watch_params;
 
     if( ev.type == 'DOMNodeInserted' ){
       $el = $(params.watch);
-      is_touched = (isDefined($el.attr("touch")) && $el.attr("touch") == 'kqr');
+      is_handled = (isDefined($el.attr("handled")) && $el.attr("handled") == 'kqr');
 
-      if( $el.length && !is_touched ){
+      if( $el.length && !is_handled ){
         $elparent = $el.parent();
         _BOX.observe_recaptcha_wrapper( $elparent.get(0) );
 
         // flag to not come-around
-        // $el.addClass("kqr-watched");
-        $el.attr("touch", "kqr");
+        $el.attr("handled", "kqr");
       }
     }
   },
@@ -2169,19 +2164,13 @@ var _BOX = {
         _BOX.submit();
       
       // assign dynamic body events
-      var $pls_container, pls_container = ".pls-container", is_touch;
+      var $pls_container, pls_container = ".pls-container";
       $pls_container = $(pls_container);
-      is_touch = $pls_container.attr("touch");
-
-      clog("pls_container="+$pls_container.length);
-
 
       if( !$pls_container.length )
         _BOX.event_recaptcha_watch(true, {watch: pls_container});
       else
         _BOX.observe_recaptcha_wrapper( $pls_container.parent().get(0) );
-      
-      // _BOX.observe_recaptcha_wrapper( $pls_container.parent().get(0) );
 
       $box_post.click(function(){ _BOX.submit() });
       gvar.$w.setTimeout(function(){
