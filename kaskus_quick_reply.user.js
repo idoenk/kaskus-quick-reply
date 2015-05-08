@@ -8,8 +8,8 @@
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1505085317
-// @timestamp      1431021220570
+// @dtversion      1505095317
+// @timestamp      1431113752119
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -33,7 +33,9 @@
 //
 // -!--latestupdate
 //
-// v5.3.1.7 - 2015-05-08 . 1431021220570
+// v5.3.1.7 - 2015-05-09 . 1431113752119
+//   tweak css image picker centered overflow-y;
+//   handle undefined grecaptcha on earlyload qr-script;
 //   [draft] adapting reCAPTCHA v2
 // 
 // -/!latestupdate---
@@ -91,13 +93,13 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.1.7';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1431021220570 // version.timestamp
-  ,dtversion: 1505085317 // version.date
+   timestamp: 1431113752119 // version.timestamp
+  ,dtversion: 1505095317 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 15050853170 // css revision date; only change this when you change your external css
+  ,cssREV: 15050853171 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 /*
 window.alert(new Date().getTime());
@@ -616,8 +618,7 @@ var rSRC = {
       + '<div class="form-group fg-button-submit">'
           // text-counter
       +  '<span class="counter" style="'+(gvar.settings.txtcount ? '':'none')+'"><i>Characters left:</i> <tt class="numero">' + (gvar.thread_type == 'group' ? '1000' : '20000') + '</tt> <b class="qr_preload" style="display:none" title="Est. layout-template"></b></span>'
-      +  '<div class="col-xs-6 col-xs-offset-3 wrap-button-submit">'
-      // +    '<input type="submit" tabindex="1" value="'+gvar.inner.reply.submit+'" name="sbutton" id="sbutton" class="goog-btn '+ (gvar.user.isDonatur ? 'goog-btn-primary' : 'goog-btn-red') +(gvar.readonly ? ' goog-btn-disabled':'')+'" />'
+      +  '<div class="col-xs-8 col-xs-offset-2 wrap-button-submit">'
       +    '<button type="submit" tabindex="1" name="sbutton" id="sbutton" class="goog-btn '+ (gvar.user.isDonatur ? 'goog-btn-primary' : 'goog-btn-red') +(gvar.readonly ? ' goog-btn-disabled':'')+'">'+(gvar.user.isDonatur ? '':'<i class="icon-rc2"></i>')+gvar.inner.reply.submit+'</button>'
       +    '<input type="submit" tabindex="2" value="Preview Post" name="spreview" id="spreview" class="goog-btn goog-btn-default'+(gvar.readonly ? ' goog-btn-disabled':'')+'"/>'
       +    '<input type="submit" tabindex="3" value="Go Advanced" name="sadvanced" id="sadvanced" class="goog-btn goog-btn-default'+(gvar.readonly ? ' goog-btn-disabled':'')+'"/>'
@@ -689,7 +690,7 @@ var rSRC = {
      )
     + '<div id="box_response_msg" class="ghost"></div>'
     + '<div id="box_recaptcha_container" class="entry-content">'
-        //activate-disabled | activated 
+        // activate-disabled | activated 
     +   '<div id="box_progress_posting" class="activate-disabled"></div>'
         // recaptcha_is_building_widget
     +   '<div class="RCw" id="recaptcha_widget">'+rSRC._BOX_RC_Widget()+'</div>'
@@ -1164,6 +1165,11 @@ var rSRC = {
     return ""
     +'#box_preview {max-height:' + (parseInt( getHeight() ) - gvar.offsetMaxHeight - gvar.offsetLayer) + 'px;}'
     +'body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"], .ghost{ display:none; }'
+
+    // hide recapctcha arrow
+    +'.pls-tailbottom, .pls-tailtop, .pls-tailright, .pls-tailleft, .pls-dropTR, .pls-dropBR, .pls-dropBL{display:none!important;}'
+    +'.modal-rc2-pls-container{position: fixed !important;width: 100% !important;left: 0px !important;top: 0px !important;height: 100% !important;overflow-y: auto !important;}'
+    +'.modal-rc2-pls-container table.gc-bubbleDefault{margin:0 auto!important;}'
   },
   getCSS_Fixups: function(mode){
     var css='', i='!important';
@@ -1204,7 +1210,21 @@ var rSRC = {
     +'var prfx = "";'
 
     +'function showRecaptcha2(){'
-    + 'grecaptcha.render("kqr_recaptcha2", {"sitekey": "6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ"});'
+    + 'if("undefined" !== typeof grecaptcha)'
+    +  'grecaptcha.render("kqr_recaptcha2", {'
+    +    '"sitekey": "6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ"'
+    +  '});'
+    + 'else{'
+    +  'if(window.kqr_recaptcha2_injected) return;'
+    +  '(function(d, s, k) {'
+    +  'var js, hjs = d.getElementsByTagName(s)[0];'
+    +  'if (d.getElementById(k)) return;'
+    +  'js = d.createElement(s); js.id=k; js.async="async"; js.defer="defer";'
+    +  'js.src = "https://www.google.com/recaptcha/api.js?hl=en&onload=showRecaptcha2&render=explicit";'
+    +  'hjs.parentNode.insertBefore(js, hjs);'
+    +  '})(document,"script","kqr_recaptcha2_inject");'
+    +  'window.kqr_recaptcha2_injected=true;'
+    + '}'
     +'}'
     +'function SimulateMouse(elem,event,preventDef) {'
     +  'if("object" != typeof elem) return;'
@@ -1990,14 +2010,121 @@ var _BOX = {
       $('#'+ids[3]).removeClass( cls[4] );
     }
   },
+  observe_recaptcha_wrapper: function(targetElement){
+    if( !("undefined" != typeof targetElement && targetElement) ) return;
+
+    clog("inside observe_recaptcha_wrapper");
+
+    // create an observer instance of changing attribute
+    var maxIter = 50, steps=0;
+    var observer = new MutationObserver(function(mutations) {
+      var BreakException = {};
+      try{
+        mutations.forEach(function(mev) {
+          var $el = $(mev.target),
+            is_visible = (getComputedStyle($el.get(0)).getPropertyValue("visibility") == 'visible'),
+            is_observed = $el.hasClass("modal-rc2-pls-container")
+          ;
+          if( is_observed ) throw BreakException;
+
+          clog('tick...; is_visible:'+is_visible );
+          if( is_visible && !is_observed ){
+            setTimeout(function(){
+              $el.addClass("modal-rc2-pls-container");
+
+              if( !$el.hasClass("events") ){
+                $el.click(function(e){
+
+                  $(e.target||e)
+                    .css("visibility", "hidden")
+                    .removeClass("modal-rc2-pls-container")
+                  ;
+
+                  $("body").trigger("click");
+                }).addClass("events");
+              }
+            }, 0);
+          }
+          steps++;
+
+          if( steps > maxIter ){
+            clog("steps-exceed treshold, disconecting observer");
+            steps = 0;
+            _BOX.e.observer && 
+              _BOX.e.observer.disconnect();
+
+            clog("sto.reinitiate observe in 2 secs");
+            setTimeout(function(){
+              _BOX.observe_recaptcha_wrapper( targetElement );
+            }, 2345);
+            throw BreakException;
+          }
+        });
+      }catch(e){
+        if(e!==BreakException) throw e;
+      }
+    });
+    // pass in the target node, as well as the observer options
+    // observer.observe($elparent.get(0), {
+    observer.observe(targetElement, {
+      attributes: true,
+      childList: false,
+      characterData: false
+    });
+    _BOX.e.observer = observer;  
+  },
+  event_recaptcha_watch_handler: function(ev){
+    clog("inside event_recaptcha_watch_handler");
+    var $el, $elparent, touched, params = _BOX.e.watch_params;
+    // var $target = $(ev.target);
+    // clog($target.get(0).nodeName+'; style='+$target.attr("style")+'; class='+$target.attr("class"));
+
+    clog(ev.type);
+
+    if( ev.type == 'DOMNodeInserted' ){
+      $el = $(params.watch);
+      is_touched = (isDefined($el.attr("touch")) && $el.attr("touch") == 'kqr');
+
+      if( $el.length && !is_touched ){
+        $elparent = $el.parent();
+        _BOX.observe_recaptcha_wrapper( $elparent.get(0) );
+
+        // flag to not come-around
+        // $el.addClass("kqr-watched");
+        $el.attr("touch", "kqr");
+      }
+    }
+  },
+  event_recaptcha_watch: function(enabled, params){
+    if( enabled ){
+      _BOX.e.watch_params = params;
+
+      clog("binding DOMNodeInserted");
+      $("body").bind("DOMNodeInserted", _BOX.event_recaptcha_watch_handler);
+    }
+    else{
+      clog("unbind DOMNodeInserted");
+      $("body").unbind("DOMNodeInserted", _BOX.event_recaptcha_watch_handler);
+
+      if( _BOX.e.observer ){
+        clog("disconnect observer");
+        _BOX.e.observer.disconnect();
+        _BOX.e.observer = null;
+      }
+    }
+  },
   presubmit: function(){
     if(_BOX.e.ishalted) return;
     // init preview
     $('#'+_BOX.e.dialogname).css('visibility', 'visible');
     var $judulbox, $baseparent, $parent, $box_post;
-    clog("INSIDE presubmit");
+    
+    if( !$('#kqr_recaptcha2').html() )
+      do_click( $("#hidrecap_btn").get(0) );
 
-    //modal_capcay_box
+    
+
+    // modal_capcay_box
     $baseparent = $("#wrap-recaptcha_dialog");
     $parent = $("#modal_capcay_box");
     $judulbox = $parent.find(".modal-dialog-title-text");
@@ -2026,23 +2153,37 @@ var _BOX = {
     $parent.show();
 
     resize_popup_container();
-    $parent.find('.kqr-icon-close').click(function(){
-      close_popup()
-    });
+
+    if( !$parent.find('.kqr-icon-close').hasClass("events") )
+      $parent.find('.kqr-icon-close').click(function(){
+        close_popup();
+        _BOX.event_recaptcha_watch( !1 );
+      }).addClass("events");
 
     myfadeIn( $('#'+_BOX.e.boxcapcay), 50 );
     _BOX.attach_userphoto('#cont_button .qr_current_user');
 
     if( false === gvar.user.isDonatur && !gvar.edit_mode && gvar.thread_type != 'group' ){
-      // plis cek capcay
-
-      $box_post.click(function(){
-        _BOX.submit()
-      });
-
+      // cek capcay
       if( gvar.is_solvedrobot )
-        _BOX.submit()
+        _BOX.submit();
+      
+      // assign dynamic body events
+      var $pls_container, pls_container = ".pls-container", is_touch;
+      $pls_container = $(pls_container);
+      is_touch = $pls_container.attr("touch");
 
+      clog("pls_container="+$pls_container.length);
+
+
+      if( !$pls_container.length )
+        _BOX.event_recaptcha_watch(true, {watch: pls_container});
+      else
+        _BOX.observe_recaptcha_wrapper( $pls_container.parent().get(0) );
+      
+      // _BOX.observe_recaptcha_wrapper( $pls_container.parent().get(0) );
+
+      $box_post.click(function(){ _BOX.submit() });
       gvar.$w.setTimeout(function(){
         $box_post.focus();
       }, 234);
@@ -2849,7 +2990,7 @@ var _TEXT = {
       var $a = $("#"+gvar.tID);
 
       if( !$a.hasClass("events-keys") ){
-        clog("accating event events-keys");
+        clog("activating event events-keys");
         $a.keydown(function(e){
           
           if( sC.indexOf(e.keyCode) !== -1 ){
@@ -2990,6 +3131,7 @@ var _TEXTCOUNT = {
     return (_tc.limitchar - _tc.preload_length - _tc.$editor.val().length);
   },
   do_watch: function(_tc){
+    _tc.dismiss();
     gvar.sTryTCount = window.setInterval(function() {
       _tc.$target.text( _tc.count_it(_tc) );
     }, 600);
@@ -5322,7 +5464,7 @@ function do_sanitize(text){
   return ret;
 }
 
-function myfadeIn(el,d, cb){
+function myfadeIn(el, d, cb){
   var no_animate = 1;
   if( !d ) d = 100;
   if( typeof cb != 'function') cb = function(){};
@@ -5447,6 +5589,14 @@ function SimulateMouse(elem,event,preventDef) {
 function do_click(el){
   SimulateMouse(el, 'click', true);
 }
+// set css to the element with important priority support
+function cssVal($el, styleName, value, priority){
+  var style = $el.get(0).style;
+  if( !$el.length || isUndefined(styleName) || isUndefined(value) ) return;
+  priority = typeof priority != 'undefined' ? priority : '';
+  style.setProperty(styleName, value, priority);
+  return $el.get(0).style;
+};
 
 function createTextEl(a) {
   return document.createTextNode(a)
@@ -5898,6 +6048,9 @@ function precheck_quoted( injected ){
 }
 
 function close_popup(){
+  // hacky to avoid broken rc2 when iframe is being destroyed
+  $('body').trigger('click');
+
   try {
     gvar.sTryEvent.abort();
     gvar.sTryRequest.abort();
@@ -5910,6 +6063,9 @@ function close_popup(){
   if( !gvar.user.isDonatur ){
     if( gvar.is_solvedrobot = ($('#kqr_recaptcha2').find("[name=g-recaptcha-response]").val() ? true : false) )
       $("#sbutton").removeClass("goog-btn-red").addClass("goog-btn-primary");
+
+    if( _BOX.e.observer )
+      _BOX.event_recaptcha_watch( !1 );
   }
     
   $('#'+_BOX.e.dialogname).css('visibility', 'hidden');
@@ -6742,10 +6898,13 @@ function eventsTPL(){
 
     // clog("input:"+pCSA+'_'+A);
     
-    if( A == 27 && $("#" + _BOX.e.dialogname).is(":visible") && $("#" + _BOX.e.dialogname).css('visibility')=='visible' ){
+    if( A == 27 ){
+      if( $("#" + _BOX.e.dialogname).is(":visible") && $("#" + _BOX.e.dialogname).css('visibility')=='visible' ){
+        close_popup();
+        $("#" + gvar.tID).focus();
+      }
+
       do_an_e(ev);
-      close_popup();
-      $("#" + gvar.tID).focus();
       return;
     }
 
@@ -6807,6 +6966,7 @@ function eventsTPL(){
       }, 50);
     }
   }).blur(function(){
+    clog("blur editor, gvar.settings.txtcount="+gvar.settings.txtcount);
     if( gvar.settings.txtcount ){
       $XK.find('.counter').first().removeClass('kereng');
       _TEXTCOUNT.dismiss();
@@ -6814,6 +6974,7 @@ function eventsTPL(){
 
     if( gvar.settings.fixed_toolbar ){
       if( gvar.sTryWatchWinScroll ){
+        clog("deactivate onfocus event");
         clearInterval(gvar.sTryWatchWinScroll);
 
         gvar.sTryPreUnFixed_markItUp = setTimeout(function(){
@@ -7698,10 +7859,18 @@ function init(){
 
   // set true to simulate using css from googlecode, [debug-purpose]
   gvar.force_live_css = null;
-  if( gvar.__CLIENTDEBUG__ ){
-    gvar.__DEBUG__ = 1;
-    gvar.force_live_css = true;
+
+  // if __DEBUG__ is early set live_css wont happen
+  if( gvar.__DEBUG__ ){
+    gvar.force_live_css = !1;
   }
+  else{
+    if( gvar.__CLIENTDEBUG__ ){
+      gvar.__DEBUG__ = 1;
+      gvar.force_live_css = true;
+    }
+  }
+
 
   gvar.kqr_static = 'http://' + (!gvar.force_live_css && gvar.__DEBUG__ ? 
     '127.0.0.1:8010/GITs/dev-kqr/kaskus-quick-reply/assets/css/' : 
