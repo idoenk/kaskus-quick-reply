@@ -7632,6 +7632,12 @@ function start_Main(){
       +']');
     gvar.readonly = true;
   }
+  
+  if( !gvar.user.isDonatur && $("#recaptcha_wrapper").length ){
+
+    clog("FJB with old reCaptcha detected, QR is not supported.");
+    return !1;
+  }
 
   clog("Injecting getCSS");
   GM_addGlobalStyle(rSRC.getCSS(), 'kqr-dynamic-css');
