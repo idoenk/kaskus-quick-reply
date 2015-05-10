@@ -9,7 +9,7 @@
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
 // @dtversion      1505105317
-// @timestamp      1431266455945
+// @timestamp      1431275590215
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -33,7 +33,7 @@
 //
 // -!--latestupdate
 //
-// v5.3.1.7 - 2015-05-10 . 1431266455945
+// v5.3.1.7 - 2015-05-10 . 1431275590215
 //   flow on capcay dialog will autosubmited; callback expired-captcha;
 //   avoid always-notify on edit-mode submission;
 //   always-notify feature: autoInject text-based multiquote ids to notify users (hardcoded, todo: put in options);
@@ -97,7 +97,7 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.1.7';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1431266455945 // version.timestamp
+   timestamp: 1431275590215 // version.timestamp
   ,dtversion: 1505105317 // version.date
 
   ,titlename: 'Quick Reply'
@@ -111,7 +111,7 @@ window.alert(new Date().getTime());
 //=-=-=-=--=
 //========-=-=-=-=--=========
 gvar.__DEBUG__ = !1; // development debug, author purpose
-gvar.__CLIENTDEBUG__ = 1; // client debug, w/o using local assets
+gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 //========-=-=-=-=--=========
 //=-=-=-=--=
@@ -702,7 +702,8 @@ var rSRC = {
     + '<div id="box_recaptcha_container" class="entry-content">'
         // activate-disabled | activated 
     +   '<div id="box_progress_posting" class="activate-disabled"></div>'
-        // recaptcha_is_building_widget
+
+    // ghost RCw when box_progress_posting is .activated
     + (!gvar.user.isDonatur ? '<div class="RCw" id="recaptcha_widget">'+rSRC._BOX_RC_Widget()+'</div>' : '')
     + '</div>'
     + '<div id="cont_button" class="modal-dialog-buttons" '+(gvar.edit_mode ? ' style="visibility:hidden;"':'')+'>'
@@ -2045,20 +2046,17 @@ var _BOX = {
   },
   postloader: function(flag){
     var ids = ['recaptcha_widget','box_progress_posting','box_response_msg','box_post']
-       // ,cls = ['recaptcha_is_building_widget','activate-disabled','activated','mf-spinner','goog-btn-disabled'];
-       ,cls = ['activate-disabled','activated','mf-spinner','goog-btn-disabled'];
+       ,cls = ['ghost','activate-disabled','activated','mf-spinner','goog-btn-disabled'];
+
     if(flag){
-      // $('#'+ids[0]).addClass( cls[0] ); // tohide capcay-box
-      // $('#'+ids[1]).removeClass(cls[1]).addClass( cls[2] ).addClass( cls[3] );
-      $('#'+ids[1]).removeClass(cls[0]).addClass( cls[1] ).addClass( cls[2] );
+      $('#'+ids[0]).addClass( cls[0] ); // tohide capcay-box
+      $('#'+ids[1]).removeClass(cls[1]).addClass( cls[2]+' '+cls[3] );
       $('#'+ids[2]).hide();
-      // $('#'+ids[3]).addClass( cls[4] );
-      $('#'+ids[3]).addClass( cls[3] );
+      $('#'+ids[3]).addClass( cls[4] );
     }else{
-      // $('#'+ids[0]).removeClass( cls[0] );
-      // $('#'+ids[1]).removeClass( cls[3] ).removeClass( cls[2] ).addClass( cls[1] );
-      $('#'+ids[1]).removeClass( cls[2] ).removeClass( cls[1] ).addClass( cls[0] );
-      $('#'+ids[3]).removeClass( cls[3] );
+      $('#'+ids[0]).removeClass( cls[0] );
+      $('#'+ids[1]).removeClass( cls[3]+' '+cls[2] ).addClass( cls[1] );
+      $('#'+ids[3]).removeClass( cls[4] );
     }
   },
   observe_recaptcha_wrapper: function(targetElement){
