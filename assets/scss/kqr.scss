@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:15050853172
+ cssREV:15050853173
 */
 
 /**
@@ -256,7 +256,7 @@ ul.qrset_mnu li.qrt.curent {
   position: relative;
 }
 
-.ghost {
+.ghost{
   display: none !important;
 }
 
@@ -1694,6 +1694,105 @@ ul {
     text-shadow: 1px 1px #fff;
     color: #666;
     text-align: center;
+  }
+}
+
+/*old-recaptcha*/
+.RCw {
+  .recaptcha-main {
+    position: relative;
+    text-align: left;
+    padding: 13px;
+    .errormsg {
+      margin: 0 0 .5em;
+    }
+    input[type=text] {
+      width: 100%;
+      padding: 5px;
+      text-align: center;
+      line-height: 22px;
+      font-size: 14px;
+      font-weight: normal;
+      color: #333;
+    }
+    label strong {
+      display: block;
+      text-align: left;
+      color: #222;
+      font-weight: normal;
+      margin: 0 0 .4em;
+    }
+  }
+  .recaptcha-buttons {
+    position: absolute;
+    top: 8px;
+    right: 5px;
+    a {
+      display: inline-block;
+      height: 21px;
+      width: 21px;
+      margin-left: 2px;
+      background: #fff;
+      background-position: center center;
+      background-repeat: no-repeat;
+      line-height: 0;
+      opacity: .55;
+      &:hover {
+        opacity: .8;
+      }
+    }
+    span {
+      position: absolute;
+      left: -99999em;
+    }
+  }
+  #recaptcha_reload_btn {
+    background: $url_recaptcha -63px!important;
+  }
+  #recaptcha_whatsthis_btn {
+    background: $url_recaptcha!important;
+  }
+
+  /*capcay-hacky*/
+  table.recaptchatable {
+    border: 0!important;
+    width: 100%;
+    tbody > tr {
+      &:first-child td, &:last-child td:last-child {
+        display: none;
+      }
+      &:first-child td.recaptcha_image_cell {
+        display: block;
+        width: 100%;
+        padding: 0!important;
+      }
+      &:last-child td:first-child {
+        padding: 0 7px !important;
+      }
+    }
+  }
+  .recaptchatable {
+    img#recaptcha_challenge_image {
+      width: 100%;
+      height: 100%;
+    }
+    #recaptcha_image {
+      width: 100% !important;
+      height: 100% !important;
+      border:0 !important;
+      background-color: #e1e1e1;
+    }
+    #recaptcha_response_field {
+      border: 1px solid #ccc !important;
+      width: 100% !important;
+      padding: 5px 0px;
+      text-align: center;
+      line-height: 16px;
+      font-size: 15px;
+      &:focus {
+        border: 1px solid #999 !important;
+      }
+    }
   }
 }
 
