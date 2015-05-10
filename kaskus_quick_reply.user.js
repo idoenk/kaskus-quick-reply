@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.1.7
+// @version        5.3.1.8
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1505105317
-// @timestamp      1431275590215
+// @dtversion      1505105318
+// @timestamp      1431284779215
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -33,7 +33,7 @@
 //
 // -!--latestupdate
 //
-// v5.3.1.7 - 2015-05-10 . 1431275590215
+// v5.3.1.8 - 2015-05-10 . 1431284779215
 //   flow on capcay dialog will autosubmited; callback expired-captcha;
 //   avoid always-notify on edit-mode submission;
 //   always-notify feature: autoInject text-based multiquote ids to notify users (hardcoded, todo: put in options);
@@ -94,11 +94,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.1.7';
+gvar.sversion = 'v' + '5.3.1.8';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1431275590215 // version.timestamp
-  ,dtversion: 1505105317 // version.date
+   timestamp: 1431284779215 // version.timestamp
+  ,dtversion: 1505105318 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
