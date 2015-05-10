@@ -8,8 +8,8 @@
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1505095317
-// @timestamp      1431113752119
+// @dtversion      1505105317
+// @timestamp      1431266455945
 // @homepageURL    https://greasyfork.org/scripts/96
 // @updateURL      https://greasyfork.org/scripts/96/code.meta.js
 // @downloadURL    https://greasyfork.org/scripts/96/code.user.js
@@ -33,7 +33,11 @@
 //
 // -!--latestupdate
 //
-// v5.3.1.7 - 2015-05-09 . 1431113752119
+// v5.3.1.7 - 2015-05-10 . 1431266455945
+//   flow on capcay dialog will autosubmited; callback expired-captcha;
+//   avoid always-notify on edit-mode submission;
+//   always-notify feature: autoInject text-based multiquote ids to notify users (hardcoded, todo: put in options);
+//   reCAPTCHA verifyCallback doing submit post;
 //   tweak css image picker centered overflow-y;
 //   handle undefined grecaptcha on earlyload qr-script;
 //   [draft] adapting reCAPTCHA v2
@@ -93,13 +97,13 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.1.7';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1431113752119 // version.timestamp
-  ,dtversion: 1505095317 // version.date
+   timestamp: 1431266455945 // version.timestamp
+  ,dtversion: 1505105317 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 15050853171 // css revision date; only change this when you change your external css
+  ,cssREV: 15050853172 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 /*
 window.alert(new Date().getTime());
@@ -604,6 +608,9 @@ var rSRC = {
       +   '</div>' // .edit-options
 
           // helper fake-elements
+          // remote signal from ifr-content before posting
+      +   '<input id="qr_signsectok" type="button" class="ghost" value="sgt" />'
+
           // remote append from ifr-content
       +   '<input id="qr_getcont" type="button" class="ghost" value="gcf" />'
           // remote button to chkVal
@@ -612,6 +619,8 @@ var rSRC = {
       +   '<input id="qr_chkcookie" type="button" class="ghost" value="cq" onclick="try{chkMultiQuote()}catch(e){console && console.log && console.log(e)}" />'
           // remote button to delete-mQ
       +   '<input id="qr_remoteDC" type="button" class="ghost" value="dc" onclick="try{deleteMultiQuote()}catch(e){console && console.log && console.log(e)}" />'
+          // remote button to inject-mQ
+      +   '<input id="qr_remoteIC" type="button" class="ghost" value="ic" onclick="try{injectMultiQuote()}catch(e){console && console.log && console.log(e)}" />'
       + '</div>' // .form-group.fg-button-bottom
 
 
@@ -679,8 +688,9 @@ var rSRC = {
     +'<div class="modal-dialog-title"><span class="modal-dialog-title-text">'+(gvar.edit_mode ? 'Saving Changes':'Verification')+'</span><span class="kqr-icon-close popbox"/></div>'
     
     // helper fake-elements
-    // remote make Recaptcha
-    +'<input type="button" class="ghost" id="hidrecap_btn" value="reCAPTCHA" style="display:" onclick="showRecaptcha2();" />' 
+    // remote Recaptcha handler dompage-wrapper com
+    +'<input type="button" class="ghost" id="hidrecap_btn" value="reCAPTCHA" onclick="showRecaptcha2();" />' 
+    +'<input type="button" class="ghost" id="resetrecap_btn" value="rRC" />' 
 
     +'<div id="box_wrap" class="ycapcay">'
     +(gvar.edit_mode ? ''
@@ -693,7 +703,7 @@ var rSRC = {
         // activate-disabled | activated 
     +   '<div id="box_progress_posting" class="activate-disabled"></div>'
         // recaptcha_is_building_widget
-    +   '<div class="RCw" id="recaptcha_widget">'+rSRC._BOX_RC_Widget()+'</div>'
+    + (!gvar.user.isDonatur ? '<div class="RCw" id="recaptcha_widget">'+rSRC._BOX_RC_Widget()+'</div>' : '')
     + '</div>'
     + '<div id="cont_button" class="modal-dialog-buttons" '+(gvar.edit_mode ? ' style="visibility:hidden;"':'')+'>'
     +  '<span class="qr_current_user"></span>'
@@ -1212,7 +1222,9 @@ var rSRC = {
     +'function showRecaptcha2(){'
     + 'if("undefined" !== typeof grecaptcha)'
     +  'grecaptcha.render("kqr_recaptcha2", {'
-    +    '"sitekey": "6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ"'
+    +    '"sitekey": "6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ",'
+    +    '"callback": function(){ $("#box_post").trigger("click") },'
+    +    '"expired-callback": function(){ $("#box_prepost, #sbutton").removeClass("goog-btn-primary").addClass("goog-btn-red"); $("#resetrecap_btn").trigger("click") }'
     +  '});'
     + 'else{'
     +  'if(window.kqr_recaptcha2_injected) return;'
@@ -1241,10 +1253,19 @@ var rSRC = {
     +'function deleteMultiQuote(){!$[prfx+"cookie"] && jq_cookie(); $[prfx+"cookie"](__mq,null, { expires: null, path: "/", secure: false }); $("#"+__tmp).val("")}'
     +'function chkMultiQuote(){ !($ && $[prfx+"cookie"]) && jq_cookie(); var mqs=$[prfx+"cookie"](__mq)||""; $("#"+__tmp).val(mqs ? mqs.replace(/\s/g,"") : ""); SimulateMouse($("#qr_chkval").get(0), "click", true); }'
     +'try{chkMultiQuote()}catch(e){console && console.log && console.log(e)};'
+    +'function injectMultiQuote(){!($ && $[prfx+"cookie"]) && jq_cookie(); var store_id=$("#"+__tmp).val(); if(store_id) $[prfx+"cookie"](__mq, store_id, {expired:null,path:"/",secure:false})};'
+
 
     +'function ifrdone(el){'
     +'$("#ifr_content").val( $(el).contents().find("textarea[name=message]").first().val() );'
     +'SimulateMouse( $("#qr_getcont").get(0), "click", true); $(el).remove();'
+    +'}'
+    +'function ifrdone_message(el){'
+    +'$("#ifr_content").val( $(el).contents().find("textarea[name=message]").first().val() );'
+
+    +'var $sgtok = $("#qr_signsectok");'
+    +'$(el).remove();'
+    +'SimulateMouse( $sgtok.get(0), "click", true);'
     +'}'
 
     +'function kqrmailto(el){'
@@ -1781,7 +1802,7 @@ var _BOX = {
           _BOX.attach_userphoto('#cont_button .qr_current_user', 'Signed in as ');
 
           if( !gvar.user.isDonatur ){
-            if(gvar.edit_mode == 1 || gvar.is_solvedrobot)
+            if( gvar.edit_mode || gvar.is_solvedrobot )
               $btn_prepost.addClass('goog-btn-primary').removeClass('goog-btn-red');
             else
               $btn_prepost.removeClass('goog-btn-primary').addClass('goog-btn-red');
@@ -1887,6 +1908,40 @@ var _BOX = {
       return "undefined" != typeof json_obj && json_obj ? json_obj : false;
     };
 
+    
+    if( !gvar.edit_mode ){
+      // DEBUG-NEW-FEATURE
+      var always_notify = 1;
+
+
+      if( always_notify ){
+        var $box_info = $('#box_response_msg');
+        $box_info
+          .removeClass('ghost qrerror qrinfo')
+          .addClass('g_notice qrinfo')
+        ;
+        $("#box_post").addClass('goog-btn-disabled');
+
+        if( !gvar.fetched_token_post ){
+          $box_info.html('Notifying Users...').show();
+
+          _BOX.check_usernotify();
+          clog("submit-postponed");
+          return !1; // this is required!
+        }
+        else{
+          $box_info.html('Wait for it...').show();
+          gvar.fetched_token_post = null;
+        }
+      }
+    }
+
+    clog("Another HALTD HERE, gonna submit");
+    return !1;
+    
+
+
+
     var query = _BOX.buildQuery(true);
     if( gvar.thread_type == 'group' )
       query["sbutton"] = encodeURI( 'Post+Message' );
@@ -1941,17 +1996,14 @@ var _BOX = {
           }
 
           // decision-stage
-          if( is_error ){
+          if( is_error && !redirect ){
             _BOX.postloader(false);
-            // do_click( $('#hidrecap_reload_btn').get(0) );
+
             $('#box_response_msg')
               .html( String(data.message) )
-              .removeClass('ghost')
+              .removeClass('ghost qrerror qrinfo')
               .addClass('g_notice qrerror')
               .show();
-            $('#recaptcha_response_field')
-              .val('')
-              .addClass('twt-glowerror');
           }
           else{
             // good go
@@ -1998,16 +2050,20 @@ var _BOX = {
   },
   postloader: function(flag){
     var ids = ['recaptcha_widget','box_progress_posting','box_response_msg','box_post']
-       ,cls = ['recaptcha_is_building_widget','activate-disabled','activated','mf-spinner','goog-btn-disabled'];
+       // ,cls = ['recaptcha_is_building_widget','activate-disabled','activated','mf-spinner','goog-btn-disabled'];
+       ,cls = ['activate-disabled','activated','mf-spinner','goog-btn-disabled'];
     if(flag){
-      $('#'+ids[0]).addClass( cls[0] ); // tohide capcay-box
-      $('#'+ids[1]).removeClass(cls[1]).addClass( cls[2] ).addClass( cls[3] );
+      // $('#'+ids[0]).addClass( cls[0] ); // tohide capcay-box
+      // $('#'+ids[1]).removeClass(cls[1]).addClass( cls[2] ).addClass( cls[3] );
+      $('#'+ids[1]).removeClass(cls[0]).addClass( cls[1] ).addClass( cls[2] );
       $('#'+ids[2]).hide();
-      $('#'+ids[3]).addClass( cls[4] );
+      // $('#'+ids[3]).addClass( cls[4] );
+      $('#'+ids[3]).addClass( cls[3] );
     }else{
-      $('#'+ids[0]).removeClass( cls[0] );
-      $('#'+ids[1]).removeClass( cls[3] ).removeClass( cls[2] ).addClass( cls[1] );
-      $('#'+ids[3]).removeClass( cls[4] );
+      // $('#'+ids[0]).removeClass( cls[0] );
+      // $('#'+ids[1]).removeClass( cls[3] ).removeClass( cls[2] ).addClass( cls[1] );
+      $('#'+ids[1]).removeClass( cls[2] ).removeClass( cls[1] ).addClass( cls[0] );
+      $('#'+ids[3]).removeClass( cls[3] );
     }
   },
   observe_recaptcha_wrapper: function(targetElement){
@@ -2075,18 +2131,23 @@ var _BOX = {
   },
   event_recaptcha_watch_handler: function(ev){
     clog("inside event_recaptcha_watch_handler");
-    var $el, $elparent, params = _BOX.e.watch_params;
+    var $el, $elparent, touched, params = _BOX.e.watch_params;
+    // var $target = $(ev.target);
+    // clog($target.get(0).nodeName+'; style='+$target.attr("style")+'; class='+$target.attr("class"));
+
+    clog(ev.type);
 
     if( ev.type == 'DOMNodeInserted' ){
       $el = $(params.watch);
-      is_handled = (isDefined($el.attr("handled")) && $el.attr("handled") == 'kqr');
+      is_touched = (isDefined($el.attr("touch")) && $el.attr("touch") == 'kqr');
 
-      if( $el.length && !is_handled ){
+      if( $el.length && !is_touched ){
         $elparent = $el.parent();
         _BOX.observe_recaptcha_wrapper( $elparent.get(0) );
 
         // flag to not come-around
-        $el.attr("handled", "kqr");
+        // $el.addClass("kqr-watched");
+        $el.attr("touch", "kqr");
       }
     }
   },
@@ -2112,12 +2173,10 @@ var _BOX = {
     if(_BOX.e.ishalted) return;
     // init preview
     $('#'+_BOX.e.dialogname).css('visibility', 'visible');
-    var $judulbox, $baseparent, $parent, $box_post;
-    
-    if( !$('#kqr_recaptcha2').html() )
-      do_click( $("#hidrecap_btn").get(0) );
 
-    
+    var $judulbox, $baseparent, $parent, $box_post, is_require_captcha;
+    is_require_captcha = !(gvar.user.isDonatur || gvar.thread_type == 'group');
+
 
     // modal_capcay_box
     $baseparent = $("#wrap-recaptcha_dialog");
@@ -2125,8 +2184,17 @@ var _BOX = {
     $judulbox = $parent.find(".modal-dialog-title-text");
     $box_post = $parent.find("#box_post");
 
-    if( gvar.user.isDonatur || gvar.thread_type == 'group' )
+    $box_post
+      .removeClass('goog-btn-disabled')
+
+    if( is_require_captcha ){
+      if( !$('#kqr_recaptcha2').html() )
+        do_click( $("#hidrecap_btn").get(0) );
+    }
+    else{
       $judulbox.text('Posting....');
+    }
+
 
     if( gvar.edit_mode ){
       
@@ -2143,6 +2211,8 @@ var _BOX = {
         .html('Posting');
       $parent.find(".ycapcay label").hide();
     }
+
+
     $parent.find("#box_response_msg").html('').hide();
     $baseparent.removeClass("ghost");
     $parent.show();
@@ -2152,27 +2222,39 @@ var _BOX = {
     if( !$parent.find('.kqr-icon-close').hasClass("events") )
       $parent.find('.kqr-icon-close').click(function(){
         close_popup();
-        _BOX.event_recaptcha_watch( !1 );
+        if( is_require_captcha )
+          _BOX.event_recaptcha_watch( !1 );
       }).addClass("events");
 
     myfadeIn( $('#'+_BOX.e.boxcapcay), 50 );
     _BOX.attach_userphoto('#cont_button .qr_current_user');
 
-    if( false === gvar.user.isDonatur && !gvar.edit_mode && gvar.thread_type != 'group' ){
+
+    if( is_require_captcha && !gvar.edit_mode ){
       // cek capcay
       if( gvar.is_solvedrobot )
         _BOX.submit();
       
       // assign dynamic body events
-      var $pls_container, pls_container = ".pls-container";
+      var $pls_container, pls_container = ".pls-container", is_touch;
       $pls_container = $(pls_container);
+      is_touch = $pls_container.attr("touch");
+
+      clog("pls_container="+$pls_container.length);
 
       if( !$pls_container.length )
         _BOX.event_recaptcha_watch(true, {watch: pls_container});
       else
         _BOX.observe_recaptcha_wrapper( $pls_container.parent().get(0) );
 
-      $box_post.click(function(){ _BOX.submit() });
+      $box_post.click(function(e){
+        // simplecheck: recaptcha2 this hidden textarea is filled
+        if( $("#g-recaptcha-response").val() )
+          _BOX.submit()
+
+        e.preventDefault();
+        return !1;
+      });
       gvar.$w.setTimeout(function(){
         $box_post.focus();
       }, 234);
@@ -2180,6 +2262,44 @@ var _BOX = {
     else{
       // donat
       _BOX.submit();
+    }
+  },
+
+  check_usernotify: function(){
+    clog("inside check_usernotify");
+
+    var editortext = $("#"+gvar.tID).val();
+    var parts = editortext.split("[QUOTE=");
+    if( parts.length <= 1 ){
+      gvar.fetched_token_post = true;
+      _BOX.submit();
+      return;
+    }
+
+    // collect all post_ids
+    var cucok, post_ids = [];
+    var fetch_get_token = function(ids){
+      var rnd, action_url = $('#formform').attr("action");
+      rnd = 'ifc-' + gvar.sversion+'-'+gvar.scriptMeta.timestamp;
+      if( $("#"+rnd).length ) return !1;
+
+      $("#tmp_chkVal").val( ids );
+      $("#qr_remoteIC").trigger("click");
+      
+      clog("iframe="+action_url);
+      
+      $("body")
+        .append('<iframe id="'+rnd+'" src="'+action_url+'" class="ghost" onload="ifrdone_message(this)"></iframe>');
+    };
+
+    for(var i=0, iL=parts.length; i<iL; i++){
+      if( cucok = /[^;]+.(\w{24})\]/i.exec(parts[i]) )
+        post_ids.push( cucok[1] );
+    }
+
+    if( post_ids.length > 0 ){
+      post_ids.sort();
+      fetch_get_token( post_ids );
     }
   },
   attach_userphoto: function(target, dt_ori){
@@ -2247,11 +2367,10 @@ var _AJAX = {
       _AJAX.ajaxPID('quote');
       if(typeof(cb_before)=='function') cb_before();
       
-      
-      var rnd = Math.random().toString();
-      rnd = 'ifc-' + rnd.replace(/0\./g, '').substring(0, 5);
-      $("body")
-        .append('<iframe id="'+rnd+'" src="'+uri+'" class="ghost" onload="ifrdone(this)"></iframe>');
+      rnd = 'ifrf-' + gvar.sversion+'-'+gvar.scriptMeta.timestamp;
+      if( !$("#"+rnd).length )
+        $("body")
+          .append('<iframe id="'+rnd+'" src="'+uri+'" class="ghost" onload="ifrdone(this)"></iframe>');
 
       // eof-everything to fetch quote
       // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -6059,6 +6178,7 @@ function close_popup(){
     
   $('#'+_BOX.e.dialogname).css('visibility', 'hidden');
   $('body > .kqr-dialog-base:not(#wrap-recaptcha_dialog)').remove();
+
   // hide recaptcha dialog, instead of destroy it
   $('#wrap-recaptcha_dialog').addClass("ghost");
 
@@ -6743,6 +6863,16 @@ function eventsTPL(){
     _DRAFT.provide_draft()
     $(this).hide()
   });
+  $XK.find('#qr_signsectok').click(function(){
+    gvar.fetched_token_post = $(this).attr("data-xsctoken");
+    if( "undefined" != typeof gvar.fetched_token_post && gvar.fetched_token_post )
+      $("#qr-securitytoken").val( gvar.fetched_token_post );
+
+    // bypass
+    gvar.fetched_token_post = true;
+
+    _BOX.submit();
+  });
   $XK.find('#qr_getcont').click(function(){
     var $ifr = $("#ifr_content"), values = trimStr( $ifr.val() );
 
@@ -7383,10 +7513,13 @@ function finalizeTPL(){
     // dark-backdrop
     +'<div id="qr-modalBoxFaderLayer" class="modal-dialog-backdrop"></div>'
 
-    +(!gvar.user.isDonatur ? ''
+    // even donatur stil need this for submision dialog only
     +'<div id="wrap-recaptcha_dialog" class="kqr-dialog-base ghost">'+rSRC.getBOX_RCDialog()+'</div>'
-    :'')
   );
+  $('#resetrecap_btn').click(function(){
+    alert("gvar.is_solvedrobot reset...");
+    gvar.is_solvedrobot = null
+  });
 }
 
 
@@ -7883,9 +8016,8 @@ function init(){
   gvar.ajax_pid = {}; // each ajax performed {preview: timestamp, post: timestamp, edit: timestamp }
   gvar.edit_mode = gvar.pID = gvar.maxH_editor = 0;
   gvar.upload_tipe = gvar.last_postwrap = "";
-
-  gvar.is_solvedrobot = null;
   
+  gvar.is_solvedrobot = null;
   
   gvar.offsetEditorHeight = 160; // buat margin top Layer
   gvar.offsetLayer = 10; // buat margin top Layer
