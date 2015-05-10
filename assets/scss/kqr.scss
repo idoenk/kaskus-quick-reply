@@ -296,16 +296,16 @@ ul.qrset_mnu li.qrt.curent {
   line-height: 16px;
   min-height: 16px;
   padding: .3em;
-  &.qrerror {
-    background-color: #ffd7ff;
-    border-color: #dca7a7;
+  &.qrinfo {
+    background-color: #f9edbe;
+    border: 1px solid #f0c36d;
   }
   &.qrsuccess {
     background-color: #dfc;
   }
 }
 
-.qrerror {
+.qrerror, .g_notice.qrerror {
   background-color: #ffd7ff;
   border-color: #dca7a7;
 }
