@@ -7633,12 +7633,6 @@ function start_Main(){
     gvar.readonly = true;
   }
   
-  if( !gvar.user.isDonatur && $("#recaptcha_wrapper").length ){
-
-    clog("FJB with old reCaptcha detected, QR is not supported.");
-    return !1;
-  }
-
   clog("Injecting getCSS");
   GM_addGlobalStyle(rSRC.getCSS(), 'kqr-dynamic-css');
 
@@ -8024,6 +8018,15 @@ function init(){
 
   
   ApiBrowserCheck();
+
+
+  // intervene halt on old-captcha detected
+  if( $("#recaptcha_wrapper").length ){
+
+    clog("FJB with old reCaptcha detected, QR is not supported.");
+    return !1;
+  }
+
   // gvar.css_default = 'kqr_style'+ (!gvar.force_live_css && gvar.__DEBUG__ && !gvar.isOpera ? '.dev' : '.' + gvar.scriptMeta.cssREV)  +'.css';
   gvar.css_default = 'kqr.css'; //?_=gvar.scriptMeta.cssREV
 
