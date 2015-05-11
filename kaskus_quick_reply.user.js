@@ -1,18 +1,16 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.1.8
+// @version        5.3.1.9
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1505105318
-// @timestamp      1431284779215
+// @dtversion      1505115319
+// @timestamp      1431338146783
 // @homepageURL    https://greasyfork.org/scripts/96
-// @updateURL      https://greasyfork.org/scripts/96/code.meta.js
-// @downloadURL    https://greasyfork.org/scripts/96/code.user.js
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
 // @include        /^https?://www.kaskus.co.id/thread/*/
@@ -33,6 +31,13 @@
 //
 // -!--latestupdate
 //
+// v5.3.1.9 - 2015-05-11 . 1431338146783
+//   patch hung-up on click "Post", invalid find element of g-recaptcha-response;
+//   silent expired captcha, get rid alert;
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.1.8 - 2015-05-10 . 1431284779215
 //   flow on capcay dialog will autosubmited; callback expired-captcha;
 //   avoid always-notify on edit-mode submission;
@@ -42,9 +47,6 @@
 //   handle undefined grecaptcha on earlyload qr-script;
 //   [draft] adapting reCAPTCHA v2
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.1.6 - 2015-04-23 . 1429727071841
 //   Adapting existing public quickreply; Patch broken recaptcha;
 //   Add include fjb: [thread,product,post]
@@ -94,11 +96,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.1.8';
+gvar.sversion = 'v' + '5.3.1.9';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1431284779215 // version.timestamp
-  ,dtversion: 1505105318 // version.date
+   timestamp: 1431338146783 // version.timestamp
+  ,dtversion: 1505115319 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -2242,7 +2244,7 @@ var _BOX = {
 
       $box_post.click(function(e){
         // simplecheck: recaptcha2 this hidden textarea is filled
-        if( $("#g-recaptcha-response").val() )
+        if( $('#kqr_recaptcha2').find("[name=g-recaptcha-response]").val() )
           _BOX.submit()
 
         e.preventDefault();
@@ -7509,8 +7511,9 @@ function finalizeTPL(){
     // even donatur stil need this for submision dialog only
     +'<div id="wrap-recaptcha_dialog" class="kqr-dialog-base ghost">'+rSRC.getBOX_RCDialog()+'</div>'
   );
+
   $('#resetrecap_btn').click(function(){
-    alert("gvar.is_solvedrobot reset...");
+
     gvar.is_solvedrobot = null
   });
 }
