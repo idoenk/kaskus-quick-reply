@@ -32,6 +32,7 @@
 // -!--latestupdate
 //
 // v5.3.2 - 2015-05-13 . 1431535348307
+//   patch #1 parse URL and preserve with encodeURI;
 //   avoid form submission by attr flag;
 //   deprecate obsolete method clean_unreg_options;
 // 
@@ -117,7 +118,7 @@ window.alert(new Date().getTime());
 //=-=-=-=--=
 //========-=-=-=-=--=========
 gvar.__DEBUG__ = !1; // development debug, author purpose
-gvar.__CLIENTDEBUG__ = 1; // client debug, w/o using local assets
+gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 //========-=-=-=-=--=========
 //=-=-=-=--=
@@ -5270,7 +5271,7 @@ var _QQparse = {
           clog('bbcode recognized: ['+mct[1]+']');
         }
         lastIdx = LT.a.length-1;
-        pRet = (mct && mct[1] ? (isDefined(LT.a[lastIdx]) ? '['+LT.a[lastIdx].toUpperCase()+(LT.a[lastIdx].toUpperCase()=='URL' ? '='+mct[1]:'') +']' :'') : (isDefined(LT.a[lastIdx]) ? '['+'/'+LT.a[lastIdx].toUpperCase()+']' : '') );
+        pRet = (mct && mct[1] ? (isDefined(LT.a[lastIdx]) ? '['+LT.a[lastIdx].toUpperCase()+(LT.a[lastIdx].toUpperCase()=='URL' ? '='+encodeURI(mct[1]) : '') +']' :'') : (isDefined(LT.a[lastIdx]) ? '['+'/'+LT.a[lastIdx].toUpperCase()+']' : '') );
         
         if( !openTag )
           LT.a.splice(lastIdx,1);
@@ -5307,11 +5308,11 @@ var _QQparse = {
               if( !pairedEmote )
                 pairedEmote = prep_paired_emotes();
               
-              return ( isDefined(pairedEmote[tag]) ? pairedEmote[tag] : '[IMG]' + mct[1] + '[/IMG]' );
+              return ( isDefined(pairedEmote[tag]) ? pairedEmote[tag] : '[IMG]'+encodeURI(mct[1])+'[/IMG]' );
             }
           }else {
             clog('bbcode recognized: [IMG]');
-            return '[IMG]' + mct[1] + '[/IMG]';
+            return '[IMG]' + encodeURI(mct[1]) + '[/IMG]';
           }
         }else{
           return '';
