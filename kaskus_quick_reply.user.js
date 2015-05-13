@@ -112,7 +112,7 @@ gvar.scriptMeta = {
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 15050853173 // css revision date; only change this when you change your external css
+  ,cssREV: 1505135320 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 /*
 window.alert(new Date().getTime());
@@ -1030,9 +1030,6 @@ var rSRC = {
        +'<p><tt><kbd>Alt</kbd> + <kbd>S</kbd></tt><span>Post Reply</span></p>'
        +'<p><tt><kbd>Alt</kbd> + <kbd>P</kbd></tt><span>Preview Quick Reply</span></p>'
        +'<p><tt><kbd>Alt</kbd> + <kbd>X</kbd></tt><span>Go Advanced</span></p>'
-       +'<p><em>While focus on reCaptcha form</em></p>'
-       +'<p><tt><kbd>Pg-Up</kbd> or <kbd>Pg-Down</kbd></tt><span>Reload reCaptcha</span></p>'
-       +'<p><tt><kbd>Alt</kbd> + <kbd>R</kbd></tt><span>Reload reCaptcha</span></p>'
       +'</div>' // itemkbd
       +'<div id="tabs-itemkbd-kaskus" class="itemtabcon">'
        +'<p><tt><kbd>J</kbd></tt><span>Jump to next post section</span></p>'
