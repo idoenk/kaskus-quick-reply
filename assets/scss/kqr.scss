@@ -590,7 +590,7 @@ ul.qrset_mnu li.qrt.curent {
   }
   .tm-sub.forum-title #close_title {
     right: 0;
-    margin-right: -56px;
+    margin-right: -80px;
     top: 1px;
     height: 32px;
     width: 32px;
@@ -1177,6 +1177,9 @@ ul {
     height: 34px;
     position: absolute;
     z-index: 99;
+    #pick_icon{
+      height: 34px;
+    }
   }
   &.mnu-icons {
     width: 220px;
@@ -1755,6 +1758,18 @@ ul.qrset_mnu li {
       background-color: #fff;
       li.qrt div {
         padding: 2px 8px;
+        > .num {
+          float: left;
+          min-width: 15px;
+          margin-right: 2px;
+          text-align: center;
+          background: #4d90fe;
+          color: #fff;
+          border-radius: 5px;
+          border-bottom-left-radius: 0;
+          border-top-left-radius: 0;
+          padding: 0 4px 0 0px;
+        }
       }
     }
   }
