@@ -32,6 +32,8 @@
 // -!--latestupdate
 //
 // v5.3.2 - 2015-05-13 . 1431535348307
+//   fix submission flow data.message;
+//   update securitytoken after post-notifying;
 //   patch #1 parse URL and preserve with encodeURI;
 //   avoid form submission by attr flag;
 //   deprecate obsolete method clean_unreg_options;
@@ -915,7 +917,7 @@ var rSRC = {
        +'</div>' // fg
   
        +'<div class="form-group">'
-       + '<label class="'+cls_label+'" for="misc_always_notify">Notify Quoted Post'+gen_helplink("always-notify")+'</label>'
+       + '<label class="'+cls_label+'" for="misc_always_notify">Notifying Quoted Post'+gen_helplink("always-notify")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox">'
        +   '<input id="misc_always_notify" class="optchk" type="checkbox" '+(GVS.always_notify ? ' checked="checked"' : '')+'/>'
@@ -1271,14 +1273,14 @@ var rSRC = {
 
 
     +'function ifrdone(el, cb_elclick){'
-    + '$("#ifr_content").val( $(el).contents().find("textarea[name=message]").first().val() );'
+    + 'var $frmcontent = $(el).contents();'
+    + '$("#ifr_content").val( $frmcontent.find("textarea[name=message]").first().val() );'
+    + 'if(cb_elclick == "#qr_signsectok"){'
+    +   'var newsectok = $frmcontent.find("*[name=securitytoken]").val();'
+    +   'newsectok && $("#qr-securitytoken").val(newsectok);'
+    + '}'
     + '$(el).remove(); SimulateMouse( $(cb_elclick).get(0), "click", true);'
     +'}'
-    // +'function ifrdone_message(el){'
-    // + '$("#ifr_content").val( $(el).contents().find("textarea[name=message]").first().val() );'
-    // + '$(el).remove();'
-    // + 'SimulateMouse( $("#qr_signsectok").get(0), "click", true);'
-    // +'}'
 
     +'function kqrmailto(el){'
     +'var pwin, p_url = el.getAttribute("href")+"?subject="+encodeURIComponent("#KQR: suggestion, bugs")+"&body=%0A%0A"+encodeURIComponent("UAString: "+window.navigator.userAgent)+"%0A"+encodeURIComponent("Via: QR-'+gvar.sversion+'");'
@@ -1921,13 +1923,13 @@ var _BOX = {
     };
 
     
+    var $box_info = $('#box_response_msg');
+    $box_info
+      .removeClass('ghost qrerror qrinfo')
+      .addClass('g_notice qrinfo')
+    ;
     if( !gvar.edit_mode && gvar.settings.always_notify ){
 
-      var $box_info = $('#box_response_msg');
-      $box_info
-        .removeClass('ghost qrerror qrinfo')
-        .addClass('g_notice qrinfo')
-      ;
       $("#box_post").addClass('goog-btn-disabled');
 
       if( !gvar.fetched_token_post ){
@@ -1936,13 +1938,11 @@ var _BOX = {
         _BOX.check_usernotify();
         clog("submit-postponed");
         return !1; // this is required!
+        // -= HALTED =-
       }
-      else{
-        $box_info.html('Wait for it...').show();
-        gvar.fetched_token_post = null;
-      }
+      
+      gvar.fetched_token_post = null;
     }
-
 
     var query = _BOX.buildQuery(true);
     if( gvar.thread_type == 'group' )
@@ -1952,6 +1952,9 @@ var _BOX = {
 
     _BOX.postloader(true);
     
+    // insist to show it, after postloader
+    $box_info.html('Wait for it...').show();
+
     try{
       clog('ignite post=' + _BOX.e.boxaction );
       clog('query=' + JSON.stringify(query) );
@@ -2010,8 +2013,14 @@ var _BOX = {
           else{
             // good go
             setValue(KS+'TMP_TEXT', '', function(){
-              if( redirect )
-                location.href = redirect;
+              if( redirect ){
+                if( data.message )
+                  $box_info.html(data.message);
+
+                setTimeout(function(){
+                  location.href = redirect;
+                }, 345);
+              }
               else
                 alert("Redirect link not found");
             });
@@ -3247,7 +3256,7 @@ var _TEXTCOUNT = {
 * object urusan draft
 * event check for any change in textarea to keep it drafted
 */
-var _DRAFT= {
+var _DRAFT = {
   el: null, dsc: null
   ,_construct: function(){
     _DRAFT.el = $('#qrdraft');
@@ -6865,9 +6874,6 @@ function eventsTPL(){
     $(this).hide()
   });
   $XK.find('#qr_signsectok').click(function(){
-    // gvar.fetched_token_post = $(this).attr("data-xsctoken");
-    // if( "undefined" != typeof gvar.fetched_token_post && gvar.fetched_token_post )
-    //   $("#qr-securitytoken").val( gvar.fetched_token_post );
 
     gvar.fetched_token_post = true;
     _BOX.submit();
