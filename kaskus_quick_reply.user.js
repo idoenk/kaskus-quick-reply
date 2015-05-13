@@ -8,8 +8,8 @@
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1505115320
-// @timestamp      1431366530472
+// @dtversion      1505135320
+// @timestamp      1431535348307
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,7 +31,8 @@
 //
 // -!--latestupdate
 //
-// v5.3.2 - 2015-05-12 . 1431366530472
+// v5.3.2 - 2015-05-13 . 1431535348307
+//   avoid form submission by attr flag;
 //   deprecate obsolete method clean_unreg_options;
 // 
 // -/!latestupdate---
@@ -102,8 +103,8 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.2';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1431366530472 // version.timestamp
-  ,dtversion: 1505115320 // version.date
+   timestamp: 1431535348307 // version.timestamp
+  ,dtversion: 1505135320 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -116,7 +117,7 @@ window.alert(new Date().getTime());
 //=-=-=-=--=
 //========-=-=-=-=--=========
 gvar.__DEBUG__ = !1; // development debug, author purpose
-gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
+gvar.__CLIENTDEBUG__ = 1; // client debug, w/o using local assets
 gvar.$w = window;
 //========-=-=-=-=--=========
 //=-=-=-=--=
@@ -1793,8 +1794,8 @@ var _BOX = {
             });
             $('#cont_button').show();
 
-            $btn_prepost.click(function(){
-              _BOX.init();
+            $btn_prepost.click(function(e){
+              _BOX.init(e);
               _BOX.presubmit();
             });
           }
@@ -3073,7 +3074,7 @@ var _TEXT = {
       var resizeEv = function( isforced ){
         if( !isforced && isTyping ) return !1;
 
-        var yPos, yrPos, a = gID(gvar.tID);
+        var yPos, a = gID(gvar.tID);
         if( !isforced && parseInt(a.scrollHeight) == parseInt(a.style.height) ) 
           return !1;
 
@@ -3084,8 +3085,6 @@ var _TEXT = {
         a.style.height = a.scrollHeight+'px';
         a.style.setProperty('overflow-y', (!gvar.settings.elastic_editor && a.scrollHeight > max ? 'auto' : 'hidden'), 'important');
         
-        // yrPos = getCurrentYPos();
-        // clog("setElasticEvent[resizeEv]:after="+yrPos);
         if( !isNaN(yPos) && yPos > 0 && getCurrentYPos() != yPos )
           $('html,body').scrollTop(yPos);
       };
@@ -3143,14 +3142,10 @@ var _TEXT = {
     var yPos = gvar.lastYpos;
 
     var resize = function() {
-      // clog("setElastic[resize]:before="+yPos);
-
       a.style.height = 'auto';
       a.style.height = a.scrollHeight+'px';
       a.style.setProperty('overflow-y', (!gvar.settings.elastic_editor && a.scrollHeight > max ? 'auto' : 'hidden'), 'important');
 
-      // yrPos = getCurrentYPos();
-      // clog("setElastic[resize]:after="+yrPos);
       if( !isNaN(yPos) && yPos > 0 && getCurrentYPos() != yPos )
         $('html,body').scrollTop(yPos);
     };
@@ -3332,8 +3327,7 @@ var _DRAFT= {
     gvar.sITryLiveDrafting = gvar.$w.setTimeout(function() { _DRAFT.check() }, 5000); // 5 sec if any live change
   }
   ,switchClass: function(to_add){
-    var to_rem = (to_add=="gbtn" ? _DRAFT.disabled_class : "gbtn" );
-    // var to_rem = (to_add=="goog-btn-default" ? _DRAFT.disabled_class : "goog-btn-default");
+    var to_rem = (to_add=="gbtn" ? _DRAFT.disabled_class : "gbtn");
     _DRAFT.el.addClass(to_add).removeClass(to_rem);;
   }
 };
@@ -3697,12 +3691,10 @@ var _SML_ = {
 
       $(this).select()
     }).keydown(function(ev){
-      if( ev.keyCode==13 ){
-        do_an_e(ev);
-        do_click($('#manage_btn').get(0));
-      }else if(ev.keyCode==27){
-
-        do_click($('#manage_cancel').get(0));
+      if( [13,27].indexOf(ev.keyCode) !== -1 ){
+        $('#formform').attr('ignoresubmit', 1);
+        do_an_e( ev );
+        return do_click( $(ev.keyCode==13 ? '#manage_btn' : '#manage_cancel').get(0) );
       }
     });
     
@@ -3724,7 +3716,8 @@ var _SML_ = {
     });
 
     // cancel
-    $boxSM.find('#manage_cancel').click(function(){
+    $boxSM.find('#manage_cancel').click(function(e){
+      e.preventDefault();
       $('li.add_group').removeClass('curent');
       
       $('#manage_help, #manage_cancel, #custom_addgroup_container, #dv_menu_disabler, #position_group', $boxSM)
@@ -3738,10 +3731,11 @@ var _SML_ = {
       }else{
         $('#custom_bottom', $boxSM).addClass("hide");
       }
+      return !1;
     });
 
     // manage | save
-    $boxSM.find('#manage_btn').click(function(){
+    $boxSM.find('#manage_btn').click(function(e){
       var task = $(this).html().toLowerCase();
       if(task=='save'){
         var grupname, todo, niubuf,
@@ -3799,8 +3793,10 @@ var _SML_ = {
 
         if( trimStr(grupname)=='' ){
           alert('Group Name can not be empty');
+          return !1;
         }else if( !niubuf ){
           alert('Invalid tag and\/or smiley format');
+          return !1;
         }else{
           //save custom smiley
           (function remixBuff(niubuf, todel){
@@ -3885,31 +3881,33 @@ var _SML_ = {
       }
       else if(task=='manage'){
 
-          $(this).text('Save');
-          $('label_group').text('Group');
-          $('#scustom_todo').val('edit');
-          $('#manage_help, #manage_cancel, #custom_bottom, #custom_addgroup_container, #dv_menu_disabler, #position_group, #delete_grupname', $boxSM)
-            .removeClass("hide");
-          $('#scustom_container, #title_group', $boxSM)
-            .addClass("hide");
-          
-          var gid, grupname = $('#current_grup').val(), buff_edit='';
-          $('#input_grupname').val( grupname );
-          gid = $('#current_order').val();
-          // pos_group_sets
-          $('#pos_group_sets option[value='+gid+']').attr('selected', 'selected');
-          
-          getValue(KS + 'CUSTOM_SMILEY', function(retcs){
-            var part, cparts = retcs.split('<!>'), cprL = cparts.length;
-            for(var n=0; n<cprL; n++){
-              part = cparts[n].split('<!!>');
-              if( grupname==part[0] )
-                buff_edit = unescape( String( part[1] ).replace(/,/g, '\n').replace(/{sctag\:br}/g, '') );
-            }
-            $('#textarea_scustom_container').val( buff_edit );
-            $('#input_grupname').focus();
-          });
-        }
+        $(this).text('Save');
+        $('label_group').text('Group');
+        $('#scustom_todo').val('edit');
+        $('#manage_help, #manage_cancel, #custom_bottom, #custom_addgroup_container, #dv_menu_disabler, #position_group, #delete_grupname', $boxSM)
+          .removeClass("hide");
+        $('#scustom_container, #title_group', $boxSM)
+          .addClass("hide");
+        
+        var gid, grupname = $('#current_grup').val(), buff_edit='';
+        $('#input_grupname').val( grupname );
+        gid = $('#current_order').val();
+        // pos_group_sets
+        $('#pos_group_sets option[value='+gid+']').attr('selected', 'selected');
+        
+        getValue(KS + 'CUSTOM_SMILEY', function(retcs){
+          var part, cparts = retcs.split('<!>'), cprL = cparts.length;
+          for(var n=0; n<cprL; n++){
+            part = cparts[n].split('<!!>');
+            if( grupname==part[0] )
+              buff_edit = unescape( String( part[1] ).replace(/,/g, '\n').replace(/{sctag\:br}/g, '') );
+          }
+          $('#textarea_scustom_container').val( buff_edit );
+          $('#input_grupname').focus();
+        });
+      }
+      do_an_e(e);
+      return !1;
     });
     
     $boxSM.find('#delete_grupname').click(function(){
@@ -5955,18 +5953,18 @@ function ApiBrowserCheck() {
 // ----my ge-debug--------
 function show_alert(msg, force) {
   if(arguments.callee.counter) { arguments.callee.counter++; } else { arguments.callee.counter=1; }
-  GM_log('('+arguments.callee.counter+') '+msg);
+  GM_log( ["string", "number"].indexOf(typeof msg) !== -1 ? '('+arguments.callee.counter+') '+msg : msg );
 
   if(force==0) { return; }
 }
 function clog(msg) {
   if( !gvar.__DEBUG__ ) return;
-  msg = (["string", "number"].indexOf(typeof msg) !== -1 ? '[QR:dbg] '+msg : msg);
-  if( ["string", "number"].indexOf(typeof msg) === -1 )
-    try{
-      msg = '[QR:dbg] '+JSON.stringify( msg );
-    }catch(e){ msg = '[QR:dbg] '+msg; }
-  show_alert(msg);
+  var isPlain = (["string", "number"].indexOf(typeof msg) !== -1);
+  var msgStr = (isPlain ? '[QR:dbg] '+msg : msg);
+  if( !isPlain )
+    show_alert('[QR:dbg] '+typeof msg);
+
+  show_alert(msgStr);
 }
 
 //=== functions ===
@@ -6818,8 +6816,16 @@ function eventsTPL(){
   var $XK = $("#"+gvar.qID);
   
   $XK.find('#sbutton').click(function(ev){
+
+    // bypass to avoid submission by click enter on any input element under form
     do_an_e(ev);
-    _BOX.init();
+    var $form = $('#formform');
+    if( $form.attr('ignoresubmit') ){
+      $form.removeAttr('ignoresubmit');
+      return !1;
+    }
+
+    _BOX.init(ev);
     _BOX.presubmit();
   });
   $XK.find('#sadvanced').click(function(ev){
@@ -6830,7 +6836,7 @@ function eventsTPL(){
   });
   $XK.find('#spreview').click(function(ev){
     do_an_e(ev);
-    _BOX.init();
+    _BOX.init(ev);
     _BOX.preview();
   });
   $XK.find('#squote_post').click(function(){
@@ -7155,7 +7161,7 @@ function eventsTPL(){
         if(A===13){
           if( gvar.readonly )
             return;
-          _BOX.init();
+          _BOX.init(ev);
           _BOX.presubmit();
         }else{
 
