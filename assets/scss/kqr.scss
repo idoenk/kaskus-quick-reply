@@ -1756,20 +1756,33 @@ ul.qrset_mnu li {
     ul.qrset_mnu {
       width: 100%;
       background-color: #fff;
-      li.qrt div {
-        padding: 2px 8px;
-        padding-left: 0;
-        > .num {
-          float: left;
-          min-width: 15px;
-          margin-right: 2px;
-          text-align: center;
-          background: #4d90fe;
-          color: #fff;
-          border-radius: 5px;
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
-          padding: 0 4px 0 0px;
+      li.qrt {
+        div {
+          padding: 2px 8px;
+          padding-left: 0;
+          > .num {
+            float: left;
+            margin-right: 2px;
+            text-align: center;
+            background: #4d90fe;
+            color: #fff;
+            border-radius: 5px;
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+
+            margin-left: -4px;
+            min-width: 19px;
+            padding: 0;
+          }
+        }
+        &.curent{
+          div{
+            > .num{
+              margin-left: 0;
+              min-width: 15px;
+              padding: 0 4px 0 0px;
+            }
+          }
         }
       }
     }
