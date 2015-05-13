@@ -1764,7 +1764,7 @@ ul.qrset_mnu li {
             float: left;
             margin-right: 2px;
             text-align: center;
-            background: #4d90fe;
+            background: #999;
             color: #fff;
             border-radius: 5px;
             border-bottom-left-radius: 0;
@@ -1778,6 +1778,7 @@ ul.qrset_mnu li {
         &.curent{
           div{
             > .num{
+              background: #4d90fe;
               margin-left: 0;
               min-width: 15px;
               padding: 0 4px 0 0px;
