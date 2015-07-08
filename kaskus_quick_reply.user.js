@@ -33,6 +33,8 @@
 //
 // v5.3.3 - 2015-07-09 . 1436375672078
 //   fix jump-around textarea, kill sti on typing avoid lag-timing;
+//   patch fixed BBCode toolbar, change top-elemen orientation in fixed_markItUp;
+//   BBCode Setting only when Elastic Editor enabled;
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -102,7 +104,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = !1; // development debug, author purpose
+gvar.__DEBUG__ = 1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 //========-=-=-=-=--=========
@@ -869,7 +871,7 @@ var rSRC = {
        +  '</div>'
        + '</div>' // cls_cont
        +'</div>' // fg
-       +'<div class="form-group">'
+       +'<div class="form-group fg-fixed_toolbar'+(GVS.elastic_editor ? '' : ' hide')+'">'
        + '<label class="'+cls_label+'" for="misc_fixed_toolbar">Fixed BBCode Toolbar'+gen_helplink("fixedtoolbar")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox">'
@@ -4178,6 +4180,15 @@ var _STG = {
       do_click($('#misc_autolayout').get(0));
       $('#misc_autolayout').removeAttr('checked');
     });
+    $('#qr-box_setting #misc_elastic_editor').click(function(){
+      var $me = $(this);
+      var $par = $me.closest("#tabs-itemstg-general");
+      var $tgt = $par.find(".fg-fixed_toolbar");
+      if( $me.is(":checked") )
+        $tgt.removeClass("hide");
+      else
+        $tgt.addClass("hide");
+    });
     $('#qr-box_setting .goog-tab').each(function(){
       $(this).click(function(){
         var $me = $(this),
@@ -4189,7 +4200,7 @@ var _STG = {
         $par.find('#'+target).addClass('active');
       });
     });
-    
+
     if( !gvar.noCrossDomain ) {// unavailable on Chrome|Opera still T_T
       $('#chk_upd_now').click(function(){
         $('#chk_upd_load').show();
@@ -4311,6 +4322,10 @@ var _STG = {
         _TEXT.setElastic(null, true);
 
         // FIXED_TOOLBAR
+        if( gvar.settings.elastic_editor )
+          $('#misc_fixed_toolbar').prop("checked", true);
+        else
+          $('#misc_fixed_toolbar').prop("checked", false);
         value = (isChk($('#misc_fixed_toolbar')) ? '1' : '0');
         setValue(KS+'FIXED_TOOLBAR', String( value ));
         gvar.settings.fixed_toolbar = (value == '1' ? true : false);
@@ -6434,7 +6449,7 @@ function fixed_markItUp(){
   var $editor = $XK.find("#"+gvar.tID);
   var eH = $editor.height();
   var treshold_minHeight_editor = 82; // def: 82
-  var treshold_fixed_top = 20;
+  var treshold_fixed_top = 0;
   var fixed_reset = function(){
     $XK.removeClass("fixed_markItUp");
     $XK.find(".markItUpContainer").css("width", "auto");
@@ -6443,7 +6458,7 @@ function fixed_markItUp(){
   // clog("tick eH="+eH+'; treshold_minHeight_editor='+treshold_minHeight_editor);
   if( eH >= treshold_minHeight_editor ){
 
-    var $ustick = $(".user-control-stick").first(),
+    var $ustick = $(".navbar-fixed-top").first(),
       isus = ($ustick.is(":visible") && $ustick.css("position") == 'fixed'),
       ustickFixPos = {top:0}, ustickH = 0,
       tgtH, sTop, tgtTop;
