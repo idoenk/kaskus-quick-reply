@@ -33,7 +33,7 @@
 //   Add include fjb: [thread,product,post]
 //   Patches: [preview post, fixed BBCode toolbar] on fjb
 //   Patch get_quotefrom TS using QQ on fjb
-//   Avoid alert raised on existing QR (second-load-order, act as donatur);
+//   Avoid alert raised on existing QR (second-load-order, act as donatur)
 // 
 // -/!latestupdate---
 // ==/UserScript==
