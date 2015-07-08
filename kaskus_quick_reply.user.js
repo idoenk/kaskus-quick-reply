@@ -33,6 +33,7 @@
 //   Add include fjb: [thread,product,post]
 //   Patches: [preview post, fixed BBCode toolbar] on fjb
 //   Patch get_quotefrom TS using QQ on fjb
+//   Avoid alert raised on existing QR (second-load-order, act as donatur);
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -7447,12 +7448,16 @@ function start_Main(){
 
         // prevent appending if we found dom-wrapper
         if( gID(gvar.qID) ){
-          return setTimeout(function(){
-            alert('QR-'+gvar.sversion+' load aborted.'+"\n"
-              +'You may have another version of QR installed.'
-            );
-            $('#QR-main-css').remove();
-          }, 1);
+          var msg = 'You may have another version of QR installed.';
+          if( !gvar.user.isDonatur )
+            return setTimeout(function(){
+              alert('QR-'+gvar.sversion+' load aborted.'+"\n"
+                +msg
+              );
+              $('#QR-main-css').remove();
+            }, 1);
+          else
+            return clog("QR halted. "+msg);
         }
 
 
