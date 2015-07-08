@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.2
+// @version        5.3.3
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1505135320
-// @timestamp      1431535348307
+// @dtversion      1507095330
+// @timestamp      1436375672078
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,6 +31,12 @@
 //
 // -!--latestupdate
 //
+// v5.3.3 - 2015-07-09 . 1436375672078
+//   fix jump-around textarea, kill sti on typing avoid lag-timing;
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.2 - 2015-05-13 . 1431535348307
 //   fix submission flow data.message;
 //   update securitytoken after post-notifying;
@@ -38,9 +44,6 @@
 //   avoid form submission by attr flag;
 //   deprecate obsolete method clean_unreg_options;
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.1.9 - 2015-05-11 . 1431338146783
 //   patch hung-up on click "Post", invalid find element of g-recaptcha-response;
 //   silent expired captcha, get rid alert;
@@ -68,26 +71,6 @@
 //   Fix finding .main-content element on group-discusstion
 //   Patch adjust entry-body width, mismatch width on single post on page;
 //   Adjusting migration code to github
-// 
-// v5.3.1.3 - 2015-03-01 . 1425170995166
-//   GF link of what's this? (custom smiley);
-//   Filter purpose: add subject ticket mail;
-//   Help links Setting;
-//   Redefine proper local var $, avoid jQuery document being overridden, opera-chromium need it. Thx:[Asep]
-//   Patch toggle spoiler (opera-chromium). Thx:[Asep]
-//   Avoid kill sidebar on unselected FixupTheme;
-//   Adjust entry-body width;
-// 
-// v5.3.1.2 - 2015-02-08 . 1423473091884
-//   Fix preview, force image rendering from mls-img data-src;
-//   Fix CSS fjb;
-//   +Options Smiley First Tab;
-//   Patch apply transparent color on selected text. Thanks:[booster.bs]
-//   +Options Hide Grey Origin Link;
-//   Patch QuickQuote cleanup grey-origin-link;
-//   Avoid focus editor on autoshow smilies;
-//   Split General Settings, group for Smilies
-//   Missing form-title while edit (post #1, field is mandatory). Thanks:[Drupalorg]
 //
 //
 // v0.1 - 2010-06-29
@@ -103,11 +86,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.2';
+gvar.sversion = 'v' + '5.3.3';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1431535348307 // version.timestamp
-  ,dtversion: 1505135320 // version.date
+   timestamp: 1436375672078 // version.timestamp
+  ,dtversion: 1507095330 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -3075,21 +3058,27 @@ var _TEXT = {
     }
   },
   setElasticEvent: function(enabled, max){
-    var delay = 25;
-    var isTyping = null;
+    var delay = 500;
+
     if( enabled ){
       var resizeEv = function( isforced ){
+        var yPos, a = gID(gvar.tID);
+
+        var selisih = 10;
+        var isTyping = (a.getAttribute("data-istyping") == 1);
+
         if( !isforced && isTyping ) return !1;
 
-        var yPos, a = gID(gvar.tID);
-        if( !isforced && parseInt(a.scrollHeight) == parseInt(a.style.height) ) 
+        clog("scrollHeight="+a.scrollHeight+"; height="+a.style.height);
+        if( !isforced && (Math.abs(parseInt(a.scrollHeight) - parseInt(a.style.height)) <= selisih) ) {
           return !1;
+        }
 
         yPos = getCurrentYPos();
         clog("setElasticEvent[resizeEv]:before="+yPos);
 
         a.style.height = 'auto';
-        a.style.height = a.scrollHeight+'px';
+        a.style.height = parseInt(a.scrollHeight)+'px';
         a.style.setProperty('overflow-y', (!gvar.settings.elastic_editor && a.scrollHeight > max ? 'auto' : 'hidden'), 'important');
         
         if( !isNaN(yPos) && yPos > 0 && getCurrentYPos() != yPos )
@@ -3098,12 +3087,14 @@ var _TEXT = {
 
       // [Enter, Backspace, Delete]
       var sC = [13, 8, 46];
+      var _f = null;
       var $a = $("#"+gvar.tID);
 
       if( !$a.hasClass("events-keys") ){
         clog("activating event events-keys");
+
         $a.keydown(function(e){
-          
+          // clog("in-keydown keyCode:"+e.keyCode);
           if( sC.indexOf(e.keyCode) !== -1 ){
             if( e.keyCode === 13 ){
               var value = $(this).val(),
@@ -3115,22 +3106,33 @@ var _TEXT = {
                 _TEXT.setCaretPos(lastPos);
               }
             }
+            clog("gonna sto forced resizeEv from keydown, keyCode="+e.keyCode);
             setTimeout(function(){ resizeEv( true ) }, 0)
           }
         }).keypress(function(e){
           if( sC.indexOf(e.keyCode) !== -1 ){ return true };
 
-          isTyping = true;
-          var _f = setTimeout(function(){
-            isTyping = false
-          }, 255);
+          var $me = $(this);
+          $me.attr("data-istyping", 1);
+          if( _f )
+            clearTimeout( _f );
+
+          _f = setTimeout(function(){ 
+            $me.attr("data-istyping", 0);
+          }, delay*1.43);
         }).addClass("events-keys");
       }
+
+      // 0--0--0
+      clog("gonna sti resizeEv..");
+      gvar.sITryFocusEditor &&
+        clearInterval( gvar.sITryFocusEditor );
 
       gvar.sITryFocusEditor = setInterval(resizeEv, delay);
     }
     else{
 
+      clog("clearing sti sITryFocusEditor resizeEv..");
       gvar.sITryFocusEditor &&
         clearInterval( gvar.sITryFocusEditor );
     }
@@ -3173,7 +3175,7 @@ var _TEXT = {
           yPos = getCurrentYPos();
           resize()
         }, 0)});
-      
+
       $a.on("focus", function(){
         _TEXT.setElasticEvent( true, max );
       }).on("blur", function(){
