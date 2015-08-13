@@ -11,8 +11,6 @@
 // @dtversion      1504235316
 // @timestamp      1429727071841
 // @homepageURL    https://greasyfork.org/scripts/96
-// @updateURL      https://greasyfork.org/scripts/96/code.meta.js
-// @downloadURL    https://greasyfork.org/scripts/96/code.user.js
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
 // @include        /^https?://fjb.kaskus.co.id/(thread|product|post)/*/
