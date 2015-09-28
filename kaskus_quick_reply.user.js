@@ -107,7 +107,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = 1; // development debug, author purpose
+gvar.__DEBUG__ = !1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 //========-=-=-=-=--=========
@@ -5281,8 +5281,6 @@ var _QQparse = {
       
       // parse linkify
       if( /\shref=/i.test($2) || _2up=='A' ){
-        clog('parse A');
-        clog(S+'; $1='+$1+'; $2='+$2);
         mct = $2.match(/\/?a\s*(?:(?:target|style|title|linkid)=[\'\"][^\'\"]+.\s*)*(?:\s?href=['"]([^'"]+))?/i);
         if( isDefined(mct[1]) ){
           tag = (/^mailto:/.test(mct[1]) ? 'EMAIL' : 'URL' );
@@ -5305,12 +5303,10 @@ var _QQparse = {
         else{
           pRet = (isDefined(LT.a[lastIdx]) ? '['+'/'+LT.a[lastIdx].toUpperCase()+']' : '');
         }
-
         
         if( !openTag )
           LT.a.splice(lastIdx,1);
 
-        clog("pRet="+pRet);
         return pRet;
       }else
       
