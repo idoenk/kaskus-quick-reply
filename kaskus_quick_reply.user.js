@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.3
+// @version        5.3.4
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1507095330
-// @timestamp      1436375672078
+// @dtversion      1509225340
+// @timestamp      1442934294343
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,14 +31,17 @@
 //
 // -!--latestupdate
 //
+// v5.3.4 - 2015-09-22 . 1442934294343
+//   Patch parsing redirect url with quick-quote;
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.3 - 2015-07-09 . 1436375672078
 //   fix jump-around textarea, kill sti on typing avoid lag-timing;
 //   patch fixed BBCode toolbar, change top-elemen orientation in fixed_markItUp;
 //   BBCode Setting only when Elastic Editor enabled;
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.2 - 2015-05-13 . 1431535348307
 //   fix submission flow data.message;
 //   update securitytoken after post-notifying;
@@ -88,11 +91,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.3';
+gvar.sversion = 'v' + '5.3.4';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1436375672078 // version.timestamp
-  ,dtversion: 1507095330 // version.date
+   timestamp: 1442934294343 // version.timestamp
+  ,dtversion: 1509225340 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -104,7 +107,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = !1; // development debug, author purpose
+gvar.__DEBUG__ = 1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 //========-=-=-=-=--=========
@@ -5279,6 +5282,7 @@ var _QQparse = {
       // parse linkify
       if( /\shref=/i.test($2) || _2up=='A' ){
         clog('parse A');
+        clog(S+'; $1='+$1+'; $2='+$2);
         mct = $2.match(/\/?a\s*(?:(?:target|style|title|linkid)=[\'\"][^\'\"]+.\s*)*(?:\s?href=['"]([^'"]+))?/i);
         if( isDefined(mct[1]) ){
           tag = (/^mailto:/.test(mct[1]) ? 'EMAIL' : 'URL' );
@@ -5294,10 +5298,19 @@ var _QQparse = {
           clog('bbcode recognized: ['+mct[1]+']');
         }
         lastIdx = LT.a.length-1;
-        pRet = (mct && mct[1] ? (isDefined(LT.a[lastIdx]) ? '['+LT.a[lastIdx].toUpperCase()+(LT.a[lastIdx].toUpperCase()=='URL' ? '='+encodeURI(mct[1]) : '') +']' :'') : (isDefined(LT.a[lastIdx]) ? '['+'/'+LT.a[lastIdx].toUpperCase()+']' : '') );
+
+        if( mct && mct[1] ){
+          pRet = (isDefined(LT.a[lastIdx]) ? '['+LT.a[lastIdx].toUpperCase()+(LT.a[lastIdx].toUpperCase()=='URL' ? (mct[1] == '#__kqr-blank-for-absurl__'.toUpperCase() ? '' : '='+encodeURI(mct[1])) : '') +']' :'');
+        }
+        else{
+          pRet = (isDefined(LT.a[lastIdx]) ? '['+'/'+LT.a[lastIdx].toUpperCase()+']' : '');
+        }
+
         
         if( !openTag )
           LT.a.splice(lastIdx,1);
+
+        clog("pRet="+pRet);
         return pRet;
       }else
       
@@ -5343,6 +5356,30 @@ var _QQparse = {
       }else{
         return S;
       }
+    }
+    ,parseCleanUpLink = function(S, $1, $2){
+      var parts, px_head, px_tail, countTripleDot;
+      var mct = $1.match(/\s*(?:(?:target|style|title|linkid)=[\'\"][^\'\"]+.\s*)*(?:\s?href=['"]([^'"]+))?/i);
+      
+      if( mct && mct[1] ){
+        if( /^https?\:\/\/www\.kaskus\.co\.id\/redirect\b/.test(mct[1]) )
+          mct[1] = unescape( mct[1].replace(/^https?\:\/\/www\.kaskus\.co\.id\/redirect\?url=/i, '') );
+
+        countTripleDot = ($2.match(/\.{3}/g) || []).length;
+        if( /^(?:ht|f)tps?\:\/\//.test(mct[1]) && countTripleDot === 1 ){
+          parts = $2.split("...");
+          if( parts[1].length == 14 ){
+            px_head = new RegExp('^'+parts[0].replace(/(\W)/g, "\\$1"));
+            px_tail = new RegExp(parts[1].replace(/(\W)/g, "\\$1")+'$');
+            if( mct[1].match(px_head) && mct[1].match(px_tail) ) 
+              return '<a href="#__kqr-blank-for-absurl__">'+mct[1];
+          }
+        }
+        else
+          return '<a href="'+mct[1]+'">'+$2;
+      }
+
+      return S;
     }
     ,double_encode= function(x){
       x = br2nl(x);
@@ -5456,6 +5493,10 @@ var _QQparse = {
 
     x = double_encode($pCon.html());
     pCon = null; $pCon = null;
+
+    // cleanup parser for <A>
+    x = trimStr( String(x).replace(/<a([^>]+).([^<]+)/gm, parseCleanUpLink ));
+
 
     // serials parse
     ret = trimStr( String(x).replace(/<(\/?)([^>]+)>/gm, parseSerials ));
