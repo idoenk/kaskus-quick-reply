@@ -8,8 +8,8 @@
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1509225340
-// @timestamp      1442934294343
+// @dtversion      1510125340
+// @timestamp      1444660624069
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,7 +31,8 @@
 //
 // -!--latestupdate
 //
-// v5.3.4 - 2015-09-22 . 1442934294343
+// v5.3.4 - 2015-10-12 . 1444660624069
+//   Patch unnecessary encoded string, applied to IMG and LINK;
 //   Patch parsing redirect url with quick-quote;
 // 
 // -/!latestupdate---
@@ -94,8 +95,8 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.4';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1442934294343 // version.timestamp
-  ,dtversion: 1509225340 // version.date
+   timestamp: 1444660624069 // version.timestamp
+  ,dtversion: 1510125340 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -5298,7 +5299,7 @@ var _QQparse = {
         lastIdx = LT.a.length-1;
 
         if( mct && mct[1] ){
-          pRet = (isDefined(LT.a[lastIdx]) ? '['+LT.a[lastIdx].toUpperCase()+(LT.a[lastIdx].toUpperCase()=='URL' ? (mct[1] == '#__kqr-blank-for-absurl__'.toUpperCase() ? '' : '='+encodeURI(mct[1])) : '') +']' :'');
+          pRet = (isDefined(LT.a[lastIdx]) ? '['+LT.a[lastIdx].toUpperCase()+(LT.a[lastIdx].toUpperCase()=='URL' ? (mct[1] == '#__kqr-blank-for-absurl__'.toUpperCase() ? '' : '='+mct[1]) : '') +']' :'');
         }
         else{
           pRet = (isDefined(LT.a[lastIdx]) ? '['+'/'+LT.a[lastIdx].toUpperCase()+']' : '');
@@ -5340,11 +5341,11 @@ var _QQparse = {
               if( !pairedEmote )
                 pairedEmote = prep_paired_emotes();
               
-              return ( isDefined(pairedEmote[tag]) ? pairedEmote[tag] : '[IMG]'+encodeURI(mct[1])+'[/IMG]' );
+              return ( isDefined(pairedEmote[tag]) ? pairedEmote[tag] : '[IMG]'+mct[1]+'[/IMG]' );
             }
           }else {
             clog('bbcode recognized: [IMG]');
-            return '[IMG]' + encodeURI(mct[1]) + '[/IMG]';
+            return '[IMG]'+mct[1]+'[/IMG]';
           }
         }else{
           return '';
@@ -5372,7 +5373,7 @@ var _QQparse = {
           }
         }
         else
-          return '<a href="'+mct[1]+'">'+$2;
+          return S.replace(/<a[^>]+>/, '<a href="'+mct[1]+'">');
       }
 
       return S;
@@ -5494,8 +5495,14 @@ var _QQparse = {
     x = trimStr( String(x).replace(/<a([^>]+).([^<]+)/gm, parseCleanUpLink ));
 
 
+    clog("x pra-parseCleanUpLink, before-parseSerials");
+    clog(x);
+
     // serials parse
-    ret = trimStr( String(x).replace(/<(\/?)([^>]+)>/gm, parseSerials ));
+    ret = trimStr( String(x).replace(/<(\/?)([^>]+)./gm, parseSerials ));
+
+    clog("x pra-parseSerials");
+    clog(x);
     
     // clean rest (unparsed tags)
     return unescapeHtml( entity_decode(this.clearTag( ret )) );
