@@ -5722,7 +5722,7 @@ function prep_paired_emotes(){
   // '1' : [H+'ngakaks.gif', ':ngakaks', 'Ngakak (S)']
   // ( !gvar.smbesar || !gvar.smkecil || !gvar.smcustom )
   var sml, paired={}, tmp;
-  if( !gvar.smbesar || !gvar.smkecil )
+  if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus )
     rSRC.getSmileySet();
   tmp = gvar.smkecil;
   for(var i=0; i < tmp.length; i++){
@@ -5730,6 +5730,11 @@ function prep_paired_emotes(){
     paired[ sml[0].replace(/[^\w]/g,'').toString() ] = sml[1].toString();
   }
   tmp = gvar.smbesar;
+  for(var i=0; i < tmp.length; i++){
+    sml = tmp[i];
+    paired[sml[0].replace(/[^\w]/g,'').toString()] = sml[1].toString();
+  } 
+  tmp = gvar.smkplus;
   for(var i=0; i < tmp.length; i++){
     sml = tmp[i];
     paired[sml[0].replace(/[^\w]/g,'').toString()] = sml[1].toString();
