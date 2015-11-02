@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.5
+// @version        5.3.5.1
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -31,8 +31,8 @@
 //
 // -!--latestupdate
 //
-// v5.3.5 - 2015-11-02 . 1446473529196
-//   Kaskus Plus emoticon
+// v5.3.5.1 - 2015-11-02 . 1446473529196
+//   Paired emoted Kaskus Plus
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -72,7 +72,7 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.5';
+gvar.sversion = 'v' + '5.3.5.1';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
    timestamp: 1446473529196 // version.timestamp
