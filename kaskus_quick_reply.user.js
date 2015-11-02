@@ -9,7 +9,7 @@
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
 // @dtversion      1511025350
-// @timestamp      1446466470762
+// @timestamp      1446473529196
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,7 +31,7 @@
 //
 // -!--latestupdate
 //
-// v5.3.5 - 2015-11-02 . 1446466470762
+// v5.3.5 - 2015-11-02 . 1446473529196
 //   Kaskus Plus emoticon
 // 
 // -/!latestupdate---
@@ -75,7 +75,7 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.5';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1446466470762 // version.timestamp
+   timestamp: 1446473529196 // version.timestamp
   ,dtversion: 1511025350 // version.date
 
   ,titlename: 'Quick Reply'
@@ -937,10 +937,10 @@ var rSRC = {
 
 
        +'<div class="form-group">'
-       + '<label class="'+cls_label+'" for="misc_smiley_kplus">Show Kaskus PLus Smiley'+gen_helplink("kaskusplus")+'</label>'
+       + '<label class="'+cls_label+'" for="misc_smiley_kplus">Show Kaskus Plus Smiley'+gen_helplink("kaskusplus")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox">'
-       +   '<input id="misc_smiley_kplus" class="optchk" type="checkbox" '+(GVS.show_kaskusplus ? ' checked="checked"' : '')+'/>'
+       +   '<input id="misc_smiley_kplus" class="optchk" type="checkbox" '+(GVS.show_kaskusplus ? ' checked="checked"' : '')+'/>  <em class="checkbox-text checkbox-desc">(require reload page)</em>'
        +  '</div>'
        + '</div>' // cls_cont
        +'</div>' // fg
@@ -4035,19 +4035,22 @@ var _SML_ = {
         if( target != '#tcustom' ){
           var imagehost = gvar.kkcdn;
           
-          if( target == 'tkplus' ){
+          if( target == '#tkplus' ){
             imagehost = gvar.kkcdn_plus;
           }
 
           $.each(smilies, function(i, img){
             tpl+= '<img src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
           });
-          if( target == 'tkplus' ){
-            tpl += '<div class="help-kplus" ><a href="'+gvar.domain+'miscellaneous/donatur/?ref=kqr-script&amp;med=k-plus" target="_blank">Emoticon Kaskus Plus tidak muncul?</a></div>';
 
+          if( target == '#tkplus' ){
+            tpl += ''
+              +'<div class="help-kplus">'
+              +'<a href="'+gvar.domain+'miscellaneous/donatur/?ref=kqr-script&amp;med=k-plus" target="_blank">Emoticon Kaskus Plus tidak muncul?</a>'
+              +'</div>';
 
+            clog(tpl);
           }
-            
 
           $tgt.html( tpl );
           _SML_.event_img(target, label);
