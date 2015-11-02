@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.4
+// @version        5.3.5
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1510125340
-// @timestamp      1444660624069
+// @dtversion      1511025350
+// @timestamp      1446466470762
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,13 +31,16 @@
 //
 // -!--latestupdate
 //
-// v5.3.4 - 2015-10-12 . 1444660624069
-//   Patch unnecessary encoded string, applied to IMG and LINK;
-//   Patch parsing redirect url with quick-quote;
+// v5.3.5 - 2015-11-02 . 1446466470762
+//   Kaskus Plus emoticon
 // 
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.4 - 2015-10-12 . 1444660624069
+//   Patch unnecessary encoded string, applied to IMG and LINK;
+//   Patch parsing redirect url with quick-quote;
+// 
 // v5.3.3 - 2015-07-09 . 1436375672078
 //   fix jump-around textarea, kill sti on typing avoid lag-timing;
 //   patch fixed BBCode toolbar, change top-elemen orientation in fixed_markItUp;
@@ -54,29 +57,6 @@
 //   patch hung-up on click "Post", invalid find element of g-recaptcha-response;
 //   silent expired captcha, get rid alert;
 // 
-// v5.3.1.8 - 2015-05-10 . 1431284779215
-//   flow on capcay dialog will autosubmited; callback expired-captcha;
-//   avoid always-notify on edit-mode submission;
-//   always-notify feature: autoInject text-based multiquote ids to notify users (hardcoded, todo: put in options);
-//   reCAPTCHA verifyCallback doing submit post;
-//   tweak css image picker centered overflow-y;
-//   handle undefined grecaptcha on earlyload qr-script;
-//   [draft] adapting reCAPTCHA v2
-// 
-// v5.3.1.6 - 2015-04-23 . 1429727071841
-//   Adapting existing public quickreply; Patch broken recaptcha;
-//   Add include fjb: [thread,product,post]
-//   Patches: [preview post, fixed BBCode toolbar] on fjb
-//   Patch get_quotefrom TS using QQ on fjb
-// 
-// v5.3.1.5 - 2015-04-01 . 1427832016030
-//   GitHub repolink on settings::about
-// 
-// v5.3.1.4 - 2015-04-01 . 1427827211090
-//   Patch submission on group-discusstion. Thx:[nostafu]
-//   Fix finding .main-content element on group-discusstion
-//   Patch adjust entry-body width, mismatch width on single post on page;
-//   Adjusting migration code to github
 //
 //
 // v0.1 - 2010-06-29
@@ -92,11 +72,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.4';
+gvar.sversion = 'v' + '5.3.5';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1444660624069 // version.timestamp
-  ,dtversion: 1510125340 // version.date
+   timestamp: 1446466470762 // version.timestamp
+  ,dtversion: 1511025350 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -138,6 +118,7 @@ var KS = 'KEY_SAVE_',
     ,KEY_SAVE_THEME_FIXUP:      ['']  // theme fixer, hack css theme for viewing purpose
     ,KEY_SAVE_HIDE_GREYLINK:    ['1'] // hide grey origin link
     ,KEY_SAVE_ALWAYS_NOTIFY:    ['1'] // activate user notification
+    ,KEY_SAVE_SHOW_KASKUS_PLUS: ['1'] // show kaskus plus smiley
 
     ,KEY_SAVE_SCUSTOM_NOPARSE:  ['0'] // dont parse custom smiley tag. eg. tag=babegenit. BBCODE=[[babegenit]
 
@@ -515,12 +496,14 @@ var rSRC = {
       +      '<ul class="nav nav-tabs" role="tablist">'
       +       '<li><a href="#tkecil" role="tab" data-toggle="tab">Kecil</a></li>'
       +       '<li><a href="#tbesar" role="tab" data-toggle="tab">Besar</a></li>'
+      +       (gvar.settings.show_kaskusplus ? '<li><a href="#tkplus" role="tab" data-toggle="tab"><i class="icon icon-kplus"></i>Plus</a></li>':'')
       +       '<li><a href="#tcustom" role="tab" data-toggle="tab" class="green-tab">Custom</a></li>'
       +       '<li class="li-tabclose pull-right"><a href="javascript:;" class="close-tab"><i class="kqr-icon-close"></i></a></li>'
       +      '</ul>'
       +      '<div class="tab-content">'
       +       '<div class="tab-pane bbthumb" id="tkecil"></div>'
       +       '<div class="tab-pane bbthumb" id="tbesar"></div>'
+      +       (gvar.settings.show_kaskusplus ? '<div class="tab-pane bbthumb" id="tkplus"></div>':'')
       +       '<div class="tab-pane" id="tcustom"></div>'
       +       '<div class="clearfix"></div>'
       +      '</div>' // .tab-content
@@ -952,6 +935,17 @@ var rSRC = {
        + '</div>' // cls_cont
        +'</div>' // fg
 
+
+       +'<div class="form-group">'
+       + '<label class="'+cls_label+'" for="misc_smiley_kplus">Show Kaskus PLus Smiley'+gen_helplink("kaskusplus")+'</label>'
+       + '<div class="'+cls_cont+'">'
+       +  '<div class="checkbox">'
+       +   '<input id="misc_smiley_kplus" class="optchk" type="checkbox" '+(GVS.show_kaskusplus ? ' checked="checked"' : '')+'/>'
+       +  '</div>'
+       + '</div>' // cls_cont
+       +'</div>' // fg
+
+
        +'<div class="form-group">'
        + '<label class="'+cls_label+'">First Tab Smiley'+gen_helplink("tabfirst")+'</label>'
        + '<div class="'+cls_cont+'">'
@@ -1182,6 +1176,12 @@ var rSRC = {
     +'.pls-tailbottom, .pls-tailtop, .pls-tailright, .pls-tailleft, .pls-dropTR, .pls-dropBR, .pls-dropBL{display:none!important;}'
     +'.modal-rc2-pls-container{position: fixed !important;width: 100% !important;left: 0px !important;top: 0px !important;height: 100% !important;overflow-y: auto !important;}'
     +'.modal-rc2-pls-container table.gc-bubbleDefault{margin:0 auto!important;}'
+
+    // kplus-thingie
+    +'.nav.nav-tabs li a[href="#tkplus"]{background-color: #1b83c3; color: #f0f0f0; padding-left: 30px;}'
+    +'.nav.nav-tabs li.active a[href="#tkplus"]{color:#fff; background: rgba(27,131,195,1); background: -moz-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(27,131,195,1)), color-stop(66%, rgba(112,180,219,1)), color-stop(100%, rgba(238,238,238,1))); background: -webkit-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -o-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -ms-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: linear-gradient(to bottom, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#1b83c3", endColorstr="#eeeeee", GradientType=0 );}'
+    +'.icon.icon-kplus{background-image: url(https://plus.kaskus.co.id/plus/img/icon-kplus-forum.png); background-repeat: no-repeat; width: 23px;height: 23px; background-size: contain; position: absolute; left: 4px; top: -2px;}'
+    +'.help-kplus{position: absolute; right: 45px; top: 5px;}'
   },
   getCSS_Fixups: function(mode){
     var css='', i='!important';
@@ -1625,6 +1625,21 @@ var rSRC = {
      ,["sumbangan/15.gif", ":)", "Smilie"]
      ,["sumbangan/06.gif", ":(", "Frown"]
     ]; // smkecil
+
+
+    // base: http://s.kaskus.id/images/smilies/
+    if( gvar.settings.show_kaskusplus )
+    gvar.smkplus = [
+      ["smilies_fb5i1orqcrc7.gif", ":tepar", "Tepar"],
+      ["smilies_fb5i1ormrmng.gif", ":pertamax", "Pertamax"],
+      ["smilies_fb5i1oqzqzc2.gif", ":kangen", "Kangen"],
+      ["smilies_fb5i1oqy98xv.gif", ":jones", "Jones"],
+      ["smilies_fb5i1oqtmu9v.gif", ":insomnia", "Insomnia"],
+      ["smilies_fb5i2wtqtpje.gif", ":butuhpacar", "Butuh Pacar"],
+      ["smilies_fb5iakdq4cug.gif", ":bokek", "Bokek"],
+      ["smilies_fb5i2wth5mp5.gif", ":belumtidur", "Belum Tidur"],
+    ]; // smkplus
+
   } // getSmileySet
 };
 //=== rSRC
@@ -3984,7 +3999,7 @@ var _SML_ = {
     _SML_.event_menus();
   },
   load_smiley: function(target){
-    if( !gvar.smbesar || !gvar.smkecil || !gvar.smcustom )
+    if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus || !gvar.smcustom )
       rSRC.getSmileySet();
 
     clog("load_smiley");
@@ -4001,13 +4016,39 @@ var _SML_ = {
     
       var label, smilies, tpl='';
       label = target.replace('#', '');
-      smilies = (label == 'tkecil' ? gvar.smkecil : (label=='tbesar' ? gvar.smbesar : gvar.smcustom) );
+      switch(label){
+        case "tkecil":
+          smilies = gvar.smkecil;
+          break;
+        case "tbesar":
+          smilies = gvar.smbesar;
+          break;
+        case "tkplus":
+          smilies = gvar.smkplus;
+          break;
+        default:
+          smilies = gvar.smcustom;
+          break;
+      }
       
       gvar.sTryLoadSmilies = gvar.$w.setTimeout(function(){
         if( target != '#tcustom' ){
+          var imagehost = gvar.kkcdn;
+          
+          if( target == 'tkplus' ){
+            imagehost = gvar.kkcdn_plus;
+          }
+
           $.each(smilies, function(i, img){
-            tpl+= '<img src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+            tpl+= '<img src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
           });
+          if( target == 'tkplus' ){
+            tpl += '<div class="help-kplus" ><a href="'+gvar.domain+'miscellaneous/donatur/?ref=kqr-script&amp;med=k-plus" target="_blank">Emoticon Kaskus Plus tidak muncul?</a></div>';
+
+
+          }
+            
+
           $tgt.html( tpl );
           _SML_.event_img(target, label);
         }else{
@@ -4339,6 +4380,11 @@ var _STG = {
         setValue(KS+'SCUSTOM_NOPARSE', String( value ));
         gvar.settings.scustom_noparse = (value == '1' ? true : false);
 
+        // SHOW_KASKUS_PLUS | gvar.settings.show_kaskusplus
+        value = (isChk($('#misc_smiley_kplus')) ? '1' : '0');
+        setValue(KS+'SHOW_KASKUS_PLUS', String( value ));
+        gvar.settings.show_kaskusplus = (value == '1' ? true : false);
+
         // THEME_FIXUP
         value = $('#misc_theme_fixups').val();
         if( ['centered','c1024px','fullwidth'].indexOf(value) == -1 )
@@ -4479,7 +4525,7 @@ var _STG = {
   load_rawsetting: function(){
     // collect all settings from storage,. 
     var keys  = [
-       'UPDATES','UPDATES_INTERVAL'
+       'UPDATES','UPDATES_INTERVAL','SHOW_KASKUS_PLUS'
       ,'QR_HOTKEY_KEY','QR_HOTKEY_CHAR','QR_DRAFT'
       ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP','HIDE_GREYLINK','ALWAYS_NOTIFY'
       ,'SHOW_SMILE','TABFIRST_SMILE','LAYOUT_CONFIG','LAYOUT_TPL','SCUSTOM_NOPARSE','CUSTOM_SMILEY'
@@ -4500,7 +4546,8 @@ var _STG = {
       ,'QR_HOTKEY_CHAR':'Char of QR-Hotkey; validValue=[A-Z0-9]'
       ,'LAYOUT_CONFIG':'Layout Config; [userid=isNaN,isEnable_autoLAYOUT]; isEnable\'s validValue=[1,0]'
       ,'LAYOUT_TPL':'Layout Template; [userid=LAYOUT]; validValue of LAYOUT is must contain escaped {MESSAGE}'
-      ,'SCUSTOM_NOPARSE':'Smiley Custom Tags will not be parsed; validValue=[1,0]'   
+      ,'SHOW_KASKUS_PLUS':'Show Kaskus Plus Smilies; validValue=[1,0]'
+      ,'SCUSTOM_NOPARSE':'Smiley Custom Tags will not be parsed; validValue=[1,0]'
       ,'CUSTOM_SMILEY':'Smiley Custom\'s Raw-Data; [tagname|smileylink]'
     };
     
@@ -4587,7 +4634,7 @@ var _STG = {
         ,'UPLOAD_LOG','CSS_BULK','CSS_WIDE','CSS_META','SCUSTOM_NOPARSE'
         ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP'
         ,'HIDE_GREYLINK','ALWAYS_NOTIFY'
-        ,'SHOW_SMILE','TABFIRST_SMILE'
+        ,'SHOW_SMILE','TABFIRST_SMILE','SHOW_KASKUS_PLUS'
         ];
         var kL=keys.length, waitfordel, alldone=0;
         for(var i=0; i<kL; i++){
@@ -5700,7 +5747,10 @@ function domainParse(){
     "host": l,
 
     // host for emoticons
-    "statics" : 'cdn.kaskus.com'
+    "statics" : 'cdn.kaskus.com',
+
+    // host for emoticons kplus
+    "statics_plus" : 's.kaskus.id'
   };
 }
 
@@ -7376,6 +7426,7 @@ function getSettings(stg){
   getValue(KS+'THEME_FIXUP', function(ret){ settings.theme_fixups=ret });
   getValue(KS+'HIDE_GREYLINK', function(ret){ settings.hide_greylink=(ret=='1') });
   getValue(KS+'ALWAYS_NOTIFY', function(ret){ settings.always_notify=(ret=='1') });
+  getValue(KS+'SHOW_KASKUS_PLUS', function(ret){ settings.show_kaskusplus=(ret=='1') });
 
   settings.plusquote = null;
   
@@ -8040,6 +8091,7 @@ function init(){
   gvar.domain = kdomain.prot + '//' + kdomain.host +'/';
   gvar.kask_domain = kdomain.prot+'//kask.us/';
   gvar.kkcdn = kdomain.prot + '//'+ kdomain.statics + '/';
+  gvar.kkcdn_plus = kdomain.prot + '//'+ kdomain.statics_plus + '/';
 
   // set true to simulate using css from googlecode, [debug-purpose]
   gvar.force_live_css = null;
