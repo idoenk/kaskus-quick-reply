@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.6
+// @version        5.3.6.1
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1512075360
-// @timestamp      1449499113807
+// @dtversion      1512085361
+// @timestamp      1449580514561
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -29,14 +29,17 @@
 //
 // -!--latestupdate
 //
+// v5.3.6.1 - 2015-12-08 . 1449580514561
+//   Rearrange smilies; +New Kaskus Emotes;
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.6 - 2015-12-07 . 1446473529196
 //   +New Kaskus Plus. Thanks:[coolkips]
 //   Deprecated uploader services: [imgur,imgzzz]
 //   Allow non-donat kaskuser use IMG-BBCode for KaskusPlus smilies
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.5.1 - 2015-11-02 . 1446473529196
 //   Paired emoted Kaskus Plus
 // 
@@ -64,11 +67,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.6';
+gvar.sversion = 'v' + '5.3.6.1';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1449499113807 // version.timestamp
-  ,dtversion: 1512075360 // version.date
+   timestamp: 1449580514561 // version.timestamp
+  ,dtversion: 1512085361 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -1443,6 +1446,7 @@ var rSRC = {
     });
     if(isDefined(custom) && custom) return;
 
+    /*
     gvar.smbesar = [
       // old medium-smiley
       ["sumbangan/smiley_beer.gif", ":beer:", "Angkat Beer"]
@@ -1517,7 +1521,7 @@ var rSRC = {
     ];
     // smbesar
 
-    /* Only di Kaskus (Small) */ // 
+    // Only di Kaskus (Small)
     gvar.smkecil = [
       ["s_sm_peace.gif", ":Yb", "Blue Guy Peace"]
      ,["takuts.gif", ":takuts", "Takut (S)"]
@@ -1547,8 +1551,8 @@ var rSRC = {
      ,["add-friend-kecil.gif", ":addfriends", "Add Friend (S)"]
      ,["s_sm_smile.gif", ":)b", "Blue Guy Smile (S)"] 
 
-      /* standart */ 
 
+      // standart -----
      ,["sumbangan/13.gif", ";)", "Wink"]
      ,["sumbangan/001.gif", ":wowcantik", "Wowcantik"]
      ,["sumbangan/44.gif", ":tv", "televisi"]
@@ -1623,7 +1627,195 @@ var rSRC = {
      ,["sumbangan/15.gif", ":)", "Smilie"]
      ,["sumbangan/06.gif", ":(", "Frown"]
     ]; // smkecil
+    */
 
+
+    var nPath = 'http://s.kaskus.id/';
+    gvar.smbesar = [
+      // old medium-smiley
+      ["smilies_fb5ogiimgq21.gif", ":wow", "Wow", nPath]
+     ,["smilies_fb5ohtykhbhj.gif", ":wkwkwk", "Wkwkwk", nPath]
+     ,["smilies_fb5ogiiief4q.gif", ":wakaka", "Wakaka", nPath]
+     ,["smilies_fb5ly1zwmwkm.gif", ":ultahhore", "Ultah", nPath]
+     ,["smilies_fb5ly1i58kbq.gif", ":ultah", "Ultah", nPath]
+
+     ,["traveller.gif", ":travel", "Traveller"]
+     ,["smilies_fb5ly1iothbu.gif", ":toast", "Toast", nPath]
+     ,["smilies_fb5ly1itttkb.gif", ":takut", "Takut", nPath]
+     ,["fd_5.gif", ":sup:", "Sundul Up"]
+     ,["smilies_fb5ly1iy2y34.gif", ":sup2", "Sundul", nPath]
+     ,["smilies_fb5ly1xldg9p.gif", ":sorry", "Sorry", nPath]
+     ,["shakehand2.gif", ":shakehand2", "Shakehand2"]
+     ,["smilies_fb5ohtwaipmr.gif", ":selamat", "Selamat", nPath]
+     ,["smilies_fb5ogiiddd93.gif", ":salamkenal", "Salam Kenal", nPath]
+     ,["lebaran03.gif", ":salaman", "Salaman"]
+     ,["salah_kamar.gif", ":salahkamar", "Salah Kamar"]
+     ,["request.gif", ":request", "Request"]
+     ,["smilies_fb5ohtyqhwnh.gif", ":repost:", "Repost"]
+     ,["s_sm_repost2.gif", ":repost2", "Purple Repost"]
+     ,["s_sm_repost1.gif", ":repost", "Blue Repost"]
+     ,["smilies_fb5ly1xidtbd.gif", ":recsel", "Recommended Seller", nPath]
+     ,["smilies_fb5ohtvqnpxx.gif", ":rate5", "Rate 5 Star", nPath]
+     ,["peluk.gif", ":peluk", "Peluk"]
+     ,["nosara.gif", ":nosara", "No Sara Please"]
+     ,["nohope.gif", ":nohope", "No Hope"]
+     ,["smilies_fb5ohtyfyn16.gif", ":ngakak", "Ngakak", nPath]
+     ,["ngacir2.gif", ":ngacir2", "Ngacir2"]
+     ,["ngacir3.gif", ":ngacir", "Ngacir"]
+     ,["najis.gif", ":najis", "Najis"]
+     ,["smilies_fb5ogiicfbwj.gif", ":motret", "Motret", nPath]
+     ,["smilies_fb5ohtveegn8.gif", ":mewek", "Mewek", nPath]
+     ,["smilies_fb5ohtvdpjkq.gif", ":matabelo", "Matabelo", nPath]
+     ,["smilies_fb5l20l4pt7z.gif", ":marigerak", "#MAR16ERAK", nPath]
+     ,["marah.gif", ":marah", "Marah"]
+     ,["smilies_fb5ohtvafv6q.gif", ":malu", "Malu", nPath]
+     ,["lebaran04.gif", ":maafaganwati", "Maaf Aganwati"]
+     ,["lebaran01.gif", ":maafagan", "Maaf Agan"]
+     ,["fd_6.gif", ":kts:", "Kemana TSnya?"]
+     ,["smilies_fb5ohtvf8ymz.gif", ":kr", "Kaskus Radio", nPath]
+     ,["cewek.gif", ":kiss", "Kiss"]
+     ,["kimpoi.gif", ":kimpoi", "Kimpoi"]
+     ,["lebaran05.gif", ":ketupat", "Ketupat"]
+     ,["fd_4.gif", ":kbgt:", "Kaskus Banget"]
+     ,["fd_8.gif", ":kacau:", "Thread Kacau"]
+     ,["fd_1.gif", ":jrb:", "Jangan ribut disini"]
+     ,["s_sm_ilovekaskus.gif", ":ilovekaskus", "I Love Kaskus"]
+     ,["smilies_fb5ly1xu2wka.gif", ":iloveindonesia", "I Love Indonesia", nPath]
+     ,["hoax.gif", ":hoax", "Hoax"]
+     ,["hotnews.gif", ":hn", "Hot News"]
+     ,["hammer.gif", ":hammer", "Hammer2"]
+     ,["smilies_fb5ohtxkkci6.gif", ":hai", "Hai", nPath]
+     ,["smilies_fb5ly1xc0hnl.gif", ":games", "Games", nPath]
+     ,["smilies_fb5ogii64nj7.gif", ":entahlah", "Entahlah", nPath]
+     ,["dp.gif", ":dp", "DP"]
+     ,["cystg.gif", ":cystg", "cystg"]
+     ,["smilies_fb5ohtw20w8z.gif", ":cool", "Cool", nPath]
+     ,["s_big_cendol.gif", ":cendolbig", "Blue Guy Cendol (L)"]
+     ,["cekpm.gif", ":cekpm", "Cek PM"]
+     ,["fd_2.gif", ":cd:", "Cape deeehh"]
+     ,["capede.gif", ":cd", "Cape d..."]
+     ,["bola.gif", ":bola", "Bola"]
+     ,["bingung.gif", ":bingung", "Bingung"]
+     ,["fd_3.gif", ":bigo:", "Bukan IGO"]
+     ,["s_sm_maho.gif", ":betty", "Betty"]
+     ,["berduka.gif", ":berduka", "Turut Berduka"]
+     ,["lebaran02.gif", ":bedug", "Bedug"]
+     ,["s_big_batamerah.gif", ":batabig", "Blue Guy Bata (L)"]
+     ,["babygirl.gif", ":babygirl", "Baby Girl"]
+     ,["babyboy1.gif", ":babyboy1", "Baby Boy 1"]
+     ,["babyboy.gif", ":babyboy", "Baby Boy"]
+     ,["angel1.gif", ":angel", "Angel"]
+     ,["smilies_fb5ly1x373yj.gif", ":2thumbup", "2 Jempol", nPath]
+     ,["smilies_fb5ly1j43vv5.gif", ":1thumbup", "Jempol", nPath]
+    ];
+
+    gvar.smkecil = [
+      ["s_sm_peace.gif", ":Yb", "Blue Guy Peace"]
+     ,["takuts.gif", ":takuts", "Takut (S)"]
+     ,["sundulgans.gif", ":sundulgans", "Sundul Gan (S)"]
+     ,["shutup-kecil.gif", ":shutups", "Shutup (S)"]
+     ,["reposts.gif", ":reposts", "Repost (S)"]
+     ,["ngakaks.gif", ":ngakaks", "Ngakak (S)"]
+     ,["najiss.gif", ":najiss", "Najis (S)"]
+     ,["malus.gif", ":malus", "Malu (S)"]
+     ,["mads.gif", ":mads", "Mad (S)"]
+     ,["kisss.gif", ":kisss", "Kiss (S)"]
+     ,["iluvkaskuss.gif", ":ilovekaskuss", "I Love Kaskus (S)"]
+     ,["iloveindonesias.gif", ":iloveindonesias", "I Love Indonesia (S)"]
+     ,["hammers.gif", ":hammers", "Hammer (S)"]
+     ,["cendols.gif", ":cendols", "Cendol (S)"]
+     ,["s_sm_cendol.gif", ":cendolb", "Blue Guy Cendol (S)"]
+     ,["cekpms.gif", ":cekpms", "Cek PM (S)"]
+     ,["capedes.gif", ":capedes", "Cape d... (S)"]
+     ,["bookmark-kecil.gif", ":bookmarks", "Bookmark (S)"]
+     ,["bingungs.gif", ":bingungs", "Bingung (S)"]
+     ,["mahos.gif", ":bettys", "Betty (S)"]
+     ,["berdukas.gif", ":berdukas", "Berduka (S)"]
+     ,["berbusa-kecil.gif", ":berbusas", "Berbusa (S)"]
+     ,["batas.gif", ":batas", "Bata (S)"]
+     ,["s_sm_batamerah.gif", ":bata", "Blue Guy Bata (S)"]
+     ,["army-kecil.gif", ":armys", "Army (S)"]
+     ,["add-friend-kecil.gif", ":addfriends", "Add Friend (S)"]
+     ,["s_sm_smile.gif", ":)b", "Blue Guy Smile (S)"]
+
+      // sumbangan
+     ,["sumbangan/13.gif", ";)", "Wink"]
+     ,["sumbangan/001.gif", ":wowcantik", "Wowcantik"]
+     ,["sumbangan/44.gif", ":tv", "televisi"]
+     ,["sumbangan/47.gif", ":thumbup", "thumbsup"]
+     ,["sumbangan/48.gif", ":thumbdown", "thumbdown"]
+     ,["sumbangan/006.gif", ":think:", "Thinking"]
+     ,["sumbangan/shit-3.gif", ":tai", "Tai"]
+     ,["tabrakan.gif", ":tabrakan:", "Ngacir Tubrukan"]
+     ,["sumbangan/39.gif", ":table:", "table"]
+     ,["sumbangan/008.gif", ":sun:", "Matahari"]
+     ,["sumbangan/020.gif", ":siul", "siul"]
+     ,["sumbangan/5.gif", ":shutup:", "Shutup"]
+     ,["sumbangan/49.gif", ":shakehand", "shakehand"]
+     ,["sumbangan/34.gif", ":rose:", "rose"]
+     ,["sumbangan/01.gif", ":rolleyes", "Roll Eyes (Sarcastic)"]
+     ,["sumbangan/32.gif", ":ricebowl:", "ricebowl"]
+     ,["sumbangan/e02.gif", ":rainbow:", "rainbow"]
+     ,["sumbangan/60.gif", ":rain:", "raining"]
+     ,["sumbangan/40.gif", ":present:", "present"]
+     ,["sumbangan/41.gif", ":Phone:", "phone"]
+     ,["sumbangan/005.gif", ":Peace:", "Peace"]
+     ,["sumbangan/paw.gif", ":Paws:", "Paw"]
+     ,["sumbangan/6.gif", ":p", "Stick Out Tongue"]
+     ,["sumbangan/rice.gif", ":Onigiri", "Onigiri"]
+     ,["sumbangan/07.gif", ":o", "Embarrassment"]
+     ,["sumbangan/35.gif", ":norose:", "norose"]
+     ,["sumbangan/q11.gif", ":nohope:", "Nohope"]
+     ,["ngacir.gif", ":ngacir:", "Ngacir"]
+     ,["sumbangan/007.gif", ":moon:", "Moon"]
+     ,["sumbangan/q17.gif", ":metal", "Metal"]
+     ,["sumbangan/33.gif", ":medicine:", "medicine"]
+     ,["sumbangan/004.gif", ":matabelo:", "Belo"]
+     ,["sumbangan/1.gif", ":malu:", "Malu"]
+     ,["sumbangan/12.gif", ":mad", "Mad"]
+     ,["sumbangan/26.gif", ":linux2:", "linux2"]
+     ,["sumbangan/25.gif", ":linux1:", "linux"]
+     ,["sumbangan/28.gif", ":kucing:", "kucing"]
+     ,["sumbangan/36.gif", ":kissmouth", "kiss"]
+     ,["sumbangan/014.gif", ":kissing:", "kisssing"]
+     ,["sumbangan/smiley_couple.gif", ":kimpoi:", "Pasangan Smiley"]
+     ,["sumbangan/3.gif", ":kagets:", "Kagets"]
+     ,["sumbangan/hi.gif", ":hi:", "Hi"]
+     ,["sumbangan/37.gif", ":heart:", "heart"]
+     ,["sumbangan/8.gif", ":hammer:", "Hammer"]
+     ,["sumbangan/crazy.gif", ":gila:", "Gila"]
+     ,["sumbangan/q03.gif", ":genit", "Genit"]
+     ,["sumbangan/fuck-4.gif", ":fuck:", "fuck"]
+     ,["sumbangan/fuck-8.gif", ":fuck3:", "fuck3"]
+     ,["sumbangan/fuck-6.gif", ":fuck2:", "fuck2"]
+     ,["sumbangan/frog.gif", ":frog:", "frog"]
+     ,["smileyfm329wj.gif", ":fm:", "Forum Music"]
+     ,["sumbangan/e03.gif", ":flower:", "flower"]
+     ,["sumbangan/52.gif", ":exclamati", "exclamation"]
+     ,["sumbangan/43.gif", ":email", "mail"]
+     ,["sumbangan/4.gif", ":eek", "EEK!"]
+     ,["sumbangan/18.gif", ":doctor", "doctor"]
+     ,["sumbangan/14.gif", ":D", "Big Grin"]
+     ,["sumbangan/05.gif", ":cool:", "Cool"]
+     ,["sumbangan/7.gif", ":confused", "Confused"]
+     ,["sumbangan/31.gif", ":coffee:", "coffee"]
+     ,["sumbangan/42.gif", ":clock", "clock"]
+     ,["sumbangan/kaskuslove.gif", ":ck", "Kaskus Lovers"]
+     ,["sumbangan/woof.gif", ":buldog", "Buldog"]
+     ,["sumbangan/38.gif", ":breakheart", "breakheart"]
+     ,["bolakbalik.gif", ":bingung:", "Bingung"]
+     ,["sumbangan/vana-bum-vanaweb-dot-com.gif", ":bikini", "Bikini"]
+     ,["sumbangan/q20.gif", ":berbusa", "Busa"]
+     ,["sumbangan/smiley_beer.gif", ":beer:", "Angkat Beer"]
+     ,["sumbangan/30.gif", ":baby:", "baby"]
+     ,["sumbangan/27.gif", ":babi:", "babi"]
+     ,["sumbangan/24.gif", ":army", "army"]
+     ,["sumbangan/29.gif", ":anjing:", "anjing"]
+     ,["sumbangan/017.gif", ":angel:", "angel"]
+     ,["sumbangan/amazed.gif", ":amazed:", "Amazed"]
+     ,["sumbangan/kribo.gif", ":afro:", "afro"]
+     ,["sumbangan/15.gif", ":)", "Smilie"]
+    ];
 
     // base: http://s.kaskus.id/images/smilies/
     if( gvar.settings.show_kaskusplus )
@@ -4020,8 +4212,22 @@ var _SML_ = {
     
     if( !$tgt.hasClass('filled') ){
     
-      var label, smilies, tpl='';
-      label = target.replace('#', '');
+      var smilies, tpl='',
+          label = target.replace('#', ''),
+          smilies_segments = {
+            tkecil: [
+              {label: 'Only in Kaskus Smilies(Small)', index: 0, n: 27},
+              {label: 'Standart Smilies', index: 27}
+            ],
+            tbesar: [
+              {label: 'Only in Kaskus Smilies'}
+            ],
+            tkplus: [
+              {label: 'Plus Exclusive'}
+            ]
+          }
+      ;
+
       switch(label){
         case "tkecil":
           smilies = gvar.smkecil;
@@ -4039,15 +4245,35 @@ var _SML_ = {
       
       gvar.sTryLoadSmilies = gvar.$w.setTimeout(function(){
         if( target != '#tcustom' ){
-          var imagehost = gvar.kkcdn;
-          
-          if( target == '#tkplus' ){
-            imagehost = gvar.kkcdn_plus;
+          var tmp_smilies, segment, imagehost = (target == '#tkplus' ? gvar.kkcdn_plus : gvar.kkcdn);
+          segment = ('undefined' != typeof smilies_segments[label] && smilies_segments[label] ? smilies_segments[label] : null);
+
+          if( segment ){
+            tmp_smilies = smilies;
+            for(var j=0, jL=segment.length; j<jL; j++){
+              tpl += '<div><strong>'+segment[j]['label']+'</strong></div>';
+              smilies = tmp_smilies.slice(parseFloat(segment[j]['index']), (segment[j]['n'] ? parseFloat(segment[j]['n']) : undefined));
+              $.each(smilies, function(i, img){
+                if( img[3] )
+                  imagehost = img[3];
+
+                tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+              });
+            }
+          }
+          else{
+            // just-failover
+            $.each(smilies, function(i, img){
+              if( img[3] )
+                imagehost = img[3];
+
+              tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+            });
           }
 
-          $.each(smilies, function(i, img){
-            tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
-          });
+          // $.each(smilies, function(i, img){
+          //   tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+          // });
 
           if( target == '#tkplus' ){
             tpl += ''
@@ -4058,6 +4284,7 @@ var _SML_ = {
             clog(tpl);
           }
 
+          // attach-html
           $tgt.html( tpl );
           _SML_.event_img(target, label);
         }else{
