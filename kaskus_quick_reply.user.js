@@ -9,7 +9,7 @@
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
 // @dtversion      1512085361
-// @timestamp      1449580514561
+// @timestamp      1450371144167
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -29,8 +29,9 @@
 //
 // -!--latestupdate
 //
-// v5.3.6.1 - 2015-12-08 . 1449580514561
-//   Rearrange smilies; +New Kaskus Emotes;
+// v5.3.6.1 - 2015-12-17 . 1450371144167
+//   +New Kaskus Emotes; Rearrange smilies;
+//   Kplus in option of [autoshow, first-tab]
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -70,7 +71,7 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.6.1';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1449580514561 // version.timestamp
+   timestamp: 1450371144167 // version.timestamp
   ,dtversion: 1512085361 // version.date
 
   ,titlename: 'Quick Reply'
@@ -916,24 +917,7 @@ var rSRC = {
        // -=-=-=-=-=-=-=-
 
        +'<div class="form-group">'
-       + '<label class="'+cls_label+'" for="misc_autoshow_smile">AutoShow Smiley'+gen_helplink("autoshowsmiley")+'</label>'
-       + '<div class="'+cls_cont+'">'
-       +  '<div class="checkbox">'
-       +   '<input id="misc_autoshow_smile" class="optchk" type="checkbox" '+(GVS_aus[0]=='1' ? 'checked="checked"':'')+'/>'
-       +  '</div>'
-       +  '<div id="misc_autoshow_smile_child" class="fg-sub'+(GVS_aus[0]=='1' ? '':' hide')+'">'
-       +   '<div class="radio">'
-       +    '<label><input name="aus" type="radio" value="kecil" '+(GVS_aus[1]=='kecil' ? 'checked':'')+'/> kecil</label>'
-       +    '<label><input name="aus" type="radio" value="besar" '+(GVS_aus[1]=='besar' ? 'checked':'')+'/> besar</label>'
-       +    '<label><input name="aus" type="radio" value="custom" '+(GVS_aus[1]=='custom' ? 'checked':'')+'/> custom</label>'
-       +   '</div>'
-       +  '</div>'
-       + '</div>' // cls_cont
-       +'</div>' // fg
-
-
-       +'<div class="form-group">'
-       + '<label class="'+cls_label+'" for="misc_smiley_kplus">Show Kaskus Plus Smiley'+gen_helplink("kaskusplus")+'</label>'
+       + '<label class="'+cls_label+'" for="misc_smiley_kplus">KaskusPlus Smiley'+gen_helplink("kaskusplus")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox">'
        +   '<input id="misc_smiley_kplus" class="optchk" type="checkbox" '+(GVS.show_kaskusplus ? ' checked="checked"' : '')+'/>  <em class="checkbox-text checkbox-desc">(require reload page)</em>'
@@ -946,15 +930,32 @@ var rSRC = {
        + '</div>' // cls_cont
        +'</div>' // fg
 
+       +'<div class="form-group">'
+       + '<label class="'+cls_label+'" for="misc_autoshow_smile">AutoShow Smiley'+gen_helplink("autoshowsmiley")+'</label>'
+       + '<div class="'+cls_cont+'">'
+       +  '<div class="checkbox">'
+       +   '<input id="misc_autoshow_smile" class="optchk" type="checkbox" '+(GVS_aus[0]=='1' ? 'checked="checked"':'')+'/>'
+       +  '</div>'
+       +  '<div id="misc_autoshow_smile_child" class="fg-sub'+(GVS_aus[0]=='1' ? '':' hide')+'">'
+       +   '<div class="radio">'
+       +    '<label><input name="aus" type="radio" value="kecil" '+(GVS_aus[1]=='kecil' ? 'checked':'')+'/> Kecil</label>'
+       +    '<label><input name="aus" type="radio" value="besar" '+(GVS_aus[1]=='besar' ? 'checked':'')+'/> Besar</label>'
++    '<label class="kplus_first'+(GVS.show_kaskusplus ? '':' hide')+'"><input name="aus" type="radio" value="kplus" '+(GVS_aus[1]=='kplus' ? 'checked':'')+'/> KPlus</label>'
+       +    '<label><input name="aus" type="radio" value="custom" '+(GVS_aus[1]=='custom' ? 'checked':'')+'/> Custom</label>'
+       +   '</div>'
+       +  '</div>'
+       + '</div>' // cls_cont
+       +'</div>' // fg
 
        +'<div class="form-group">'
        + '<label class="'+cls_label+'">First Tab Smiley'+gen_helplink("tabfirst")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="fg-sub">'
        +   '<div class="radio">'
-       +    '<label><input name="ftab" type="radio" value="kecil" '+(GVS_ftab=='kecil' ? 'checked':'')+'/> kecil</label>'
-       +    '<label><input name="ftab" type="radio" value="besar" '+(GVS_ftab=='besar' ? 'checked':'')+'/> besar</label>'
-       +    '<label><input name="ftab" type="radio" value="custom" '+(GVS_ftab=='custom' ? 'checked':'')+'/> custom</label>'
+       +    '<label><input name="ftab" type="radio" value="kecil" '+(GVS_ftab=='kecil' ? 'checked':'')+'/> Kecil</label>'
+       +    '<label><input name="ftab" type="radio" value="besar" '+(GVS_ftab=='besar' ? 'checked':'')+'/> Besar</label>'
+       +    '<label class="kplus_first'+(GVS.show_kaskusplus ? '':' hide')+'"><input name="ftab" type="radio" value="kplus" '+(GVS_ftab=='kplus' ? 'checked':'')+'/> KPlus</label>'
+       +    '<label><input name="ftab" type="radio" value="custom" '+(GVS_ftab=='custom' ? 'checked':'')+'/> Custom</label>'
        +   '</div>'
        +  '</div>'
        + '</div>' // cls_cont
@@ -4227,15 +4228,17 @@ var _STG = {
     }, 123)
   },
   event_main:function(){
+    var $box = $('#modal_setting_box');
+
     // menus
-    $('#qr-box_setting .qrt').each(function(){
+    $box.find('.qrt').each(function(){
       $(this).click(function(){
         var $btn, $tgt,
           $me = $(this),
           tipe = $me.attr('data-ref'),
           disb, par;
         par = $(this).parent();
-        $('#qr-box_setting').find('.isopen').removeClass('isopen').hide();
+        $box.find('.isopen').removeClass('isopen').hide();
         $tgt = $('#stg_content_' + tipe);
         $tgt.addClass('isopen').show();
         $tgt.parent().attr("data-tab", tipe);
@@ -4247,7 +4250,7 @@ var _STG = {
         $btn = $('#box_action');
         $btn.html('Save');
         if(tipe == 'exim'){
-          if( !$('#textarea_rawdata').val() )
+          if( !$box.find('#textarea_rawdata').val() )
             _STG.load_rawsetting();
           $btn.html('Import').removeClass(disb).attr('data-act', 'import');
         }else if(tipe == 'gen'){
@@ -4258,7 +4261,7 @@ var _STG = {
         $btn.attr('data-todo', tipe);
       });
     });
-    $('#qr-box_setting .optchk').each(function(){
+    $box.find('.optchk').each(function(){
       $(this).click(function(){
         var $tgt, chked, $me = $(this), id = $me.attr('id');
         chked = $me.is(':checked');
@@ -4268,17 +4271,18 @@ var _STG = {
           $tgt[chked ? 'removeClass' : 'addClass']("hide");
           
           if(id == 'misc_autolayout'){
-            $('#edit_tpl_cancel').css('display', chked ? '' : 'none' );
-            chked && $('#edit_tpl_txta').focus().select();
+            $box.find('#edit_tpl_cancel').css('display', chked ? '' : 'none' );
+            chked && $box.find('#edit_tpl_txta').focus().select();
           }
         }
       });
     });
-    $('#edit_tpl_cancel').click(function(){
-      do_click($('#misc_autolayout').get(0));
-      $('#misc_autolayout').removeAttr('checked');
+    $box.find('#edit_tpl_cancel').click(function(){
+      var $miscauto = $box.find('#misc_autolayout');
+      do_click( $miscauto.get(0) );
+      $miscauto.removeAttr('checked');
     });
-    $('#qr-box_setting #misc_elastic_editor').click(function(){
+    $box.find('#misc_elastic_editor').click(function(){
       var $me = $(this);
       var $par = $me.closest("#tabs-itemstg-general");
       var $tgt = $par.find(".fg-fixed_toolbar");
@@ -4287,7 +4291,7 @@ var _STG = {
       else
         $tgt.addClass("hide");
     });
-    $('#qr-box_setting .goog-tab').each(function(){
+    $box.find('.goog-tab').each(function(){
       $(this).click(function(){
         var $me = $(this),
           $par = $me.closest(".form-group"),
@@ -4299,19 +4303,27 @@ var _STG = {
       });
     });
 
+    $box.find('#misc_smiley_kplus').click(function(){
+      var $me = $(this), $tgtkplus = $box.find(".kplus_first");
+      if( $me.is(":checked") )
+        $tgtkplus.removeClass('hide');
+      else
+        $tgtkplus.addClass('hide');
+    });
+
     if( !gvar.noCrossDomain ) {// unavailable on Chrome|Opera still T_T
-      $('#chk_upd_now').click(function(){
-        $('#chk_upd_load').show();
+      $box.find('#chk_upd_now').click(function(){
+        $box.find('#chk_upd_load').show();
         $(this).hide();
         _UPD.caller = '#' + $(this).attr('id');
         _UPD.check(true);
       })
     }   
     
-    var val, pval, isChk = function(x){ return $(x).is(':checked') };
-    $('#box_action').click(function(){
+    var val, pval, isChk = function(x){ return $box.find(x).is(':checked') };
+    $box.find('#box_action').click(function(){
       var $me = $(this);
-      var $inner_setting = $('#tabs-contentstg-inner');
+      var $inner_setting = $box.find('#tabs-contentstg-inner');
 
       // general setting
       if( $me.attr('data-act') == 'update' ){
@@ -4329,7 +4341,7 @@ var _STG = {
 
         // validate
         pval = ( isChk('#misc_autolayout') ? '1' : '0' );
-        tpltext = trimStr( $('#edit_tpl_txta').val().toString() );
+        tpltext = trimStr( $box.find('#edit_tpl_txta').val().toString() );
         if( tpltext == "" )
           tpltext = '[B]{message}[/B]';
 
@@ -4352,16 +4364,16 @@ var _STG = {
         
         // QR_HOTKEY_KEY QR_HOTKEY_CHAR
         var oL, value, el, Chr;
-        if( isChk( $('#misc_hotkey')) ){
+        if( isChk( '#misc_hotkey' ) ){
           misc = 'misc_hotkey_ctrl,misc_hotkey_shift,misc_hotkey_alt'.split(',');
           reserved_CSA = [(!gvar.isOpera ? '0,0,1' : '1,0,1'), '1,1,0']; /* Alt+Q OR Ctrl+Alt+Q -- Ctrl+Shift+Q */
           oL = misc.length;
           value = [];
           for(var id=0; id<oL; id++){
             if( !isString(misc[id]) ) continue;
-            value.push( isChk( $('#'+misc[id]) ) ? '1' : '0' );
+            value.push( isChk( '#'+misc[id] ) ? '1' : '0' );
           }
-          Chr = $('#misc_hotkey_char').val().toUpperCase();
+          Chr = $box.find('#misc_hotkey_char').val().toUpperCase();
           if( Chr=='Q' && (reserved_CSA[0]==String( value ) || reserved_CSA[1]==String( value )) ){ // bentrok        
             if( confirm('Hotkey is already reserved:\n ['+(!gvar.isOpera ? 'Alt + Q':'Ctrl + Alt +Q')+'] : Fetch Quoted Post\n [Ctrl + Shift + Q] : Deselect Quote\n\nDo you want to make a correction?') )
               return restore_save();
@@ -4386,10 +4398,16 @@ var _STG = {
         misc = 'kecil,besar,custom'.split(',');
         // recent? > add item:  misc.push("recent")
 
+        // KASKUS_PLUS | gvar.settings.show_kaskusplus
+        value = (isChk( '#misc_smiley_kplus' ) ? '1' : '0');
+        setValue(KS+'SHOW_KASKUS_PLUS', String( value ));
+        gvar.settings.show_kaskusplus = (value == '1' ? true : false);
+        if( gvar.settings.show_kaskusplus )
+          misc.push('kplus');
         
         // autoload smiley
         value = [];
-        value.push( isChk( $('#misc_autoshow_smile')) ? '1' : '0' );
+        value.push( isChk( '#misc_autoshow_smile' ) ? '1' : '0' );
         value.push( $inner_setting.find("[name='aus']:checked").val() );
         if( misc.indexOf(value[1]) === -1 )
           value[1] = 'kecil';
@@ -4406,7 +4424,7 @@ var _STG = {
 
 
         // TXTCOUNTER
-        value = (isChk($('#misc_txtcount')) ? '1' : '0');
+        value = (isChk( '#misc_txtcount' ) ? '1' : '0');
         setValue(KS+'TXTCOUNTER', String( value ));
         gvar.settings.txtcount = (value == '1' ? true : false);
         $('.counter')[gvar.settings.txtcount ? 'show':'hide']();
@@ -4414,37 +4432,33 @@ var _STG = {
 
 
         // ELASTIC_EDITOR
-        value = (isChk($('#misc_elastic_editor')) ? '1' : '0');
+        value = (isChk( '#misc_elastic_editor' ) ? '1' : '0');
         setValue(KS+'ELASTIC_EDITOR', String( value ));
         gvar.settings.elastic_editor = (value == '1' ? true : false);
         _TEXT.setElastic(null, true);
 
         // FIXED_TOOLBAR
         if( gvar.settings.elastic_editor )
-          $('#misc_fixed_toolbar').prop("checked", true);
+          $box.find('#misc_fixed_toolbar').prop("checked", true);
         else
-          $('#misc_fixed_toolbar').prop("checked", false);
-        value = (isChk($('#misc_fixed_toolbar')) ? '1' : '0');
+          $box.find('#misc_fixed_toolbar').prop("checked", false);
+        value = (isChk( '#misc_fixed_toolbar' ) ? '1' : '0');
         setValue(KS+'FIXED_TOOLBAR', String( value ));
         gvar.settings.fixed_toolbar = (value == '1' ? true : false);
 
         // SCUSTOM_NOPARSE
-        value = (isChk($('#misc_scustom_noparse')) ? '1' : '0');
+        value = (isChk( '#misc_scustom_noparse' ) ? '1' : '0');
         setValue(KS+'SCUSTOM_NOPARSE', String( value ));
         gvar.settings.scustom_noparse = (value == '1' ? true : false);
 
-        // SHOW_KASKUS_PLUS | gvar.settings.show_kaskusplus
-        value = (isChk($('#misc_smiley_kplus')) ? '1' : '0');
-        setValue(KS+'SHOW_KASKUS_PLUS', String( value ));
-        gvar.settings.show_kaskusplus = (value == '1' ? true : false);
 
         // IMGBBCODE_KASKUS_PLUS | gvar.settings.kaskusplus_bbcode_img
-        value = (isChk($('#misc_smiley_kplus_bbcode_img')) ? '1' : '0');
+        value = (isChk( '#misc_smiley_kplus_bbcode_img' ) ? '1' : '0');
         setValue(KS+'IMGBBCODE_KASKUS_PLUS', String( value ));
         gvar.settings.kaskusplus_bbcode_img = (value == '1' ? true : false);
 
         // THEME_FIXUP
-        value = $('#misc_theme_fixups').val();
+        value = $box.find('#misc_theme_fixups').val();
         if( ['centered','c1024px','fullwidth'].indexOf(value) == -1 )
           value = '';
         setValue(KS+'THEME_FIXUP', String( value ));
@@ -4452,13 +4466,13 @@ var _STG = {
         set_theme_fixups();
 
         // HIDE_GREYLINK
-        value = (isChk($('#misc_hide_greylink')) ? '1' : '0');
+        value = (isChk( '#misc_hide_greylink' ) ? '1' : '0');
         setValue(KS+'HIDE_GREYLINK', String( value ));
         gvar.settings.hide_greylink = (value == '1' ? true : false);
         $('body')[gvar.settings.hide_greylink ? 'addClass':'removeClass']('kqr-nogreylink')
 
         // ALWAYS_NOTIFY
-        value = (isChk($('#misc_always_notify')) ? '1' : '0');
+        value = (isChk( '#misc_always_notify' ) ? '1' : '0');
         setValue(KS+'ALWAYS_NOTIFY', String( value ));
         gvar.settings.always_notify = (value == '1' ? true : false);
 
@@ -4466,9 +4480,9 @@ var _STG = {
         // last shot
         gvar.$w.setTimeout(function(){
           // save instant/autocorrect 
-          pval = (isChk('#misc_updates') ? '1' : '0');
+          pval = (isChk( '#misc_updates' ) ? '1' : '0');
           setValue(KS+'UPDATES', pval.toString(), function(){
-            val = $('#misc_updates_interval').val();
+            val = $box.find('#misc_updates_interval').val();
             val = ( isNaN(val)||val <= 0 ? 1 : (val > 99 ? 99 : val) );
             setValue(KS+'UPDATES_INTERVAL', val.toString(), function(){
 
@@ -4477,7 +4491,7 @@ var _STG = {
                 getSettings( gvar.settings );
                 _STG.cold_boot();
 
-                do_click($('#modal_setting_box #box_cancel').get(0));
+                do_click( $box.find('#box_cancel').get(0) );
               }, 200);
             });
           });
@@ -4491,10 +4505,13 @@ var _STG = {
         raw = trimStr( $(tgt).val() );
         
         if( gvar.buftxt && raw == trimStr(gvar.buftxt) ){
-          $(btn).val('Nothing changed..');
-          if(gvar.buftxt) delete( gvar.buftxt );
+          $box.find(btn).val('Nothing changed..');
+          if( gvar.buftxt )
+            delete( gvar.buftxt );
+
           window.setTimeout(function(){
-            do_click($('#box_cancel').get(0));
+
+            do_click( $box.find('#box_cancel').get(0) );
           }, 750);
         }
         else{
@@ -4502,11 +4519,11 @@ var _STG = {
               +'Are you sure to update these settings?'+'\n'
               +'Your current settings will be lost.'+'\n\n'
               +'Page may need to reload to apply new Settings.'+'\n') ){
-            $(tgt).removeClass(disb);
+            $box.find(tgt).removeClass(disb);
             return;
           }else{
           
-            $(btn).val('Saving..');
+            $box.find(btn).val('Saving..');
             raw = raw.split('\n'), rL = raw.length;
             var cucok, lastkey = false, line = 0;
             var uplkeys = ['UPLOAD_LOG'];
@@ -4553,12 +4570,13 @@ var _STG = {
       }
     });
     
-    $('#exim_select_all').click(function(){
-      $('#textarea_rawdata').focus();
-      selectAll( $('#textarea_rawdata').get(0) );
+    $box.find('#exim_select_all').click(function(){
+      var $txaraw = $box.find('#textarea_rawdata');
+      $txaraw.focus();
+      selectAll( $txaraw.get(0) );
     });
     
-    $('#reset_settings').click(function(){
+    $box.find('#reset_settings').click(function(){
 
       _STG.reset_settings()
     });
@@ -4568,7 +4586,7 @@ var _STG = {
       close_popup()
     });
     
-    do_click($('#qr-box_setting .curent').get(0));
+    do_click( $box.find('.curent').get(0) );
     $('#'+gvar.tID).blur();
   },
   cold_boot: function(){
@@ -7547,11 +7565,11 @@ function getSettings(stg){
     
     // smiley
     hVal = settings.autoload_smiley;
-    settings.autoload_smiley = (hVal && hVal.match(/^([01]{1}),(kecil|besar|custom)+/) ? hVal.split(',') : '0,kecil'.split(',') );
+    settings.autoload_smiley = (hVal && hVal.match(/^([01]{1}),(kecil|besar|kplus|custom)+/) ? hVal.split(',') : '0,kecil'.split(',') );
 
     // tabfirst-smiley
     hVal = settings.tabfirst_smiley;
-    settings.tabfirst_smiley = (hVal && hVal.match(/(kecil|besar|custom)/) ? hVal : 'kecil');
+    settings.tabfirst_smiley = (hVal && hVal.match(/(kecil|besar|kplus|custom)/) ? hVal : 'kecil');
 
     // is there any saved text
     gvar.tmp_text = settings.tmp_text;
