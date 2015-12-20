@@ -1,5 +1,5 @@
 # Kaskus Quick Reply
-Kaskus Quick Reply is a userscript designed for donatur or regular user in Kaskus forum. Enhance your experience/ engengement to reply post with lot of features.
+Kaskus Quick Reply is a userscript designed for donatur or regular user in Kaskus forum. Enhance your experience/ engagement to reply post with lot of features.
  <a class="btn btn-primary" href="kaskus_quick_reply.user.js?raw=true" title="Install Dev.Version KQR"><img src="https://dl.dropboxusercontent.com/u/33009152/btn-install-min.png"/ alt="Install Script"></a>
 
 # About this branch
