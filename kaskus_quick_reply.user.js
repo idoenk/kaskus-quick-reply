@@ -1,17 +1,18 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.6.1
+// @version        5.3.7
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1512085361
-// @timestamp      1450371144167
+// @dtversion      1602065370
+// @timestamp      1454698439227
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
+// @require        http://ichord.github.io/Caret.js/src/jquery.caret.js
 // @description    provide a quick reply feature, under circumstances capcay required.
 // @include        /^https?://www.kaskus.co.id/thread/*/
 // @include        /^https?://www.kaskus.co.id/lastpost/*/
@@ -29,13 +30,16 @@
 //
 // -!--latestupdate
 //
-// v5.3.6.1 - 2015-12-17 . 1450371144167
-//   +New Kaskus Emotes; Rearrange smilies;
-//   Kplus in option of [autoshow, first-tab]
+// v5.3.7 - 2016-02-06 . 1454698439227
+//   At.js, a github-like autocomplete library :s
 // 
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.6.1 - 2015-12-17 . 1450371144167
+//   +New Kaskus Emotes; Rearrange smilies;
+//   Kplus in option of [autoshow, first-tab]
+// 
 // v5.3.6 - 2015-12-07 . 1446473529196
 //   +New Kaskus Plus. Thanks:[coolkips]
 //   Deprecated uploader services: [imgur,imgzzz]
@@ -68,11 +72,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.6.1';
+gvar.sversion = 'v' + '5.3.7';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1450371144167 // version.timestamp
-  ,dtversion: 1512085361 // version.date
+   timestamp: 1454698439227 // version.timestamp
+  ,dtversion: 1602065370 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -87,6 +91,11 @@ window.alert(new Date().getTime());
 gvar.__DEBUG__ = !1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
+
+
+// [Testing]: Activate autocomplete smilies
+// Todos: make it available in settings
+gvar.autocomplete_smilies = 1;
 //========-=-=-=-=--=========
 //=-=-=-=--=
 
@@ -940,7 +949,7 @@ var rSRC = {
        +   '<div class="radio">'
        +    '<label><input name="aus" type="radio" value="kecil" '+(GVS_aus[1]=='kecil' ? 'checked':'')+'/> Kecil</label>'
        +    '<label><input name="aus" type="radio" value="besar" '+(GVS_aus[1]=='besar' ? 'checked':'')+'/> Besar</label>'
-+    '<label class="kplus_first'+(GVS.show_kaskusplus ? '':' hide')+'"><input name="aus" type="radio" value="kplus" '+(GVS_aus[1]=='kplus' ? 'checked':'')+'/> KPlus</label>'
+       +    '<label class="kplus_first'+(GVS.show_kaskusplus ? '':' hide')+'"><input name="aus" type="radio" value="kplus" '+(GVS_aus[1]=='kplus' ? 'checked':'')+'/> KPlus</label>'
        +    '<label><input name="aus" type="radio" value="custom" '+(GVS_aus[1]=='custom' ? 'checked':'')+'/> Custom</label>'
        +   '</div>'
        +  '</div>'
@@ -1655,7 +1664,6 @@ var rSRC = {
       ["smilies_fb5iakdq4cug.gif", ":bokek", "Bokek"],
       ["smilies_fb5i2wth5mp5.gif", ":belumtidur", "Belum Tidur"],
     ]; // smkplus
-
   } // getSmileySet
 };
 //=== rSRC
@@ -7276,6 +7284,8 @@ function eventsTPL(){
 
   // editor events: [focus,blur,keydown,keyup]
   // assigning several action, eg. watch draft, fixed toolbar martItUp,
+  gvar.sTryFixedBarStepMax = 3;
+  gvar.sTryFixedBarStep = 0;
   $XK.find('#'+gvar.tID).focus(function(){
     if( gvar.settings.txtcount ){
       $XK.find('.counter').first().addClass('kereng');
@@ -7284,11 +7294,21 @@ function eventsTPL(){
 
     // fixed_markItUp
     if( gvar.settings.fixed_toolbar ){
-      clog("activating onfocus event");
       gvar.sTryWatchWinScroll &&
         clearInterval(gvar.sTryWatchWinScroll);
+
       gvar.sTryWatchWinScroll = setInterval(function(){
-        fixed_markItUp()
+        if( gvar.sTryFixedBarStep < gvar.sTryFixedBarStepMax ){
+          fixed_markItUp()
+          gvar.sTryFixedBarStep++;
+        }
+        else{
+          gvar.sTryWatchWinScroll &&
+            clearInterval(gvar.sTryWatchWinScroll);
+
+          gvar.sITryFocusEditor &&
+            clearInterval( gvar.sITryFocusEditor );
+        }
       }, 50);
     }
   }).blur(function(){
@@ -7308,6 +7328,9 @@ function eventsTPL(){
           $XK.removeClass("fixed_markItUp");
         }, 789);
       }
+
+      if( gvar.sTryFixedBarStep )
+        gvar.sTryFixedBarStep = 0;
     }
   }).keydown(function(ev){
     var B, pCSA_Code,
@@ -7817,6 +7840,51 @@ function QR_put_after($el){
   $ajaxqr.show();
 }
 
+function init_atjs(){
+  clog("inside init_atjs..");
+  clog($.fn.atwho);
+  clog(jQuery.fn.atwho);
+  $.fn.atwho.debug = true;
+  clog($.fn.atwho);
+
+  // Initializing At.js
+  /**
+  // var emojis = $.map(emojis, function(value, i) {return {key: value, name:value}});
+  ["smilies_fb5ogiimgq21.gif", ":wow", "Wow", nPath]
+  */
+  if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus || !gvar.smcustom )
+    rSRC.getSmileySet();
+
+  var kskemojis = [];
+  if( gvar.smbesar ){
+    kskemojis = $.map(gvar.smbesar, function(item, i){
+      return {
+        key: item[0],
+        bbcode: item[1],
+        name: item[2],
+        path: item[3]
+      }
+    });
+    clog(kskemojis);
+
+    var emoji_config = {
+      at: ":",
+      data: kskemojis,
+      displayTpl: "<li><img src='${path}images/smilies/${key}.png' height='20' width='20' /> ${name}</li>",
+      insertTpl: ':${bbcode}',
+      delay: 400
+    };
+    clog(emoji_config);
+    setTimeout(function(){
+
+      var $inputor = $('#'+gvar.qID).atwho(emoji_config);
+      clog($inputor);
+      $inputor.caret('pos', 0);
+      $inputor.focus().atwho('run');
+    }, 300);
+  }
+}
+
 function start_Main(){
 
   var _url = location.href;
@@ -7848,7 +7916,6 @@ function start_Main(){
 
   getSettings( gvar.settings );
   
-
 
   var maxTry = 50, iTry=0,
   wait_settings_done = function(){
@@ -8088,6 +8155,91 @@ function start_Main(){
           }, 2000);
         }
 
+
+        if( gvar.autocomplete_smilies ){
+          clog("Injecting resources of caret.js & atwho");
+          GM_addGlobalStyle('http://localhost/GITs/github/idoenk/kaskus-quick-reply/assets/test/jquery.atwho.css', 'style-AtWho');
+
+          // GM_addGlobalScript('http://ichord.github.io/Caret.js/src/jquery.caret.js');
+          // GM_addGlobalScript('http://ichord.github.io/At.js/dist/js/jquery.atwho.js');
+          
+          // var rnd = Math.random().toString();
+          // rnd = rnd.replace(/0\./g, '').substring(0, 3);
+          // GM_addGlobalScript('http://localhost/GITs/github/idoenk/kaskus-quick-reply/assets/test/jquery.atwho-mod.js?_='+rnd);
+          GM_addGlobalScript('http://localhost/GITs/github/idoenk/kaskus-quick-reply/assets/test/jquery.caret.js?');
+          GM_addGlobalScript('http://localhost/GITs/github/idoenk/kaskus-quick-reply/assets/test/jquery.atwho.js');
+
+          // preload smilies if not loaded yet
+          // if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus || !gvar.smcustom )
+          if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus || !gvar.smcustom )
+            rSRC.getSmileySet();
+
+
+          rSRC.getSCRIPT_AtWho = function(){
+            var nn = "\n";
+            return ''
+              +'function clog(x){console.log(x)}'
+
+              // +'var $ = $||jQuery.noConflict();'
+              +'function initAtWho() {' + nn
+              // + 'var $ = jQuery;'
+              // + 'clog("checking $:");' + nn
+              // + 'clog($);' + nn
+              + 'clog("Inside initAtWho");' + nn
+              // + 'clog("checking $.fn.caret:");' + nn
+              // + 'clog($.fn.caret);' + nn
+              // + 'clog("checking $.fn.atwho:");' + nn
+              // + 'clog($.fn.atwho);' + nn
+              + '$.fn.atwho.debug = true;' + nn
+              + 'var gvar = {};' + nn
+              + 'var textarea_selector = "#'+gvar.tID+'";' + nn
+              + 'gvar.smkecil = \''+JSON.stringify(gvar.smkecil)+'\';' + nn
+              + 'gvar.smbesar = \''+JSON.stringify(gvar.smbesar)+'\';' + nn
+              + 'gvar.smkplus = \''+JSON.stringify(gvar.smkplus)+'\';' + nn
+              + 'gvar.smcustom = \''+JSON.stringify(gvar.smcustom)+'\';' + nn
+              // + 'clog(gvar.smbesar);' + nn
+
+              + 'if( gvar.smkecil ){' + nn
+              +  'gvar.smkecil = JSON.parse(gvar.smkecil);' + nn
+              +  'var kskemojis = $.map(gvar.smkecil, function(item, i){' + nn
+              +   'clog("adding key="+item[0]+"; bbcode="+item[1]+"; name="+item[2]);' + nn
+              +   'return {' + nn
+              +     'key: item[0],' + nn
+              +     'bbcode: item[1],' + nn
+              +     'name: item[2],' + nn
+              +     'path: (item[3] ? item[3] : "http://s.kaskus.id/")' + nn
+              +   '}' + nn
+              +  '});' + nn
+              +  'clog(kskemojis);' + nn
+              
+              +  'var emoji_config = {' + nn
+              +    'at: ":",' + nn
+              +    'data: kskemojis,' + nn
+              +    'displayTpl: "<li><img src=\'${path}images/smilies/${key}\' height=\'20\' width=\'20\' /> ${name}</li>",' + nn
+              +    'insertTpl: "${bbcode}",' + nn
+              +    'delay: 200' + nn
+              +  '};' + nn
+              +  'clog(emoji_config);' + nn
+              
+              // initiating
+              +  'var $inputor = jQuery(textarea_selector).atwho(emoji_config);' + nn
+              // +  'clog("Val of inputor:");'
+              // +  'clog($inputor);'
+              +  '$inputor.caret("pos", 47);' + nn
+              +  '$inputor.focus().atwho("run");' + nn
+              + '}' + nn
+              // smbesar exists
+              + 'else{ clog("Unable load smilies"); }'
+              +'}' // initAtWho
+              +'setTimeout(function(){ initAtWho();}, 567);'
+              +''
+            ;
+          };
+          GM_addGlobalScript( rSRC.getSCRIPT_AtWho(), 'script-at-who' );
+        }
+
+
+
       }, 50);
       // settimeout pra-loaded settings 
     }
@@ -8171,8 +8323,10 @@ function init(){
   }
 
 
+  // Are you developing/forking this script?
+  // make sure your local asset is accessible with correct path.
   gvar.kqr_static = 'http://' + (!gvar.force_live_css && gvar.__DEBUG__ ? 
-    '127.0.0.1:8010/GITs/dev-kqr/kaskus-quick-reply/assets/css/' : 
+    'localhost/GITs/github/idoenk/kaskus-quick-reply/assets/css/' : 
     'raw.githubusercontent.com/idoenk/kaskus-quick-reply/master/assets/css/'
   );
 
