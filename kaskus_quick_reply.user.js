@@ -7827,51 +7827,6 @@ function QR_put_after($el){
   $ajaxqr.show();
 }
 
-function init_atjs(){
-  clog("inside init_atjs..");
-  clog($.fn.atwho);
-  clog(jQuery.fn.atwho);
-  $.fn.atwho.debug = true;
-  clog($.fn.atwho);
-
-  // Initializing At.js
-  /**
-  // var emojis = $.map(emojis, function(value, i) {return {key: value, name:value}});
-  ["smilies_fb5ogiimgq21.gif", ":wow", "Wow", nPath]
-  */
-  if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus || !gvar.smcustom )
-    rSRC.getSmileySet();
-
-  var kskemojis = [];
-  if( gvar.smbesar ){
-    kskemojis = $.map(gvar.smbesar, function(item, i){
-      return {
-        key: item[0],
-        bbcode: item[1],
-        name: item[2],
-        path: item[3]
-      }
-    });
-    clog(kskemojis);
-
-    var emoji_config = {
-      at: ":",
-      data: kskemojis,
-      displayTpl: "<li><img src='${path}images/smilies/${key}.png' height='20' width='20' /> ${name}</li>",
-      insertTpl: ':${bbcode}',
-      delay: 400
-    };
-    clog(emoji_config);
-    setTimeout(function(){
-
-      var $inputor = $('#'+gvar.qID).atwho(emoji_config);
-      clog($inputor);
-      $inputor.caret('pos', 0);
-      $inputor.focus().atwho('run');
-    }, 300);
-  }
-}
-
 function start_Main(){
 
   var _url = location.href;
@@ -8188,17 +8143,9 @@ function start_Main(){
           rSRC.getSCRIPT_AtWho = function(smilies_){
             var nn = "\n";
             return ''
-              +'function clog(x){console.log(x)}'
+              // +'function clog(x){console.log(x)}'
 
               +'function kqrInitAtWho() {' + nn
-              // + 'var $ = jQuery;'
-              // + 'clog("checking $:");' + nn
-              // + 'clog($);' + nn
-              //+  'clog("Inside initAtWho");' + nn
-              // + 'clog("checking $.fn.caret:");' + nn
-              // + 'clog($.fn.caret);' + nn
-              // + 'clog("checking $.fn.atwho:");' + nn
-              // + 'clog($.fn.atwho);' + nn
               // Initial check dependencies
               +  'if( !$.fn.atwho || !$.fn.caret ){ '
               +   'console.log("initAtWho fail. Either caret or atwho is not loaded. "); return !1;'
@@ -8211,14 +8158,13 @@ function start_Main(){
 
               +  'var smilies = JSON.parse(smilies_);' + nn
               +  'var kskemojis = $.map(smilies, function(item, i){' + nn
-              +    'clog("adding fn="+item[0]+"; bbcode="+item[1]+"; name="+(item[3] ? item[3] : item[2]));' + nn
+              // +    'clog("adding fn="+item[0]+"; bbcode="+item[1]+"; name="+(item[3] ? item[3] : item[2]));' + nn
               +    'return {' + nn
               +      'fn: item[0],' + nn
               +      'bbcode: item[1],' + nn
               +      'name: (item[3] ? item[3] : item[2])' + nn
               +    '}' + nn
               +  '});' + nn
-              +  'clog(kskemojis);' + nn
               
               +  'var emoji_config = {' + nn
               +    'at: ":",' + nn
@@ -8227,13 +8173,12 @@ function start_Main(){
               +    'insertTpl: "${bbcode}",' + nn
               +    'delay: 200' + nn
               +  '};' + nn
-              +  'clog(emoji_config);' + nn
               
               // initiating
               +  'var $inputor = jQuery(textarea_selector).atwho(emoji_config);' + nn
               +  '$inputor.caret("pos", 47);' + nn
-              +  '$inputor.focus().atwho("run");' + nn
-              +'}' // initAtWho
+              +  '$inputor.atwho("run");' + nn
+              +'}' // kqrInitAtWho
               +'setTimeout(function(){ kqrInitAtWho();}, 1234);'
             ;
           };
@@ -8260,10 +8205,10 @@ function start_Main(){
               for(var j=0, jL=smtmp.length; j<jL; j++){
                 bb = String(smtmp[j][1]).replace(/\:/g, '');
                 if( String(smtmp[j][2]).toLowerCase().indexOf(bb) === -1 )
-                  // smtmp[j][3] = '<small>'+bb+'</small> | '+smtmp[j][2];
                   smtmp[j][3] = bb+' | '+smtmp[j][2];
                 else
                   smtmp[j][3] = smtmp[j][2];
+
 
                 smtmp[j][3] += (mapSmlSuffix[smkey] ? ' <small title=\\\"'+(mapSmlTitle[smkey] ? mapSmlTitle[smkey] : '')+'\\\">['+mapSmlSuffix[smkey]+']</small>' : '');
               }
@@ -8277,7 +8222,6 @@ function start_Main(){
 
           smilies = null;
         }
-
 
 
       }, 50);
