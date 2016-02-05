@@ -8122,7 +8122,7 @@ function start_Main(){
           // GM_addGlobalStyle('http://ichord.github.io/At.js/dist/css/jquery.atwho.css');
           // GM_addGlobalScript('http://ichord.github.io/Caret.js/src/jquery.caret.js');
           // GM_addGlobalScript('http://ichord.github.io/At.js/dist/js/jquery.atwho.js');
-          var olmode = (!gvar.force_live_css && gvar.__DEBUG__);
+          var olmode = !(!gvar.force_live_css && gvar.__DEBUG__);
           var base_path = 'http://'+(!olmode ? 'localhost/GITs/github/idoenk/kaskus-quick-reply/assets/vendor/' : 'ichord.github.io/At.js/dist/');
 
           GM_addGlobalStyle(base_path+(olmode ? 'css/':'')+'jquery.atwho.css', 'css-AtWho');
