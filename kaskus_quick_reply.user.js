@@ -32,6 +32,7 @@
 //
 // v5.3.7 - 2016-02-06 . 1454698439227
 //   At.js, a github-like autocomplete library :s
+//   normalize asset sub-domain for smilies.
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -92,10 +93,6 @@ gvar.__DEBUG__ = !1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
-
-// [Testing]: Activate autocomplete smilies
-// Todos: make it available in settings
-gvar.autocomplete_smilies = 1;
 //========-=-=-=-=--=========
 //=-=-=-=--=
 
@@ -1456,50 +1453,48 @@ var rSRC = {
     });
     if(isDefined(custom) && custom) return;
 
-
-    var nPath = 'http://s.kaskus.id/';
     gvar.smbesar = [
       // old medium-smiley
-      ["smilies_fb5ogiimgq21.gif", ":wow", "Wow", nPath]
-     ,["smilies_fb5ohtykhbhj.gif", ":wkwkwk", "Wkwkwk", nPath]
-     ,["smilies_fb5ogiiief4q.gif", ":wakaka", "Wakaka", nPath]
-     ,["smilies_fb5ly1zwmwkm.gif", ":ultahhore", "Ultah", nPath]
-     ,["smilies_fb5ly1i58kbq.gif", ":ultah", "Ultah", nPath]
+      ["smilies_fb5ogiimgq21.gif", ":wow", "Wow"]
+     ,["smilies_fb5ohtykhbhj.gif", ":wkwkwk", "Wkwkwk"]
+     ,["smilies_fb5ogiiief4q.gif", ":wakaka", "Wakaka"]
+     ,["smilies_fb5ly1zwmwkm.gif", ":ultahhore", "Ultah"]
+     ,["smilies_fb5ly1i58kbq.gif", ":ultah", "Ultah"]
 
      ,["traveller.gif", ":travel", "Traveller"]
-     ,["smilies_fb5ly1iothbu.gif", ":toast", "Toast", nPath]
-     ,["smilies_fb5ly1itttkb.gif", ":takut", "Takut", nPath]
+     ,["smilies_fb5ly1iothbu.gif", ":toast", "Toast"]
+     ,["smilies_fb5ly1itttkb.gif", ":takut", "Takut"]
      ,["fd_5.gif", ":sup:", "Sundul Up"]
-     ,["smilies_fb5ly1iy2y34.gif", ":sup2", "Sundul", nPath]
-     ,["smilies_fb5ly1xldg9p.gif", ":sorry", "Sorry", nPath]
+     ,["smilies_fb5ly1iy2y34.gif", ":sup2", "Sundul"]
+     ,["smilies_fb5ly1xldg9p.gif", ":sorry", "Sorry"]
      ,["shakehand2.gif", ":shakehand2", "Shakehand2"]
-     ,["smilies_fb5ohtwaipmr.gif", ":selamat", "Selamat", nPath]
-     ,["smilies_fb5ogiiddd93.gif", ":salamkenal", "Salam Kenal", nPath]
+     ,["smilies_fb5ohtwaipmr.gif", ":selamat", "Selamat"]
+     ,["smilies_fb5ogiiddd93.gif", ":salamkenal", "Salam Kenal"]
      ,["lebaran03.gif", ":salaman", "Salaman"]
      ,["salah_kamar.gif", ":salahkamar", "Salah Kamar"]
      ,["request.gif", ":request", "Request"]
      ,["smilies_fb5ohtyqhwnh.gif", ":repost:", "Repost"]
      ,["s_sm_repost2.gif", ":repost2", "Purple Repost"]
      ,["s_sm_repost1.gif", ":repost", "Blue Repost"]
-     ,["smilies_fb5ly1xidtbd.gif", ":recsel", "Recommended Seller", nPath]
-     ,["smilies_fb5ohtvqnpxx.gif", ":rate5", "Rate 5 Star", nPath]
+     ,["smilies_fb5ly1xidtbd.gif", ":recsel", "Recommended Seller"]
+     ,["smilies_fb5ohtvqnpxx.gif", ":rate5", "Rate 5 Star"]
      ,["peluk.gif", ":peluk", "Peluk"]
      ,["nosara.gif", ":nosara", "No Sara Please"]
      ,["nohope.gif", ":nohope", "No Hope"]
-     ,["smilies_fb5ohtyfyn16.gif", ":ngakak", "Ngakak", nPath]
+     ,["smilies_fb5ohtyfyn16.gif", ":ngakak", "Ngakak"]
      ,["ngacir2.gif", ":ngacir2", "Ngacir2"]
      ,["ngacir3.gif", ":ngacir", "Ngacir"]
      ,["najis.gif", ":najis", "Najis"]
-     ,["smilies_fb5ogiicfbwj.gif", ":motret", "Motret", nPath]
-     ,["smilies_fb5ohtveegn8.gif", ":mewek", "Mewek", nPath]
-     ,["smilies_fb5ohtvdpjkq.gif", ":matabelo", "Matabelo", nPath]
-     ,["smilies_fb5l20l4pt7z.gif", ":marigerak", "#MAR16ERAK", nPath]
+     ,["smilies_fb5ogiicfbwj.gif", ":motret", "Motret"]
+     ,["smilies_fb5ohtveegn8.gif", ":mewek", "Mewek"]
+     ,["smilies_fb5ohtvdpjkq.gif", ":matabelo", "Matabelo"]
+     ,["smilies_fb5l20l4pt7z.gif", ":marigerak", "#MAR16ERAK"]
      ,["marah.gif", ":marah", "Marah"]
-     ,["smilies_fb5ohtvafv6q.gif", ":malu", "Malu", nPath]
+     ,["smilies_fb5ohtvafv6q.gif", ":malu", "Malu"]
      ,["lebaran04.gif", ":maafaganwati", "Maaf Aganwati"]
      ,["lebaran01.gif", ":maafagan", "Maaf Agan"]
      ,["fd_6.gif", ":kts:", "Kemana TSnya?"]
-     ,["smilies_fb5ohtvf8ymz.gif", ":kr", "Kaskus Radio", nPath]
+     ,["smilies_fb5ohtvf8ymz.gif", ":kr", "Kaskus Radio"]
      ,["cewek.gif", ":kiss", "Kiss"]
      ,["kimpoi.gif", ":kimpoi", "Kimpoi"]
      ,["lebaran05.gif", ":ketupat", "Ketupat"]
@@ -1507,16 +1502,16 @@ var rSRC = {
      ,["fd_8.gif", ":kacau:", "Thread Kacau"]
      ,["fd_1.gif", ":jrb:", "Jangan ribut disini"]
      ,["s_sm_ilovekaskus.gif", ":ilovekaskus", "I Love Kaskus"]
-     ,["smilies_fb5ly1xu2wka.gif", ":iloveindonesia", "I Love Indonesia", nPath]
+     ,["smilies_fb5ly1xu2wka.gif", ":iloveindonesia", "I Love Indonesia"]
      ,["hoax.gif", ":hoax", "Hoax"]
      ,["hotnews.gif", ":hn", "Hot News"]
      ,["hammer.gif", ":hammer", "Hammer2"]
-     ,["smilies_fb5ohtxkkci6.gif", ":hai", "Hai", nPath]
-     ,["smilies_fb5ly1xc0hnl.gif", ":games", "Games", nPath]
-     ,["smilies_fb5ogii64nj7.gif", ":entahlah", "Entahlah", nPath]
+     ,["smilies_fb5ohtxkkci6.gif", ":hai", "Hai"]
+     ,["smilies_fb5ly1xc0hnl.gif", ":games", "Games"]
+     ,["smilies_fb5ogii64nj7.gif", ":entahlah", "Entahlah"]
      ,["dp.gif", ":dp", "DP"]
      ,["cystg.gif", ":cystg", "cystg"]
-     ,["smilies_fb5ohtw20w8z.gif", ":cool", "Cool", nPath]
+     ,["smilies_fb5ohtw20w8z.gif", ":cool", "Cool"]
      ,["s_big_cendol.gif", ":cendolbig", "Blue Guy Cendol (L)"]
      ,["cekpm.gif", ":cekpm", "Cek PM"]
      ,["fd_2.gif", ":cd:", "Cape deeehh"]
@@ -1532,8 +1527,8 @@ var rSRC = {
      ,["babyboy1.gif", ":babyboy1", "Baby Boy 1"]
      ,["babyboy.gif", ":babyboy", "Baby Boy"]
      ,["angel1.gif", ":angel", "Angel"]
-     ,["smilies_fb5ly1x373yj.gif", ":2thumbup", "2 Jempol", nPath]
-     ,["smilies_fb5ly1j43vv5.gif", ":1thumbup", "Jempol", nPath]
+     ,["smilies_fb5ly1x373yj.gif", ":2thumbup", "2 Jempol"]
+     ,["smilies_fb5ly1j43vv5.gif", ":1thumbup", "Jempol"]
     ];
 
     gvar.smkecil = [
@@ -1644,7 +1639,6 @@ var rSRC = {
      ,["sumbangan/15.gif", ":)", "Smilie"]
     ];
 
-    // base: http://s.kaskus.id/images/smilies/
     if( gvar.settings.show_kaskusplus )
     gvar.smkplus = [
       ["smilies_fb5i1orqcrc7.gif", ":tepar", "Tepar"],
@@ -4071,7 +4065,7 @@ var _SML_ = {
       
       gvar.sTryLoadSmilies = gvar.$w.setTimeout(function(){
         if( target != '#tcustom' ){
-          var tmp_smilies, segment, imagehost = (target == '#tkplus' ? gvar.kkcdn_plus : gvar.kkcdn);
+          var tmp_smilies, segment;
           segment = ('undefined' != typeof smilies_segments[label] && smilies_segments[label] ? smilies_segments[label] : null);
 
           if( segment ){
@@ -4080,26 +4074,22 @@ var _SML_ = {
               tpl += '<div><strong>'+segment[j]['label']+'</strong></div>';
               smilies = tmp_smilies.slice(parseFloat(segment[j]['index']), (segment[j]['n'] ? parseFloat(segment[j]['n']) : undefined));
               $.each(smilies, function(i, img){
-                if( img[3] )
-                  imagehost = img[3];
+                // if( img[3] )
+                //   imagehost = img[3];
 
-                tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+                tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
               });
             }
           }
           else{
             // just-failover
             $.each(smilies, function(i, img){
-              if( img[3] )
-                imagehost = img[3];
+              // if( img[3] )
+              //   imagehost = img[3];
 
-              tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+              tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
             });
           }
-
-          // $.each(smilies, function(i, img){
-          //   tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ imagehost + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
-          // });
 
           if( target == '#tkplus' ){
             tpl += ''
@@ -5840,10 +5830,7 @@ function domainParse(){
     "host": l,
 
     // host for emoticons
-    "statics" : 'cdn.kaskus.com',
-
-    // host for emoticons kplus
-    "statics_plus" : 's.kaskus.id'
+    "assets" : 's.kaskus.id'
   };
 }
 
@@ -8156,66 +8143,87 @@ function start_Main(){
         }
 
 
-        if( gvar.autocomplete_smilies ){
-          clog("Injecting resources of caret.js & atwho");
-          GM_addGlobalStyle('http://localhost/GITs/github/idoenk/kaskus-quick-reply/assets/test/jquery.atwho.css', 'style-AtWho');
+        // test with direct value 
+        // dummy value setting of autocomplete_smiley
+        // eg. 1,besar,kecil,kplus
+        var _ls_autocomplete_smiley = '1,besar,kecil,kplus';
 
+
+        var setting_autocomplete_smiley = (_ls_autocomplete_smiley && _ls_autocomplete_smiley.match(/^([01]{1}),(\w+)+/) ? _ls_autocomplete_smiley.split(',') : '0,kecil'.split(',') );
+        clog(setting_autocomplete_smiley);
+        var newval, tmpval = String(setting_autocomplete_smiley).split(',');
+        
+        setting_autocomplete_smiley.shift();
+        newval = [parseInt(tmpval[0]), setting_autocomplete_smiley];
+        gvar.settings.autocomplete_smiley = newval;
+        clog(gvar.settings.autocomplete_smiley);
+
+        gvar.autocomplete_smilies = (gvar.settings.autocomplete_smiley[0] && gvar.settings.autocomplete_smiley[1] && gvar.settings.autocomplete_smiley[1].length );
+
+        if( gvar.autocomplete_smilies ){
+          var smilies = [];
+
+          // origin
+          // GM_addGlobalStyle('http://ichord.github.io/At.js/dist/css/jquery.atwho.css');
           // GM_addGlobalScript('http://ichord.github.io/Caret.js/src/jquery.caret.js');
           // GM_addGlobalScript('http://ichord.github.io/At.js/dist/js/jquery.atwho.js');
+          var olmode = (!gvar.force_live_css && gvar.__DEBUG__);
+          var base_path = 'http://'+(!olmode ? 'localhost/GITs/github/idoenk/kaskus-quick-reply/assets/vendor/' : 'ichord.github.io/At.js/dist/');
+
+          GM_addGlobalStyle(base_path+(olmode ? 'css/':'')+'jquery.atwho.css', 'css-AtWho');
           
-          // var rnd = Math.random().toString();
-          // rnd = rnd.replace(/0\./g, '').substring(0, 3);
-          // GM_addGlobalScript('http://localhost/GITs/github/idoenk/kaskus-quick-reply/assets/test/jquery.atwho-mod.js?_='+rnd);
-          GM_addGlobalScript('http://localhost/GITs/github/idoenk/kaskus-quick-reply/assets/test/jquery.caret.js?');
-          GM_addGlobalScript('http://localhost/GITs/github/idoenk/kaskus-quick-reply/assets/test/jquery.atwho.js');
+          // anti-cache-anyone?
+          // rnd = Math.random().toString().replace(/0\./g, '').substring(0, 3);
+          if( olmode )
+            GM_addGlobalScript('http://ichord.github.io/Caret.js/src/jquery.caret.js', 'js-caret');
+          else
+            GM_addGlobalScript(base_path+'jquery.caret.js', 'js-caret');
+          GM_addGlobalScript(base_path+(olmode ? 'js/':'')+'jquery.atwho.js', 'js-AtWho');
 
           // preload smilies if not loaded yet
-          // if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus || !gvar.smcustom )
-          if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus || !gvar.smcustom )
+          if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus )
             rSRC.getSmileySet();
 
 
-          rSRC.getSCRIPT_AtWho = function(){
+          rSRC.getSCRIPT_AtWho = function(smilies_){
             var nn = "\n";
             return ''
               +'function clog(x){console.log(x)}'
 
-              // +'var $ = $||jQuery.noConflict();'
-              +'function initAtWho() {' + nn
+              +'function kqrInitAtWho() {' + nn
               // + 'var $ = jQuery;'
               // + 'clog("checking $:");' + nn
               // + 'clog($);' + nn
-              + 'clog("Inside initAtWho");' + nn
+              //+  'clog("Inside initAtWho");' + nn
               // + 'clog("checking $.fn.caret:");' + nn
               // + 'clog($.fn.caret);' + nn
               // + 'clog("checking $.fn.atwho:");' + nn
               // + 'clog($.fn.atwho);' + nn
-              + '$.fn.atwho.debug = true;' + nn
-              + 'var gvar = {};' + nn
-              + 'var textarea_selector = "#'+gvar.tID+'";' + nn
-              + 'gvar.smkecil = \''+JSON.stringify(gvar.smkecil)+'\';' + nn
-              + 'gvar.smbesar = \''+JSON.stringify(gvar.smbesar)+'\';' + nn
-              + 'gvar.smkplus = \''+JSON.stringify(gvar.smkplus)+'\';' + nn
-              + 'gvar.smcustom = \''+JSON.stringify(gvar.smcustom)+'\';' + nn
-              // + 'clog(gvar.smbesar);' + nn
+              // Initial check dependencies
+              +  'if( !$.fn.atwho || !$.fn.caret ){ '
+              +   'console.log("initAtWho fail. Either caret or atwho is not loaded. "); return !1;'
+              +  '}' + nn
+              +  '$.fn.atwho.debug = true;' + nn
 
-              + 'if( gvar.smkecil ){' + nn
-              +  'gvar.smkecil = JSON.parse(gvar.smkecil);' + nn
-              +  'var kskemojis = $.map(gvar.smkecil, function(item, i){' + nn
-              +   'clog("adding key="+item[0]+"; bbcode="+item[1]+"; name="+item[2]);' + nn
-              +   'return {' + nn
-              +     'key: item[0],' + nn
-              +     'bbcode: item[1],' + nn
-              +     'name: item[2],' + nn
-              +     'path: (item[3] ? item[3] : "http://s.kaskus.id/")' + nn
-              +   '}' + nn
+              +  'var host = "'+gvar.kkcdn+'";' + nn
+              +  'var textarea_selector = "#'+gvar.tID+'";' + nn
+              +  'var smilies_ = \''+JSON.stringify(smilies_)+'\';' + nn
+
+              +  'var smilies = JSON.parse(smilies_);' + nn
+              +  'var kskemojis = $.map(smilies, function(item, i){' + nn
+              +    'clog("adding fn="+item[0]+"; bbcode="+item[1]+"; name="+(item[3] ? item[3] : item[2]));' + nn
+              +    'return {' + nn
+              +      'fn: item[0],' + nn
+              +      'bbcode: item[1],' + nn
+              +      'name: (item[3] ? item[3] : item[2])' + nn
+              +    '}' + nn
               +  '});' + nn
               +  'clog(kskemojis);' + nn
               
               +  'var emoji_config = {' + nn
               +    'at: ":",' + nn
               +    'data: kskemojis,' + nn
-              +    'displayTpl: "<li><img src=\'${path}images/smilies/${key}\' height=\'20\' width=\'20\' /> ${name}</li>",' + nn
+              +    'displayTpl: "<li><img src=\'"+host+"images/smilies/${fn}\' height=\'20\' width=\'20\' /> ${name}</li>",' + nn
               +    'insertTpl: "${bbcode}",' + nn
               +    'delay: 200' + nn
               +  '};' + nn
@@ -8223,19 +8231,51 @@ function start_Main(){
               
               // initiating
               +  'var $inputor = jQuery(textarea_selector).atwho(emoji_config);' + nn
-              // +  'clog("Val of inputor:");'
-              // +  'clog($inputor);'
               +  '$inputor.caret("pos", 47);' + nn
               +  '$inputor.focus().atwho("run");' + nn
-              + '}' + nn
-              // smbesar exists
-              + 'else{ clog("Unable load smilies"); }'
               +'}' // initAtWho
-              +'setTimeout(function(){ initAtWho();}, 567);'
-              +''
+              +'setTimeout(function(){ kqrInitAtWho();}, 1234);'
             ;
           };
-          GM_addGlobalScript( rSRC.getSCRIPT_AtWho(), 'script-at-who' );
+
+          var 
+              mapSmlSuffix = {
+                kecil: 'kc',
+                besar: 'BS',
+                kplus: 'Ps'
+              },
+              mapSmlTitle = {
+                kecil: 'Emote Kecil',
+                besar: 'Emote Besar',
+                kplus: 'Kaskus Plus'
+              }
+          ;
+          for(var i=0, iL=gvar.settings.autocomplete_smiley[1].length; i<iL; i++){
+            var smkey, smtmp, bb;
+            smkey = gvar.settings.autocomplete_smiley[1][i];
+            if( 'undefined' != typeof gvar['sm'+smkey] ){
+              smtmp = gvar['sm'+gvar.settings.autocomplete_smiley[1][i]];
+
+              // eg. ["smilies_fb5ogiimgq21.gif", ":wow", "Wow"]
+              for(var j=0, jL=smtmp.length; j<jL; j++){
+                bb = String(smtmp[j][1]).replace(/\:/g, '');
+                if( String(smtmp[j][2]).toLowerCase().indexOf(bb) === -1 )
+                  // smtmp[j][3] = '<small>'+bb+'</small> | '+smtmp[j][2];
+                  smtmp[j][3] = bb+' | '+smtmp[j][2];
+                else
+                  smtmp[j][3] = smtmp[j][2];
+
+                smtmp[j][3] += (mapSmlSuffix[smkey] ? ' <small title=\\\"'+(mapSmlTitle[smkey] ? mapSmlTitle[smkey] : '')+'\\\">['+mapSmlSuffix[smkey]+']</small>' : '');
+              }
+              smilies = smilies.concat( smtmp );
+            }
+          }
+          if( smilies && smilies.length )
+            GM_addGlobalScript( rSRC.getSCRIPT_AtWho(smilies), 'script-at-who' );
+          else
+            clog("Unable load smilies for At.js");
+
+          smilies = null;
         }
 
 
@@ -8305,8 +8345,7 @@ function init(){
 
   gvar.domain = kdomain.prot + '//' + kdomain.host +'/';
   gvar.kask_domain = kdomain.prot+'//kask.us/';
-  gvar.kkcdn = kdomain.prot + '//'+ kdomain.statics + '/';
-  gvar.kkcdn_plus = kdomain.prot + '//'+ kdomain.statics_plus + '/';
+  gvar.kkcdn = kdomain.prot + '//'+ kdomain.assets + '/';
 
   // set true to simulate using css from googlecode, [debug-purpose]
   gvar.force_live_css = null;
