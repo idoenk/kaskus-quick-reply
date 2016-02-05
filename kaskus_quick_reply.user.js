@@ -1190,6 +1190,9 @@ var rSRC = {
     +'.nav.nav-tabs li.active a[href="#tkplus"]{color:#fff; background: rgba(27,131,195,1); background: -moz-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(27,131,195,1)), color-stop(66%, rgba(112,180,219,1)), color-stop(100%, rgba(238,238,238,1))); background: -webkit-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -o-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -ms-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: linear-gradient(to bottom, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#1b83c3", endColorstr="#eeeeee", GradientType=0 );}'
     +'.icon.icon-kplus{background-image: url(https://plus.kaskus.co.id/plus/img/icon-kplus-forum.png); background-repeat: no-repeat; width: 23px;height: 23px; background-size: contain; position: absolute; left: 4px; top: -2px;}'
     +'.help-kplus{position: absolute; right: 45px; top: 5px;}'
+
+    // atwho
+    +'.atwho-container .atwho-view{opacity: .945;}'
   },
   getCSS_Fixups: function(mode){
     var css='', i='!important';
