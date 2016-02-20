@@ -144,10 +144,11 @@ ul.ulpick_icon {
   }
 }
 
-.modal-dialog-main, #modal_dialog_box #cont_button {
+.modal-dialog-main,
+#modal_dialog_box #cont_button {
   background: #fff;
   background-clip: padding-box;
-  border: 1px solid #acacac;
+  border: 0;
   box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px;
   transition: top .5s ease-in-out;
 }
@@ -555,9 +556,11 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
       }
     }
   }
+  
   .form-title {
     margin-left: 85px;
     padding-right: 30px;
+    color: #666;
   }
   .fg-button-bottom {
     position: relative;
@@ -1451,7 +1454,7 @@ ul {
   overflow-x: hidden;
   visibility: hidden;
   filter: alpha(opacity = 60);
-  opacity: .60;
+  opacity: .45;
   background-color: #000;
 }
 
@@ -1468,7 +1471,9 @@ ul {
 
 .modal-dialog-main {
   border-radius: 2px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  box-shadow: 0 0 8px rgba(0,0,0,.18),0 8px 16px rgba(0,0,0,.36);
   position: relative;
   z-index: 99992;
   width: 600px;
@@ -1500,6 +1505,12 @@ ul {
     box-shadow: rgba(0, 0, 0, 0.15) 0 12px 25px;
     .goog-btn {
       margin: 0 4px;
+      font-size: 13px;
+      &.goog-btn-red{
+        &:hover{
+          box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+        }
+      }
     }
   }
   &.modal-dialog-main {
@@ -1525,10 +1536,10 @@ ul {
 }
 
 .modal-dialog-title {
-  color: #000;
-  background: #fff;
+  color: #fff;
+  background: #424242;
   cursor: default;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   position: relative;
   height: 36px;
@@ -1539,9 +1550,9 @@ ul {
 .modal-dialog-title-text {
   position: absolute;
   right: 0;
-  top: 3px;
-  line-height: 36px;
-  margin-right: 35px;
+  top: 0;
+  line-height: 35px;
+  margin-right: 40px;
 }
 
 .kqr-icon-close {
@@ -1578,6 +1589,7 @@ ul {
   }
   > img {
     margin-right: 15px;
+    margin-top: 5px;
   }
 }
 
@@ -1590,7 +1602,7 @@ ul {
 .popbox {
   position: absolute;
   right: 10px;
-  top: 10px;
+  top: 7px;
   padding: 12px;
   &:after {
     position: absolute;
