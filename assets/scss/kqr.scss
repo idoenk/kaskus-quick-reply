@@ -1531,7 +1531,7 @@ ul {
   transition: all 0.2s linear;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  &.scrolled{
+  &.glowed{
     box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
   }
   .icon-action{
