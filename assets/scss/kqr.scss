@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1511025350
+ cssREV:1602215370
 */
 
 /**
@@ -36,6 +36,7 @@ $data_uri_kaskus_throbber: "data:image/gif;base64,R0lGODlhIAAgAPEDAPeUHvmyXPzZr/
 */
 $url_close: url(http://ssl.gstatic.com/ui/v1/dialog/close-x.png);
 $url_iconrecaptcha2:  url(https://www.gstatic.com/recaptcha/api2/logo_48.png);
+$url_kplusforum:  url(https://plus.kaskus.co.id/plus/img/icon-kplus-forum.png);
 
 body{
   &.hideflow {
@@ -248,7 +249,8 @@ ul.qrset_mnu li.qrt.curent {
   background-image: url($data_uri_kaskus_throbber);
 }
 
-.hide {
+.hide,
+body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
   display: none;
 }
 
@@ -812,6 +814,22 @@ ul.qrset_mnu li.qrt.curent {
   .radio input[type="radio"]:checked, .radio-inline input[type="radio"]:checked, .checkbox-inline input[type="checkbox"]:checked {
     background: #fff;
   }
+}
+
+/* hide recaptcha arrow */
+.pls-tailbottom, .pls-tailtop, .pls-tailright, .pls-tailleft, .pls-dropTR, .pls-dropBR, .pls-dropBL{
+  display: none!important;
+}
+.modal-rc2-pls-container{
+  position: fixed !important;
+  width: 100% !important;
+  left: 0px !important;
+  top: 0px !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+.modal-rc2-pls-container table.gc-bubbleDefault{
+  margin:0 auto!important;
 }
 
 .stage {
@@ -2177,8 +2195,33 @@ ul.settingmnu li.qrt div {
   background-size: contain; 
   position: absolute; left: 4px; top: -2px;
 }
+/*kplus-thingie*/
 .help-kplus{
   position: absolute; 
   right: 45px; 
   top: 5px;
+}
+.nav.nav-tabs li a[href="#tkplus"]{
+  background-color: #1b83c3; color: #f0f0f0; padding-left: 30px;
+}
+.nav.nav-tabs li.active a[href="#tkplus"]{
+  color:#fff;
+  background: rgba(27,131,195,1);
+  background: -moz-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%);
+  background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(27,131,195,1)), color-stop(66%, rgba(112,180,219,1)), color-stop(100%, rgba(238,238,238,1)));
+  background: -webkit-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); 
+  background: -o-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); 
+  background: -ms-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); 
+  background: linear-gradient(to bottom, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#1b83c3", endColorstr="#eeeeee", GradientType=0 );
+}
+.icon.icon-kplus{
+  background-image: url($url_kplusforum);
+  background-repeat: no-repeat;
+  width: 23px;
+  height: 23px;
+  background-size: contain;
+  position: absolute;
+  left: 4px;
+  top: -2px;
 }
