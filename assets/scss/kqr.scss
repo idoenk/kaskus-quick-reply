@@ -1517,22 +1517,6 @@ ul {
     padding-bottom: 10px;
     margin-left: -12px;
   }
-  .box_sp {
-    position: absolute;
-    opacity: 0;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 7px;
-    pointer-events: none;
-    transition: all 0.2s linear;
-    background: -webkit-linear-gradient(rgba(0,0,0,.2),transparent);
-    background: -moz-linear-gradient(rgba(0,0,0,.1),transparent);
-    -webkit-mask-box-image: -webkit-linear-gradient(left,rgba(0,0,0,.1),rgba(0,0,0,.8),rgba(0,0,0,.1));
-    &.active {
-      opacity: 1;
-    }
-  }
 }
 
 .modal-dialog-title {
@@ -1542,9 +1526,25 @@ ul {
   font-size: 14px;
   font-weight: 400;
   position: relative;
+  z-index: 1;
   height: 36px;
+  transition: all 0.2s linear;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+  &.scrolled{
+    box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+  }
+  .icon-action{
+    display: table;
+    height: 36px;
+    margin-left: 32px;
+    >.fa{
+      font-size: 1.5em;
+      display: table-cell;
+      vertical-align: middle;
+      color: #ddd;
+    }
+  }
 }
 
 .modal-dialog-title-text {
