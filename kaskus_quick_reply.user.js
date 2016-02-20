@@ -7274,8 +7274,6 @@ function eventsTPL(){
 
   // editor events: [focus,blur,keydown,keyup]
   // assigning several action, eg. watch draft, fixed toolbar martItUp,
-  gvar.sTryFixedBarStepMax = 3;
-  gvar.sTryFixedBarStep = 0;
   $XK.find('#'+gvar.tID).focus(function(){
     if( gvar.settings.txtcount ){
       $XK.find('.counter').first().addClass('kereng');
@@ -7284,21 +7282,11 @@ function eventsTPL(){
 
     // fixed_markItUp
     if( gvar.settings.fixed_toolbar ){
+      clog("activating onfocus event");
       gvar.sTryWatchWinScroll &&
         clearInterval(gvar.sTryWatchWinScroll);
-
       gvar.sTryWatchWinScroll = setInterval(function(){
-        if( gvar.sTryFixedBarStep < gvar.sTryFixedBarStepMax ){
-          fixed_markItUp()
-          gvar.sTryFixedBarStep++;
-        }
-        else{
-          gvar.sTryWatchWinScroll &&
-            clearInterval(gvar.sTryWatchWinScroll);
-
-          gvar.sITryFocusEditor &&
-            clearInterval( gvar.sITryFocusEditor );
-        }
+        fixed_markItUp()
       }, 50);
     }
   }).blur(function(){
@@ -7318,9 +7306,6 @@ function eventsTPL(){
           $XK.removeClass("fixed_markItUp");
         }, 789);
       }
-
-      if( gvar.sTryFixedBarStep )
-        gvar.sTryFixedBarStep = 0;
     }
   }).keydown(function(ev){
     var B, pCSA_Code,
