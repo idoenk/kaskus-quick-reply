@@ -130,7 +130,7 @@ var KS = 'KEY_SAVE_',
     ,KEY_SAVE_QR_LastUpdate:['0'] // lastupdate timestamp
 
     ,KEY_SAVE_UPLOAD_LOG:  [''] // history upload (kaskus)
-    ,KEY_SAVE_SMILIES:  [''] // bulk of smilies
+    ,KEY_SAVE_SMILIES_BULK:  [''] // bulk of smilies
     ,KEY_SAVE_CSS_BULK:  [''] // bulk of ext css
     ,KEY_SAVE_CSS_META:  [''] // meta of css [filename;lastupdate]
   }
@@ -923,10 +923,10 @@ var rSRC = {
        // -=-=-=-=-=-=-=-
 
        +'<div class="form-group">'
-       + '<label class="'+cls_label+'" for="misc_smiley_kplus">Update Smiley'+gen_helplink("updatesmilies")+'</label>'
+       + '<label class="'+cls_label+'">Update Smiley'+gen_helplink("updatesmilies")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox last-update-smilies">'
-       +   '199 smilies, last update: DD MMM YYY'
+       +   'XXX smilies, last update: DD MMM YYY'
        +  '</div>'
        +  '<div class="checkbox" style="padding-top:0; min-height:auto;">'
        +   '<a id="chk_upd_smilies" class="goog-btn goog-btn-primary goog-btn-xs btn_upd_smilies" href="javascript:;" title="Update Kaskus Smilies" data-deftext="Update Smilies">Update Smilies</a>'
@@ -1012,13 +1012,13 @@ var rSRC = {
     return ''
     +'<div role="form" class="form-horizontal">'
     +'<div class="form-group fg-tabify fg-kbd">'
-    +'<div class="goog-tab-bar">'
+    +'<div class="goog-tab-bar goog-tab-white">'
      +'<div id="tkbd-qr" data-target="tabs-itemkbd-qr" class="goog-tab goog-tab-selected">KQR Hotkeys</div>'
      +'<div id="tkbd-kaskus" data-target="tabs-itemkbd-kaskus" class="goog-tab">Kaskus Hotkeys <a target="_blank" href="http://help.kaskus.co.id/kaskus-basic/kaskus_hotkeys.html" style="float:right; margin:0 4px; line-height: 13px;" title="Kaskus Hotkeys, Goto Help Center.."><i class="fa fa-question-circle"></i></a></div>'
      +'<div class="clearfix"></div>'
     +'</div>'
     +'<div class="goog-tab-bar-clear"></div>'
-    +'<div class="goog-tab-content">'
+    +'<div class="goog-tab-content goog-tab-white">'
       +'<div id="tabs-contentkbd-inner">'
       +'<div id="tabs-itemkbd-qr" class="itemtabcon active">'
        +'<em>Global on thread page</em>'
@@ -1028,7 +1028,7 @@ var rSRC = {
        +'<p><tt><kbd>Alt</kbd> + <kbd>C</kbd></tt><span>Quick Quote Selected Post</span></p>'
        +'<p><tt><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Q</kbd></tt><span>Deselect All Quoted Post</span></p>'
        +'<p><tt><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></tt><span>Load/Save Draft</span></p>'
-       +'<p><em>While focus on Editor / textarea</em></p>'
+       +'<em>While focus on Editor / textarea</em>'
        +'<p><tt><kbd>Ctrl</kbd> + <kbd>Enter</kbd></tt><span>Post Reply</span></p>'
        +'<p><tt><kbd>Alt</kbd> + <kbd>S</kbd></tt><span>Post Reply</span></p>'
        +'<p><tt><kbd>Alt</kbd> + <kbd>P</kbd></tt><span>Preview Quick Reply</span></p>'
@@ -1184,6 +1184,15 @@ var rSRC = {
 
     if( dialogname && "function" == typeof rSRC[dialogname] )
       return '<div class="kqr-dialog-base">'+rSRC[dialogname]()+'</div>';
+  },
+
+  getAlert: function(dialog_id, doshow, text){
+    return ''
+      +'<div id="'+dialog_id+'" style="position:fixed;z-index:99991;top:38px;left:45%; filter:alpha(opacity=90); opacity:.90;background:#f9edbe; border:1px solid #f0c36d; border-radius:2px;-moz-border-radius:2px;-webkit-border-radius:2px;box-shadow:0 2px 4px rgba(0,0,0,0.2);font-size:90%;font-weight:bold;line-height:22px;padding:0 15px;display:'+(doshow ? '':'none')+';">'
+      +'<span class="qrV">QR: <span class="tXt">'+(text ? text : 'Loading...')+'</span></span>'
+      +'<span class="close" style="display:inline-block;float:right;padding:auto 6px;cursor:pointer;margin:0 -5px 0 10px; color:#999;">&times;</span>'
+      +'</div>'
+    ;
   },
 
 
@@ -1402,7 +1411,87 @@ var rSRC = {
       default: return false; break;
     }
   },
-  getSmileySet: function(custom, cb){
+  getSmileySet: function(onlyCustom, cb){
+    //Format will be valid like this:
+    // 'keyname1|link1,keyname2|link2'
+    //eg. 
+    // ':yoyocici|http://foo'
+    //var sample = 'lopeh|http://static.kaskus.us/images/smilies/sumbangan/001.gif,nangis|http://static.kaskus.us/images/smilies/sumbangan/06.gif';
+    // gvar.smcustom it is an associated object of all custom smiley
+    // gvar.smgroup it is all name of group of custom smiley
+    gvar.smcustom = {};
+    gvar.smgroup = [];
+    getValue(KS+'CUSTOM_SMILEY',  function(buff){
+      
+      if( buff && isString(buff) && buff!='' ){
+        var grup, ret, extractSmiley = function(partition){
+          if(!partition) return false;
+          var idx=1,sepr = ',',customs=[];
+          var smileys = partition.split(sepr);
+          if(isDefined(smileys[0]))
+          for(var i in smileys){
+            if(isString(smileys[i]) && smileys[i]!=''){
+              var parts = smileys[i].split('|');
+              //customs[idx.toString()] = (isDefined(parts[1]) ? [parts[1], parts[0], parts[0]] : smileys[i]);
+              customs.push( (isDefined(parts[1]) ? [parts[1], parts[0], parts[0]] : smileys[i]) );
+              idx++;
+            }
+          }
+          return customs;
+        };
+        if(buff.indexOf('<!!>')==-1){ // old raw-data
+          ret = extractSmiley(buff);
+          if(ret){
+            grup='untitled';
+            gvar.smcustom[grup.toString()] = ret;      
+            gvar.smgroup.push(grup);
+          }
+        }else{
+          // spliter: ['<!>','<!!>']; 
+          // '<!>' split each group; '<!!>' split group and raw-data
+          var parts = buff.split('<!>'),part2;
+          for(var i=0; i<parts.length; i++){
+            part2=parts[i].split('<!!>');
+            part2[0]=part2[0].replace(/\\!/g,'!');
+            if(part2.length > 0){
+              ret = extractSmiley(part2[1]);
+              if(ret){
+                gvar.smcustom[part2[0].toString()] = ret;
+                gvar.smgroup.push(part2[0].toString());
+              }
+            }
+          }  // end for
+        }
+      } // end is buff
+      
+      if( isDefined(onlyCustom) && onlyCustom )
+        if( typeof cb == 'function' ) cb();
+    });
+
+    if( isDefined(onlyCustom) && onlyCustom )
+      return;
+
+    getValue(KS+'SMILIES_BULK', function(ret){
+      var smilies = {};
+      if( ret ){
+        try{
+          ret = JSON.parse( ret );
+        }catch(e){}
+
+        smilies = (ret.ksk_smiley ? ret.ksk_smiley : null);
+        clog( smilies );
+        if( smilies ){
+          for(var smtype in smilies)
+            gvar['sm'+smtype] = smilies[smtype];
+        }
+        smilies = null;
+      }
+
+      if('function' == typeof cb)
+        cb();
+    });
+  },
+  getSmileySet_OLD: function(custom, cb){
     //Format will be valid like this:
     // 'keyname1|link1,keyname2|link2'
     //eg. 
@@ -4049,29 +4138,49 @@ var _SML_ = {
     
       var smilies, tpl='',
           label = target.replace('#', ''),
-          smilies_segments = {
-            tkecil: [
-              {label: 'Only in Kaskus Smilies(Small)', index: 0, n: 27},
-              {label: 'Standart Smilies', index: 27}
-            ],
-            tbesar: [
-              {label: 'Only in Kaskus Smilies'}
-            ],
-            tkplus: [
-              {label: 'Plus Exclusive'}
-            ]
-          }
+          smilies_segments = {}
       ;
+      var bulksmilies = [gvar.smkecil, gvar.smbesar, gvar.smkplus];
+      for(var i=0, iL=bulksmilies.length; i<iL; i++){
+        var smlset = bulksmilies[i],
+            keyName = "t"+smlset.name,
+            itemLabel, lastIndex
+        ;
+        smilies_segments[keyName] = [];
+        if( smlset.labels && smlset.labels.length ){
 
-      switch(label){
+          for(var j=0, jL=smlset.labels.length; j<jL; j++ ){
+            itemLabel = {
+              label: smlset.labels[j].label
+            };
+            if( smlset.labels[j].offset ){
+              itemLabel.index = 0;
+              itemLabel.n = smlset.labels[j].offset;
+              lastIndex = itemLabel.n;
+            }
+            else{
+              if( lastIndex )
+                itemLabel.index = lastIndex;
+            }
+            smilies_segments[keyName].push( itemLabel );
+          }
+        }
+        else if( smlset.label ){
+          smilies_segments[keyName].push({
+            label: smlset.label
+          });
+        }
+      }
+
+      switch( label ){
         case "tkecil":
-          smilies = gvar.smkecil;
+          smilies = (gvar.smkecil && gvar.smkecil.smilies ? gvar.smkecil.smilies : null);
           break;
         case "tbesar":
-          smilies = gvar.smbesar;
+          smilies = (gvar.smbesar && gvar.smbesar.smilies ? gvar.smbesar.smilies : null);
           break;
         case "tkplus":
-          smilies = gvar.smkplus;
+          smilies = (gvar.smkplus && gvar.smkplus.smilies ? gvar.smkplus.smilies : null);
           break;
         default:
           smilies = gvar.smcustom;
@@ -4083,24 +4192,21 @@ var _SML_ = {
           var tmp_smilies, segment;
           segment = ('undefined' != typeof smilies_segments[label] && smilies_segments[label] ? smilies_segments[label] : null);
 
-          if( segment ){
+          if( segment && smilies ){
+
             tmp_smilies = smilies;
             for(var j=0, jL=segment.length; j<jL; j++){
               tpl += '<div><strong>'+segment[j]['label']+'</strong></div>';
               smilies = tmp_smilies.slice(parseFloat(segment[j]['index']), (segment[j]['n'] ? parseFloat(segment[j]['n']) : undefined));
               $.each(smilies, function(i, img){
-                // if( img[3] )
-                //   imagehost = img[3];
 
                 tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
               });
             }
           }
           else{
-            // just-failover
+            // failover
             $.each(smilies, function(i, img){
-              // if( img[3] )
-              //   imagehost = img[3];
 
               tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
             });
@@ -4736,7 +4842,7 @@ var _STG = {
         ,'QR_HOTKEY_KEY','QR_HOTKEY_CHAR', 'QR_DRAFT'
         ,'LAYOUT_CONFIG','LAYOUT_TPL'
         ,'QR_LastUpdate'
-        ,'UPLOAD_LOG','SMILIES','CSS_BULK','CSS_META','SCUSTOM_NOPARSE'
+        ,'UPLOAD_LOG','SMILIES_BULK','CSS_BULK','CSS_META','SCUSTOM_NOPARSE'
         ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP'
         ,'HIDE_GREYLINK','ALWAYS_NOTIFY'
         ,'SHOW_SMILE','TABFIRST_SMILE','SHOW_KASKUS_PLUS','IMGBBCODE_KASKUS_PLUS'
@@ -4760,7 +4866,26 @@ var _STG = {
 
 var _UPD_SMILIES = {
   caller: null,
-  check: function(flag){
+  dialog: function(doshow, msg){
+    var dialogId = 'sml_' + String(gvar.scriptMeta.timestamp);
+    _UPD_SMILIES.DialogId = dialogId;
+
+    if( dialogId && !$('#'+dialogId).length ){
+
+      $('body').append( rSRC.getAlert(dialogId, doshow, msg) );
+      $('#'+dialogId).find('.close').click(function(){
+        _UPD_SMILIES.dialog_dismiss();
+      });
+    }
+  },
+  dialog_dismiss: function(xfade){
+    var dialogId = _UPD_SMILIES.DialogId;
+    !xfade && (xfade = 222);
+    $('#'+dialogId).length && $('#'+dialogId).fadeOut(xfade, function(){
+      $(this).remove();
+    });
+  },
+  check: function( cb ){
     clog("inside check update smilies...");
     var url = '/misc/getsmilies/';
     var Buckets = {
@@ -4795,8 +4920,16 @@ var _UPD_SMILIES = {
     ];
 
     $.get(url, function(ret){
-      clog(ret);
-      var $page, nItem, isTH;
+      var $page, nItem, isTH,
+          $caller = $(_UPD_SMILIES.caller)
+      ;
+
+      if( $caller.length )
+        $caller
+          .prop("disabled", false)
+          .text($caller.attr('data-deftext'))
+        ;
+
       if( ret ){
         $page = $( ret ).find("#smilietable");
         nItem = $page.find("img").length;
@@ -4823,28 +4956,30 @@ var _UPD_SMILIES = {
                 if( regx.test(lastText) && regx_unmatch && 'undefined' != typeof Buckets[match_map[b]['name']] ){
                   last_bucket_name = match_map[b]['name'];
 
-                  if( 'undefined' != typeof Buckets[match_map[b]['name']]['labels'] ){
+                  if( 'undefined' != typeof Buckets[last_bucket_name]['labels'] ){
                     Buckets[match_map[b]['name']]['labels'].push({
                       label: lastText,
                       offset: iTr
                     });
                   }
-                  else if( 'undefined' == typeof Buckets[match_map[b]['name']]['label'] )
-                    Buckets[match_map[b]['name']]['label'] = lastText;
+                  else if( 'undefined' == typeof Buckets[last_bucket_name]['label'] ){
+                    Buckets[last_bucket_name]['name'] = last_bucket_name;
+                    Buckets[last_bucket_name]['label'] = lastText;
+                  }
                   else{
-                    if( 'undefined' == typeof Buckets[match_map[b]['name']]['labels'] )
-                      Buckets[match_map[b]['name']]['labels'] = [];
+                    if( 'undefined' == typeof Buckets[last_bucket_name]['labels'] )
+                      Buckets[last_bucket_name]['labels'] = [];
                     
 
-                    Buckets[match_map[b]['name']]['labels'].push({
-                      label: Buckets[match_map[b]['name']]['label'],
+                    Buckets[last_bucket_name]['labels'].push({
+                      label: Buckets[last_bucket_name]['label'],
                       offset: iTr
                     });
-                    Buckets[match_map[b]['name']]['labels'].push({
+                    Buckets[last_bucket_name]['labels'].push({
                       label: lastText
                     });
 
-                    delete Buckets[match_map[b]['name']]['label'];
+                    delete Buckets[last_bucket_name]['label'];
                   }
 
                   // reset offset
@@ -4856,7 +4991,6 @@ var _UPD_SMILIES = {
               }
             }
             else{
-              clog("collecting image..");
               // collecting image
               $tr.find("img").each(function(){
                 var $img = $(this);
@@ -4870,8 +5004,12 @@ var _UPD_SMILIES = {
             }
           });
 
-          // testing...
+          // get collected values...
+          clog('fetching smilies done.');
           clog( Buckets );
+
+          if('function' == typeof cb)
+            cb( Buckets );
         }
         else{
 
@@ -4883,8 +5021,37 @@ var _UPD_SMILIES = {
         clog("Unable get data from: "+url);
       }
     });
+  },
+  callback_handler: function(x){
+    var smiley_bulk = {
+          lastupdate: (new Date().getTime()).toString(),
+          ksk_smiley: x
+        }
+    ;
+    clog('inside callback_handler');
+    clog(smiley_bulk);
+
+    clog('saving smilies_bulk')
+    setValue(KS + 'SMILIES_BULK', JSON.stringify(smiley_bulk), function(){
+      // commencing outside callback to continue, getSettings
+      clog('commencing outside callback');
+      if( 'function' == typeof _UPD_SMILIES.callback_ext )
+        _UPD_SMILIES.callback_ext();
+      else
+        clog('callback_ext is not a function..');
+
+
+      clog('dismissing dialog smiley...');
+      _UPD_SMILIES.dialog_dismiss();
+    });
 
   },
+  run: function(cb_run){
+    var ME = this;
+    _UPD_SMILIES.callback_ext = cb_run;
+    ME.dialog(true, 'Updating smilies..');
+    ME.check( ME.callback_handler );
+  }
 };
 
 /*
@@ -4906,12 +5073,7 @@ var _CSS = {
       _CSS.DialogId = 'css_' + String(gvar.scriptMeta.timestamp);
 
     if(_CSS.DialogId && !$('#'+_CSS.DialogId).length ){
-      $('body').append(''
-       +'<div id="'+_CSS.DialogId+'" style="position:fixed;z-index:99991;top:38px;left:45%; filter:alpha(opacity=90); opacity:.90;background:#f9edbe; border:1px solid #f0c36d; border-radius:2px;-moz-border-radius:2px;-webkit-border-radius:2px;box-shadow:0 2px 4px rgba(0,0,0,0.2);font-size:90%;font-weight:bold;line-height:22px;padding:0 15px;display:'+(doshow ? '':'none')+';">'
-       +'<span class="qrV">QR: <span class="tXt">Loading...</span></span>'
-       +'<span class="close" style="display:inline-block;float:right;padding:auto 6px;cursor:pointer;margin:0 -5px 0 10px; color:#999;">&times;</span>'
-       +'</div>'
-      );
+      $('body').append( rSRC.getAlert(_CSS.DialogId, doshow) );
       $('#'+_CSS.DialogId).find('.close').click(function(){
         _CSS.dialog_dismiss();
       });
@@ -4921,7 +5083,7 @@ var _CSS = {
     $('#'+_CSS.DialogId).show().find('.tXt').html(x);
   },
   dialog_dismiss: function(xfade){
-    !xfade && (xf = 222);
+    !xfade && (xfade = 222);
     $('#'+_CSS.DialogId).length && $('#'+_CSS.DialogId).fadeOut(xfade, function(){
       $(this).remove();
     });
@@ -8018,7 +8180,10 @@ function start_Main(){
   clog("Injecting getCSS");
   GM_addGlobalStyle(rSRC.getCSS(), 'kqr-dynamic-css');
 
-  getSettings( gvar.settings );
+  // pre, before removing it..
+  $('#quick-reply').addClass('hide');
+  
+  // getSettings( gvar.settings );
   
 
   var maxTry = 50, iTry=0,
@@ -8278,7 +8443,7 @@ function start_Main(){
         gvar.autocomplete_smilies = (gvar.settings.autocomplete_smiley[0] && gvar.settings.autocomplete_smiley[1] && gvar.settings.autocomplete_smiley[1].length );
 
         if( gvar.autocomplete_smilies ){
-          var smilies = [];
+          
 
           // origin
           // GM_addGlobalStyle('http://ichord.github.io/At.js/dist/css/jquery.atwho.css');
@@ -8297,9 +8462,6 @@ function start_Main(){
             GM_addGlobalScript(base_path+'jquery.caret.js', 'js-caret');
           GM_addGlobalScript(base_path+(olmode ? 'js/':'')+'jquery.atwho.js', 'js-AtWho');
 
-          // preload smilies if not loaded yet
-          if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus )
-            rSRC.getSmileySet();
 
 
           rSRC.getSCRIPT_AtWho = function(smilies_){
@@ -8345,52 +8507,64 @@ function start_Main(){
             ;
           };
 
-          var 
-              mapSmlSuffix = {
-                kecil: 'kc',
-                besar: 'BS',
-                kplus: 'Ps'
-              },
-              mapSmlTitle = {
-                kecil: 'Emote Kecil',
-                besar: 'Emote Besar',
-                kplus: 'Kaskus Plus'
+
+
+          // preload smilies if not loaded yet
+          if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus ){
+
+            rSRC.getSmileySet(!1, function(){
+              var smilies = [],
+                  mapSmlSuffix = {
+                    kecil: 'kc',
+                    besar: 'BS',
+                    kplus: 'Ps'
+                  },
+                  mapSmlTitle = {
+                    kecil: 'Emote Kecil',
+                    besar: 'Emote Besar',
+                    kplus: 'Kaskus Plus'
+                  }
+              ;
+
+              // collecting ksk_smiley
+              for(var i=0, iL=gvar.settings.autocomplete_smiley[1].length; i<iL; i++){
+                var smkey, smtmp, bb;
+                smkey = gvar.settings.autocomplete_smiley[1][i];
+                if( 'undefined' != typeof gvar['sm'+smkey] && gvar['sm'+smkey].smilies ){
+                  smtmp = gvar['sm'+gvar.settings.autocomplete_smiley[1][i]].smilies;
+
+                  // eg. ["smilies_fb5ogiimgq21.gif", ":wow", "Wow"]
+                  if( smtmp.length )
+                  for(var j=0, jL=smtmp.length; j<jL; j++){
+                    bb = String(smtmp[j][1]).replace(/\:/g, '');
+                    if( String(smtmp[j][2]).toLowerCase().indexOf(bb) === -1 )
+                      smtmp[j][3] = bb+' | '+smtmp[j][2];
+                    else
+                      smtmp[j][3] = smtmp[j][2];
+
+
+                    smtmp[j][3] += (mapSmlSuffix[smkey] ? ' <small title=\\\"'+(mapSmlTitle[smkey] ? mapSmlTitle[smkey] : '')+'\\\">['+mapSmlSuffix[smkey]+']</small>' : '');
+                  }
+                  smilies = smilies.concat( smtmp );
+                }
               }
-          ;
-          for(var i=0, iL=gvar.settings.autocomplete_smiley[1].length; i<iL; i++){
-            var smkey, smtmp, bb;
-            smkey = gvar.settings.autocomplete_smiley[1][i];
-            if( 'undefined' != typeof gvar['sm'+smkey] ){
-              smtmp = gvar['sm'+gvar.settings.autocomplete_smiley[1][i]];
 
-              // eg. ["smilies_fb5ogiimgq21.gif", ":wow", "Wow"]
-              for(var j=0, jL=smtmp.length; j<jL; j++){
-                bb = String(smtmp[j][1]).replace(/\:/g, '');
-                if( String(smtmp[j][2]).toLowerCase().indexOf(bb) === -1 )
-                  smtmp[j][3] = bb+' | '+smtmp[j][2];
-                else
-                  smtmp[j][3] = smtmp[j][2];
+              if( smilies && smilies.length )
+                GM_addGlobalScript( rSRC.getSCRIPT_AtWho(smilies), 'script-at-who' );
+              else
+                clog("[At.js]: Unable load smilies");
 
-
-                smtmp[j][3] += (mapSmlSuffix[smkey] ? ' <small title=\\\"'+(mapSmlTitle[smkey] ? mapSmlTitle[smkey] : '')+'\\\">['+mapSmlSuffix[smkey]+']</small>' : '');
-              }
-              smilies = smilies.concat( smtmp );
-            }
+              smilies = null;
+            });
           }
-          if( smilies && smilies.length )
-            GM_addGlobalScript( rSRC.getSCRIPT_AtWho(smilies), 'script-at-who' );
-          else
-            clog("Unable load smilies for At.js");
-
-          smilies = null;
         }
-
 
       }, 50);
       // settimeout pra-loaded settings 
     }
   };
-  wait_settings_done();
+  // wait_settings_done();
+  smilies_precheck(getSettings, wait_settings_done);
 }
 
 // outside kaskus host
@@ -8517,6 +8691,38 @@ function init(){
   gvar.mx = 30; gvar.ix = 0;
   CSS_precheck();
   return !1;
+}
+
+// precheck smilies-bulk in localstorage
+function smilies_precheck(){
+  clog('inside smilies_precheck..');
+  var cb_alldone = (function(args){
+    return function(){
+      clog("inside cb_alldone..");
+      clog( args );
+      if( args.length )
+      for(var i=0, iL=args.length; i<iL; i++){
+        if( 'function' == typeof args[i] ){
+          if( args[i].name == 'getSettings' )
+            args[i]( gvar.settings )
+          else
+            args[i]();
+        }
+      }
+    };
+  }( arguments ));
+
+  getValue(KS + 'SMILIES_BULK', function(ret){
+    if( ret ){
+      clog('smilies_bulk found');
+      clog(ret);
+      cb_alldone();
+    }
+    else{
+      clog("smilies_bulk not found, running update...");
+      _UPD_SMILIES.run( cb_alldone );
+    }
+  });
 }
 
 function CSS_precheck(){
