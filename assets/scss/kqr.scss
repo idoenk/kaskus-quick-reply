@@ -2017,6 +2017,26 @@ ul.qrset_mnu li {
     }
     .tab-pane.bbthumb {
       padding: 10px 5px;
+      .bbsection{
+        margin-top: 8px;
+        margin-left: 5px;
+        &:first-child{
+          margin-top: 2px;
+        }
+      }
+      strong{
+        cursor: default;
+        color: #666;
+        .kplus-bbhelp{
+          color: #999;
+          display: inline-block;
+          position:relative;
+          padding-right: 20px;
+          .stage{
+            top: 3px;
+          }
+        }
+      }
     }
     span.nothumb:hover {
       border: 1px solid #2085c1;
