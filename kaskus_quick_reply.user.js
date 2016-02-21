@@ -927,7 +927,8 @@ var rSRC = {
        + '<label class="'+cls_label+'">Update Smiley'+gen_helplink("updatesmilies")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox last-update-smilies">'
-       +   'XXX smilies, last update: DD MMM YYY'
+       +   (gvar.smiley_bulk && gvar.smiley_bulk.counts ? gvar.smiley_bulk.counts : 0)+' smilies, '
+       +   'updated: '+(gvar.smiley_bulk && gvar.smiley_bulk.lastupdate ? gvar.smiley_bulk.lastupdate : 'n/a')
        +  '</div>'
        +  '<div class="checkbox" style="padding-top:0; min-height:auto;">'
        +   '<a id="chk_upd_smilies" class="goog-btn goog-btn-primary goog-btn-xs btn_upd_smilies" href="javascript:;" title="Update Kaskus Smilies" data-deftext="Update Smilies">Update Smilies</a>'
@@ -1335,6 +1336,55 @@ var rSRC = {
     +'}' // ajaxFileUpload
     ;
   },
+
+  getSCRIPT_AtWho: function(smilies_){
+    var nn = "\n";
+    return ''
+      // +'function clog(x){console.log(x)}'
+
+      +'function kqrInitAtWho() {' + nn
+          // dependencies check
+      +  'if( !$.fn.atwho || !$.fn.caret ){ '
+      +   'console.log("initAtWho fail. Either caret or atwho is not loaded. ");'
+      +   'return !1;'
+      +  '}' + nn
+      +  '$.fn.atwho.debug = !1;' + nn
+
+      +  'var isDonatur = '+(gvar.user.isDonatur ? '1' : '!1')+';' + nn
+      +  'var host = "'+gvar.kkcdn+'";' + nn
+      +  'var textarea_selector = "#'+gvar.tID+'";' + nn
+      +  'var smilies_ = \''+JSON.stringify(smilies_)+'\';' + nn
+
+      +  'console.log("isDonatur="+isDonatur);' + nn
+      +  'var smilies = JSON.parse(smilies_);' + nn
+      +  'var kskemojis = $.map(smilies, function(item, i){' + nn
+      +    'var set = {' + nn
+      +      'fn: item[0],' + nn
+      +      'bbcode: item[1],' + nn
+      +      'name: (item[3] ? item[3] : item[2])' + nn
+      +    '};' + nn
+      +    'if( set.name.indexOf("[Ps]") !== -1 )' + nn
+      +    ' set.bbcode = (isDonatur ? set.bbcode : "[IMG]"+host+"images/smilies/"+item[0]+"[/IMG]");' + nn
+      +    'return set;' + nn
+      +  '});' + nn
+      
+      +  'var emoji_config = {' + nn
+      +    'at: ":",' + nn
+      +    'data: kskemojis,' + nn
+      +    'displayTpl: "<li><img src=\'"+host+"images/smilies/${fn}\' height=\'20\' width=\'20\' /> ${name}</li>",' + nn
+      +    'insertTpl: "${bbcode}",' + nn
+      +    'delay: 200' + nn
+      +  '};' + nn
+      
+      // initiating
+      +  'var $inputor = jQuery(textarea_selector).atwho(emoji_config);' + nn
+      +  '$inputor.caret("pos", 47);' + nn
+      +  '$inputor.atwho("run");' + nn
+      +'}' // kqrInitAtWho
+      +'setTimeout(function(){ kqrInitAtWho();}, 1234);'
+    ;
+  },
+
   getSetOf: function(type){
     switch(type){
       case "color" :
@@ -1472,8 +1522,10 @@ var rSRC = {
     if( isDefined(onlyCustom) && onlyCustom )
       return;
 
+
+
     getValue(KS+'SMILIES_BULK', function(ret){
-      var smilies = {};
+      var smilies = {}, counter=0;
       if( ret ){
         try{
           ret = JSON.parse( ret );
@@ -1482,9 +1534,20 @@ var rSRC = {
         smilies = (ret.ksk_smiley ? ret.ksk_smiley : null);
         clog( smilies );
         if( smilies ){
-          for(var smtype in smilies)
+          for(var smtype in smilies){
+
             gvar['sm'+smtype] = smilies[smtype];
+            counter += smilies[smtype]['smilies'].length;
+          }
         }
+
+        gvar.smiley_bulk = {
+          lastupdate: (ret.lastupdate ? getHumanDate(parseFloat(ret.lastupdate)) : null),
+          counts: (counter ? counter : 0)
+        };
+        clog('smiley_bulk..'+ret.lastupdate);
+        clog(gvar.smiley_bulk);
+
         smilies = null;
       }
 
@@ -1758,6 +1821,9 @@ var rSRC = {
 };
 //=== rSRC
 
+
+
+// rSRC.;
 
 /*
 * object urusan ajax (modal-boxed)
@@ -4446,7 +4512,25 @@ var _STG = {
         .text('Updating...')
       ;
       _UPD_SMILIES.caller = '#' + $me.attr('id');
-      _UPD_SMILIES.check(true);
+      _UPD_SMILIES.run(function(smiley_bulk_){
+        
+        clog('lastupdate: '+smiley_bulk_.lastupdate)
+        // tpl: X smilies, updated: <DATE>
+        var counter = 0, updText = '',
+            smilies = (smiley_bulk_.ksk_smiley ? smiley_bulk_.ksk_smiley : null),
+            $tgt = $(".last-update-smilies")
+        ;
+
+        if( smilies )
+        for(var field in smilies)
+          counter += smilies[field]['smilies'].length;
+
+        updText = ''
+          +counter+' smilies, '
+          +'updated: '+(smiley_bulk_.lastupdate ? getHumanDate( parseFloat(smiley_bulk_.lastupdate) ) : 'n/a')
+        ;
+        $tgt.text( updText );
+      });
     })
     
     var val, pval, isChk = function(x){ return $box.find(x).is(':checked') };
@@ -4756,7 +4840,7 @@ var _STG = {
       UPLOAD_LOG:'Kaskus Uploader Log'
     };
     
-    var z, nn, kL=keys.length, getToday = function(){var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];var d=new Date();return(d.getFullYear().toString() +'-'+ ((d.getMonth()+1).toString().length==1?'0':'')+(d.getMonth()+1)+'-'+(d.getDate().toString().length==1?'0':'')+d.getDate()+', '+days[d.getDay()]+'. '+(d.getHours().toString().length==1?'0':'')+d.getHours()+':'+(d.getMinutes().toString().length==1?'0':'')+d.getMinutes()+':'+(d.getSeconds().toString().length==1?'0':'')+d.getSeconds());};
+    var z, nn, kL=keys.length;
     var parse_UA_Vers = function(){
       return ( window.navigator.userAgent.replace(/\s*\((?:[^\)]+).\s*/g,' ').replace(/\//g,'-') );
     };
@@ -4765,7 +4849,7 @@ var _STG = {
     gvar.buftxt+= '# Version: QR '+gvar.sversion+'\n';
     gvar.buftxt+= '# Source: https://'+ 'greasyfork.org/scripts/'+gvar.scriptMeta.scriptID_GF+'\n';
     gvar.buftxt+= '# User-Agent: '+parse_UA_Vers()+'\n';
-    gvar.buftxt+= '# Date-Taken: '+getToday()+'\n';
+    gvar.buftxt+= '# Date-Taken: '+getHumanDate()+'\n';
     gvar.buftxt+= nn;
     
     // append uploader log
@@ -4907,10 +4991,10 @@ var _UPD_SMILIES = {
 
     $.get(url, function(ret){
       var $page, nItem, isTH,
-          $caller = $(_UPD_SMILIES.caller)
+          $caller = (_UPD_SMILIES.caller ? $(_UPD_SMILIES.caller) : null)
       ;
 
-      if( $caller.length )
+      if( $caller && $caller.length )
         $caller
           .prop("disabled", false)
           .text($caller.attr('data-deftext'))
@@ -5022,7 +5106,7 @@ var _UPD_SMILIES = {
       // commencing outside callback to continue, getSettings
       clog('commencing outside callback');
       if( 'function' == typeof _UPD_SMILIES.callback_ext )
-        _UPD_SMILIES.callback_ext();
+        _UPD_SMILIES.callback_ext( smiley_bulk );
       else
         clog('callback_ext is not a function..');
 
@@ -5035,6 +5119,7 @@ var _UPD_SMILIES = {
   run: function(cb_run){
     var ME = this;
     _UPD_SMILIES.callback_ext = cb_run;
+
     ME.dialog(true, 'Updating smilies..');
     ME.check( ME.callback_handler );
   }
@@ -6169,7 +6254,19 @@ function basename(path, suffix) {
 };
 function gID(x) { return document.getElementById(x) }
 function dump(x){return ("undefined" != typeof JSON ? JSON.stringify(x) : x)}
-
+function getHumanDate(thedate){
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+      d=('undefined' != typeof thedate && thedate ? new Date(thedate) : new Date())
+  ;
+  return (
+    d.getFullYear().toString() +'-'
+    +((d.getMonth()+1).toString().length==1?'0':'')
+    +(d.getMonth()+1)+'-'+(d.getDate().toString().length==1?'0':'')
+    +d.getDate()+', '
+    +days[d.getDay()]+'. '
+    +(d.getHours().toString().length==1?'0':'')+d.getHours()+':'+(d.getMinutes().toString().length==1?'0':'')+d.getMinutes()+':'+(d.getSeconds().toString().length==1?'0':'')+d.getSeconds()
+  );
+}
 
 // native clean-up fetched post
 function unescapeHtml(text){
@@ -8447,52 +8544,6 @@ function start_Main(){
             GM_addGlobalScript(base_path+'jquery.caret.js', 'js-caret');
           GM_addGlobalScript(base_path+(olmode ? 'js/':'')+'jquery.atwho.js', 'js-AtWho');
 
-
-
-          rSRC.getSCRIPT_AtWho = function(smilies_){
-            var nn = "\n";
-            return ''
-              // +'function clog(x){console.log(x)}'
-
-              +'function kqrInitAtWho() {' + nn
-                  // dependencies check
-              +  'if( !$.fn.atwho || !$.fn.caret ){ '
-              +   'console.log("initAtWho fail. Either caret or atwho is not loaded. ");'
-              +   'return !1;'
-              +  '}' + nn
-              +  '$.fn.atwho.debug = !1;' + nn
-
-              +  'var isDonatur = '+(gvar.user.isDonatur ? '1' : '!1')+';' + nn
-              +  'var host = "'+gvar.kkcdn+'";' + nn
-              +  'var textarea_selector = "#'+gvar.tID+'";' + nn
-              +  'var smilies_ = \''+JSON.stringify(smilies_)+'\';' + nn
-
-              +  'var smilies = JSON.parse(smilies_);' + nn
-              +  'var kskemojis = $.map(smilies, function(item, i){' + nn
-              +    'return {' + nn
-              +      'fn: item[0],' + nn
-              +      'bbcode: (isDonatur ? item[1] : "[IMG]"+host+"images/smilies/"+item[0]+"[/IMG]"),' + nn
-              +      'name: (item[3] ? item[3] : item[2])' + nn
-              +    '}' + nn
-              +  '});' + nn
-              
-              +  'var emoji_config = {' + nn
-              +    'at: ":",' + nn
-              +    'data: kskemojis,' + nn
-              +    'displayTpl: "<li><img src=\'"+host+"images/smilies/${fn}\' height=\'20\' width=\'20\' /> ${name}</li>",' + nn
-              +    'insertTpl: "${bbcode}",' + nn
-              +    'delay: 200' + nn
-              +  '};' + nn
-              
-              // initiating
-              +  'var $inputor = jQuery(textarea_selector).atwho(emoji_config);' + nn
-              +  '$inputor.caret("pos", 47);' + nn
-              +  '$inputor.atwho("run");' + nn
-              +'}' // kqrInitAtWho
-              +'setTimeout(function(){ kqrInitAtWho();}, 1234);'
-            ;
-          };
-
           var initAtWho = function(){
             var smilies = [],
                 mapSmlSuffix = {
@@ -8710,7 +8761,6 @@ function smilies_precheck(){
   getValue(KS + 'SMILIES_BULK', function(ret){
     if( ret ){
       clog('smilies_bulk found');
-      clog(ret);
       cb_alldone();
     }
     else{
