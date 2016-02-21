@@ -31,6 +31,7 @@
 // -!--latestupdate
 //
 // v5.3.7 - 2016-02-06 . 1454698439227
+//   css update.
 //   At.js, a github-like autocomplete library :s
 //   normalize asset sub-domain for smilies.
 // 
@@ -82,14 +83,14 @@ gvar.scriptMeta = {
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1511025350 // css revision date; only change this when you change your external css
+  ,cssREV: 1602215370 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 /*
 window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = !1; // development debug, author purpose
+gvar.__DEBUG__ = 1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -129,8 +130,8 @@ var KS = 'KEY_SAVE_',
     ,KEY_SAVE_QR_LastUpdate:['0'] // lastupdate timestamp
 
     ,KEY_SAVE_UPLOAD_LOG:  [''] // history upload (kaskus)
+    ,KEY_SAVE_SMILIES:  [''] // bulk of smilies
     ,KEY_SAVE_CSS_BULK:  [''] // bulk of ext css
-    ,KEY_SAVE_CSS_WIDE:  [''] // bulk of widefix css
     ,KEY_SAVE_CSS_META:  [''] // meta of css [filename;lastupdate]
   }
 ;
@@ -641,14 +642,13 @@ var rSRC = {
     +'<div id="modal_dialog_box" class="modal-dialog-main" style="display:none">'
     +'<div class="modal-dialog-title">'
     + '<span class="modal-dialog-title-text">Preview '+(gvar.edit_mode ? gvar.inner.edit.title : gvar.inner.reply.title)+'</span><span class="kqr-icon-close popbox"/>'
-    + '<h1 id="box_preview_title"></h1>'
+    + '<span class="icon-action" title="'+(gvar.edit_mode ? 'Edit':'Reply')+' Post"><i class="fa fa-'+(gvar.edit_mode?'edit':'comments')+'"></i></span>'
     +'</div>'
     
     +'<div id="box_wrap">'
     + '<div id="box_preview" class="entry-content">'
     +  '<div class="box_preloader"><img src="'+gvar.B.nocache_png+'" /></div>'
     + '</div>' // box_preview
-    + '<div class="box_sp"></div>'
     + '<div class="clearfix"></div>'
     +'</div>' // box_wrap
     
@@ -685,7 +685,7 @@ var rSRC = {
     +   '<div id="box_progress_posting" class="activate-disabled"></div>'
 
     // ghost RCw when box_progress_posting is .activated
-    + (!gvar.user.isDonatur ? '<div class="RCw" id="recaptcha_widget">'+rSRC._BOX_RC_Widget()+'</div>' : '')
+    + (!gvar.user.isDonatur ? '<div class="RCw" id="recaptcha_widget">'+rSRC._BOX_RC_Widget()+'<i class="left-arrow"></i><span>Click to Post</span></div>' : '')
     + '</div>'
     + '<div id="cont_button" class="modal-dialog-buttons" '+(gvar.edit_mode ? ' style="visibility:hidden;"':'')+'>'
     +  '<span class="qr_current_user"></span>'
@@ -921,6 +921,18 @@ var rSRC = {
        // -=-=-=-=-=-=-=-
        // +recent-smilies
        // -=-=-=-=-=-=-=-
+
+       +'<div class="form-group">'
+       + '<label class="'+cls_label+'" for="misc_smiley_kplus">Update Smiley'+gen_helplink("updatesmilies")+'</label>'
+       + '<div class="'+cls_cont+'">'
+       +  '<div class="checkbox last-update-smilies">'
+       +   '231 smilies, last update: 12 Feb 2016'
+       +  '</div>'
+       +  '<div class="checkbox" style="padding-top:0; min-height:auto;">'
+       +   '<a id="chk_upd_smilies" class="goog-btn goog-btn-primary goog-btn-xs btn_upd_smilies" href="javascript:;" title="Update Kaskus Smilies" data-deftext="Update Smilies">Update Smilies</a>'
+       +  '</div>'
+       + '</div>' // cls_cont
+       +'</div>' // fg
 
        +'<div class="form-group">'
        + '<label class="'+cls_label+'" for="misc_smiley_kplus">KaskusPlus Smiley'+gen_helplink("kaskusplus")+'</label>'
@@ -1178,18 +1190,7 @@ var rSRC = {
   getCSS: function(){
     return ""
     +'#box_preview {max-height:' + (parseInt( getHeight() ) - gvar.offsetMaxHeight - gvar.offsetLayer) + 'px;}'
-    +'body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"], .ghost{ display:none; }'
-
-    // hide recapctcha arrow
-    +'.pls-tailbottom, .pls-tailtop, .pls-tailright, .pls-tailleft, .pls-dropTR, .pls-dropBR, .pls-dropBL{display:none!important;}'
-    +'.modal-rc2-pls-container{position: fixed !important;width: 100% !important;left: 0px !important;top: 0px !important;height: 100% !important;overflow-y: auto !important;}'
-    +'.modal-rc2-pls-container table.gc-bubbleDefault{margin:0 auto!important;}'
-
-    // kplus-thingie
-    +'.nav.nav-tabs li a[href="#tkplus"]{background-color: #1b83c3; color: #f0f0f0; padding-left: 30px;}'
-    +'.nav.nav-tabs li.active a[href="#tkplus"]{color:#fff; background: rgba(27,131,195,1); background: -moz-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(27,131,195,1)), color-stop(66%, rgba(112,180,219,1)), color-stop(100%, rgba(238,238,238,1))); background: -webkit-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -o-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: -ms-linear-gradient(top, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); background: linear-gradient(to bottom, rgba(27,131,195,1) 0%, rgba(112,180,219,1) 66%, rgba(238,238,238,1) 100%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#1b83c3", endColorstr="#eeeeee", GradientType=0 );}'
-    +'.icon.icon-kplus{background-image: url(https://plus.kaskus.co.id/plus/img/icon-kplus-forum.png); background-repeat: no-repeat; width: 23px;height: 23px; background-size: contain; position: absolute; left: 4px; top: -2px;}'
-    +'.help-kplus{position: absolute; right: 45px; top: 5px;}'
+    +'.ghost{ display:none; }'
 
     // atwho
     +'.atwho-container .atwho-view{opacity: .945;}'
@@ -1236,7 +1237,9 @@ var rSRC = {
     + 'if("undefined" !== typeof grecaptcha)'
     +  'grecaptcha.render("kqr_recaptcha2", {'
     +    '"sitekey": "6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ",'
-    +    '"callback": function(){ $("#box_post").trigger("click") },'
+    //$("#recaptcha_widget").append("<i class=\'left-arrow\'></i><span>Click to Post</span>")
+    +    '"onload": function(){alert(9)},'
+    +    '"callback": function(){$("#box_post").trigger("click") },'
     +    '"expired-callback": function(){ $("#box_prepost, #sbutton").removeClass("goog-btn-primary").addClass("goog-btn-red"); $("#resetrecap_btn").trigger("click") }'
     +  '});'
     + 'else{'
@@ -1699,15 +1702,15 @@ var _BOX = {
       close_popup()
     });
 
-    var cb_scroll = function(){};
     $('#box_preview').on("scroll", function(){
-      var $me = $(this);
-      var $par = $me.parent();
-      var $tgt = $par.find('.box_sp').first();
+      var $me = $(this),
+          $par = $me.closest(".modal-dialog-main"),
+          $tgt = $par.find('.modal-dialog-title').first()
+      ;
       if( $me.scrollTop() > 0 )
-        !$tgt.hasClass('active') && $tgt.addClass('active')
+        !$tgt.hasClass('glowed') && $tgt.addClass('glowed');
       else
-        $tgt.removeClass('active')
+        $tgt.removeClass('glowed')
     });
   },
   buildQuery: function(topost){
@@ -1823,6 +1826,15 @@ var _BOX = {
               _BOX.init(e);
               _BOX.presubmit();
             });
+
+            // wait for image being loaded, restore top position of dialog to 10px
+            setTimeout(function(){
+              var $kdb = $(".kqr-dialog-base");
+              if( $kdb.get(0).scrollHeight > $kdb.height() ){
+
+                $("#modal_dialog_box").css("top", gvar.offsetLayer+"px")
+              }
+            }, 10);
           }
           else{
             msg = (parsed.message ? parsed.message : 'something went wrong');
@@ -4312,14 +4324,26 @@ var _STG = {
         $tgtkplus.addClass('hide');
     });
 
-    if( !gvar.noCrossDomain ) {// unavailable on Chrome|Opera still T_T
+    if( !gvar.noCrossDomain ) {// unavailable on some browser T_T
       $box.find('#chk_upd_now').click(function(){
         $box.find('#chk_upd_load').show();
         $(this).hide();
         _UPD.caller = '#' + $(this).attr('id');
         _UPD.check(true);
       })
-    }   
+    }
+
+    $box.find('#chk_upd_smilies').click(function(){
+      var $me = $(this);
+
+      // restore it from: data-deftext
+      $me
+        .prop('disabled', true)
+        .text('Updating...')
+      ;
+      _UPD_SMILIES.caller = '#' + $me.attr('id');
+      _UPD_SMILIES.check(true);
+    })
     
     var val, pval, isChk = function(x){ return $box.find(x).is(':checked') };
     $box.find('#box_action').click(function(){
@@ -4712,7 +4736,7 @@ var _STG = {
         ,'QR_HOTKEY_KEY','QR_HOTKEY_CHAR', 'QR_DRAFT'
         ,'LAYOUT_CONFIG','LAYOUT_TPL'
         ,'QR_LastUpdate'
-        ,'UPLOAD_LOG','CSS_BULK','CSS_WIDE','CSS_META','SCUSTOM_NOPARSE'
+        ,'UPLOAD_LOG','SMILIES','CSS_BULK','CSS_META','SCUSTOM_NOPARSE'
         ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP'
         ,'HIDE_GREYLINK','ALWAYS_NOTIFY'
         ,'SHOW_SMILE','TABFIRST_SMILE','SHOW_KASKUS_PLUS','IMGBBCODE_KASKUS_PLUS'
@@ -4732,6 +4756,135 @@ var _STG = {
       }
     })
   }
+};
+
+var _UPD_SMILIES = {
+  caller: null,
+  check: function(flag){
+    clog("inside check update smilies...");
+    var url = '/misc/getsmilies/';
+    var Buckets = {
+      kplus: {
+        smilies: []
+      },
+      kecil: {
+        smilies: []
+      },
+      besar: {
+        smilies: []
+      }
+    };
+    var match_map = [
+      {
+        match: 'Plus',
+        name: 'kplus',
+      },
+      {
+        match: 'Small',
+        name: 'kecil',
+      },
+      {
+        match: 'Standart',
+        name: 'kecil',
+      },
+      {
+        match: 'Only in',
+        unmatch: 'Small',
+        name: 'besar',
+      },
+    ];
+
+    $.get(url, function(ret){
+      clog(ret);
+      var $page, nItem, isTH;
+      if( ret ){
+        $page = $( ret ).find("#smilietable");
+        nItem = $page.find("img").length;
+        clog("Found "+nItem+" images");
+        if( nItem > 0 ){
+          var last_bucket_name, iTr=0;
+          $page.find("tr").each(function(){
+            var $tr = $(this), $isTH, $imgs, $th, lastText;
+            $isTH = $tr.find(">th");
+            if( $isTH.length > 0 ){
+              $th = $isTH.first();
+              lastText = $th.text();
+              clog("collecting head of: "+lastText);
+              // find-match bucket
+              for(var b=0, bL=match_map.length; b<bL; b++){
+                var regx = new RegExp(match_map[b]['match']),
+                    regx_unmatch = (match_map[b]['unmatch'] ? new RegExp(match_map[b]['unmatch']) : null)
+                ;
+                if( regx_unmatch !== null )
+                  regx_unmatch = !regx_unmatch.test(lastText)
+                else
+                  regx_unmatch = true;
+
+                if( regx.test(lastText) && regx_unmatch && 'undefined' != typeof Buckets[match_map[b]['name']] ){
+                  last_bucket_name = match_map[b]['name'];
+
+                  if( 'undefined' != typeof Buckets[match_map[b]['name']]['labels'] ){
+                    Buckets[match_map[b]['name']]['labels'].push({
+                      label: lastText,
+                      offset: iTr
+                    });
+                  }
+                  else if( 'undefined' == typeof Buckets[match_map[b]['name']]['label'] )
+                    Buckets[match_map[b]['name']]['label'] = lastText;
+                  else{
+                    if( 'undefined' == typeof Buckets[match_map[b]['name']]['labels'] )
+                      Buckets[match_map[b]['name']]['labels'] = [];
+                    
+
+                    Buckets[match_map[b]['name']]['labels'].push({
+                      label: Buckets[match_map[b]['name']]['label'],
+                      offset: iTr
+                    });
+                    Buckets[match_map[b]['name']]['labels'].push({
+                      label: lastText
+                    });
+
+                    delete Buckets[match_map[b]['name']]['label'];
+                  }
+
+                  // reset offset
+                  iTr = 0;
+
+                  // continue
+                  return true;
+                }
+              }
+            }
+            else{
+              clog("collecting image..");
+              // collecting image
+              $tr.find("img").each(function(){
+                var $img = $(this);
+                Buckets[last_bucket_name]['smilies'].push([
+                  basename( $img.attr('src') ),
+                  $img.attr('alt'),
+                  $img.attr('title')
+                ]);
+                iTr++;
+              });
+            }
+          });
+
+          // testing...
+          clog( Buckets );
+        }
+        else{
+
+          clog("DOM changed, image item not found");
+        }
+      }
+      else{
+
+        clog("Unable get data from: "+url);
+      }
+    });
+
+  },
 };
 
 /*
@@ -7634,28 +7787,37 @@ function toggleTitle(){
   }
 }
 
+// adjust responsive/position of popup-dialog
 function resize_popup_container(force_width){
-  var bW, bH = parseInt( getHeight() ), mxH, cTop = 0, capcapdialog=null;
-  capcapdialog = $('#wrap-recaptcha_dialog').is(":visible");
-
-  var $mc = $('*[class^="main-content"]').first();
-  var $md = (capcapdialog ? $('.capcay-dialog') : $(".modal-dialog-main"));
-  var mW  = $mc.width();
+  var bW, mxH,
+      bH = parseInt( getHeight() ),
+      cTop = 0,
+      mdTop = 0,
+      $kdb = $(".kqr-dialog-base"),
+      is_capcapdialog = $('#wrap-recaptcha_dialog').is(":visible"),
+      $mc = $('*[class^="main-content"]').first(),
+      mW  = $mc.width(),
+      $md = (is_capcapdialog ? $('.capcay-dialog') : $(".modal-dialog-main")),
+      is_previewdialog = ($md.attr("id") == 'modal_dialog_box')
+  ;
   
   if( force_width )
     bW = force_width;
   else if( $md.hasClass('static_width') )
     bW = $md.outerWidth();
-  else
+  else{
     bW = mW;
+    if( is_previewdialog )
+      bW = (bW - 30);
+  }
   
 
   if( $md.length ){
     // capcay-dialog
-    if( capcapdialog ){
+    if( is_capcapdialog ){
       clog("bH="+bH+'; mH='+$md.height());
 
-      // capcapdialog = true;
+      // is_capcapdialog = true;
       cTop = (bH / 2) - ($md.height() / 2) - 50;
 
       if( cTop < 0 ) 
@@ -7663,10 +7825,22 @@ function resize_popup_container(force_width){
 
       bW = 320;
     }
+    else if( is_previewdialog ){
+      // top pos for edit/preview post
+      mdTop = ($(".header.site-header").height() || 50);
+
+      // on-resize
+      if( $kdb.get(0).scrollHeight > $kdb.height() || ($("#box_preview").height()+$("#cont_button").height() > (bH-mdTop) ) )
+        mdTop = gvar.offsetLayer;
+    }
+    else{
+
+      mdTop = gvar.offsetLayer;
+    }
 
     // (common) modal-dialog-main
     $md
-      .css(!capcapdialog ? 'top':'margin-top', (capcapdialog ? cTop : gvar.offsetLayer) + 'px')
+      .css(!is_capcapdialog ? 'top':'margin-top', (is_capcapdialog ? cTop : mdTop) + 'px')
       .css('width', bW + 'px')
     ;
     mxH = ( bH - gvar.offsetMaxHeight - gvar.offsetLayer );
@@ -7678,7 +7852,7 @@ function resize_popup_container(force_width){
 
     // setting-dialog
     if( $('#modal_setting_box').length ){
-      var $md = $('#modal_setting_box');
+      $md = $('#modal_setting_box');
       $md.find(".st_contributor")
         .css("max-height", (mxH - 70) + 'px');
     }
