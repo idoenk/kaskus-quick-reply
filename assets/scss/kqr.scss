@@ -222,6 +222,10 @@ ul.qrset_mnu li.qrt.curent {
       outline: none;
     }
   }
+  .last-update-smilies{
+    font-size: 11px;
+    color: #666;
+  }
 }
 
 .xkqr select.form-control, .msb select.form-control {
@@ -653,7 +657,7 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
         margin-left: 0;
         padding-right: 10px;
         &:first-child {
-          margin-top: 0;
+          margin-top: 5px;
         }
         .kqr-txta_editor {
           min-height: 300px;
@@ -1392,7 +1396,6 @@ ul {
 
 .goog-tab-content {
   clear: both;
-  background: #eee;
   border: 1px solid #d3d3d3;
   border-left: 0;
   border-right: 0;
@@ -1551,6 +1554,7 @@ ul {
   top: 0;
   line-height: 35px;
   margin-right: 40px;
+  font-weight: 700;
 }
 
 .kqr-icon-close {
@@ -2165,10 +2169,14 @@ ul.settingmnu li.qrt div {
 }
 
 .fg-kbd .itemtabcon {
+  margin-top: 10px;
   em {
     font-style: normal;
     display: inline-block;
-    margin-top: 6px;
+    margin-top: 4px;
+    &:first-child{
+      margin-top: 0;
+    }
   }
   tt {
     font-style: normal;
