@@ -931,7 +931,7 @@ var rSRC = {
        +   'updated: '+(gvar.smiley_bulk && gvar.smiley_bulk.lastupdate ? gvar.smiley_bulk.lastupdate : 'n/a')
        +  '</div>'
        +  '<div class="checkbox" style="padding-top:0; min-height:auto;">'
-       +   '<a id="chk_upd_smilies" class="goog-btn goog-btn-primary goog-btn-xs btn_upd_smilies" href="javascript:;" title="Update Kaskus Smilies" data-deftext="Update Smilies">Update Smilies</a>'
+       +   '<a id="chk_upd_smilies" class="goog-btn goog-btn-default goog-btn-xs btn_upd_smilies" href="javascript:;" title="Update Kaskus Smilies" data-deftext="Update Smilies">Update Smilies</a>'
        +  '</div>'
        + '</div>' // cls_cont
        +'</div>' // fg
