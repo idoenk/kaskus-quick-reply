@@ -926,7 +926,7 @@ var rSRC = {
        + '<label class="'+cls_label+'" for="misc_smiley_kplus">Update Smiley'+gen_helplink("updatesmilies")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox last-update-smilies">'
-       +   '231 smilies, last update: 12 Feb 2016'
+       +   '199 smilies, last update: DD MMM YYY'
        +  '</div>'
        +  '<div class="checkbox" style="padding-top:0; min-height:auto;">'
        +   '<a id="chk_upd_smilies" class="goog-btn goog-btn-primary goog-btn-xs btn_upd_smilies" href="javascript:;" title="Update Kaskus Smilies" data-deftext="Update Smilies">Update Smilies</a>'
