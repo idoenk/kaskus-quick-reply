@@ -8,11 +8,10 @@
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1602065370
-// @timestamp      1454698439227
+// @dtversion      1602255370
+// @timestamp      1456413533819
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
-// @require        http://ichord.github.io/Caret.js/src/jquery.caret.js
 // @description    provide a quick reply feature, under circumstances capcay required.
 // @include        /^https?://www.kaskus.co.id/thread/*/
 // @include        /^https?://www.kaskus.co.id/lastpost/*/
@@ -30,7 +29,7 @@
 //
 // -!--latestupdate
 //
-// v5.3.7 - 2016-02-06 . 1454698439227
+// v5.3.7 - 2016-02-25 . 1456413533819
 //   AtWho switch to img on kplus;
 //   deprecated key:IMGBBCODE_KASKUS_PLUS; non-donat will always be with imgbbcode;
 //   css update.
@@ -79,7 +78,7 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.7';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1454698439227 // version.timestamp
+   timestamp: 1456413533819 // version.timestamp
   ,dtversion: 1602065370 // version.date
 
   ,titlename: 'Quick Reply'
@@ -5013,7 +5012,7 @@ var _UPD_SMILIES = {
         clog("Found "+nItem+" images");
         if( nItem > 0 ){
           var last_bucket_name, iTr=0;
-          
+
           $page.find("tr").each(function(){
             var $tr = $(this), $isTH, $imgs, $th, lastText;
             $isTH = $tr.find(">th");
