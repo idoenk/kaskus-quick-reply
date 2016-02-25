@@ -1545,9 +1545,6 @@ var rSRC = {
           lastupdate: (ret.lastupdate ? getHumanDate(parseFloat(ret.lastupdate)) : null),
           counts: (counter ? counter : 0)
         };
-        clog('smiley_bulk..'+ret.lastupdate);
-        clog(gvar.smiley_bulk);
-
         smilies = null;
       }
 
@@ -4509,28 +4506,34 @@ var _STG = {
       // restore it from: data-deftext
       $me
         .prop('disabled', true)
+        .addClass('goog-btn-disabled')
         .text('Updating...')
+        .blur()
       ;
       _UPD_SMILIES.caller = '#' + $me.attr('id');
-      _UPD_SMILIES.run(function(smiley_bulk_){
-        
-        clog('lastupdate: '+smiley_bulk_.lastupdate)
-        // tpl: X smilies, updated: <DATE>
-        var counter = 0, updText = '',
-            smilies = (smiley_bulk_.ksk_smiley ? smiley_bulk_.ksk_smiley : null),
-            $tgt = $(".last-update-smilies")
-        ;
 
-        if( smilies )
-        for(var field in smilies)
-          counter += smilies[field]['smilies'].length;
+      // git it a break a lil
+      setTimeout(function(){
+        _UPD_SMILIES.run(function(smiley_bulk_){
+          
+          clog('lastupdate: '+smiley_bulk_.lastupdate)
+          // tpl: X smilies, updated: <DATE>
+          var counter = 0, updText = '',
+              smilies = (smiley_bulk_.ksk_smiley ? smiley_bulk_.ksk_smiley : null),
+              $tgt = $(".last-update-smilies")
+          ;
 
-        updText = ''
-          +counter+' smilies, '
-          +'updated: '+(smiley_bulk_.lastupdate ? getHumanDate( parseFloat(smiley_bulk_.lastupdate) ) : 'n/a')
-        ;
-        $tgt.text( updText );
-      });
+          if( smilies )
+          for(var field in smilies)
+            counter += smilies[field]['smilies'].length;
+
+          updText = ''
+            +counter+' smilies, '
+            +'updated: '+(smiley_bulk_.lastupdate ? getHumanDate( parseFloat(smiley_bulk_.lastupdate) ) : 'n/a')
+          ;
+          $tgt.text( updText );
+        });
+      }, 567);
     })
     
     var val, pval, isChk = function(x){ return $box.find(x).is(':checked') };
@@ -4963,31 +4966,34 @@ var _UPD_SMILIES = {
   },
   check: function( cb ){
     clog("inside check update smilies...");
-    var url = '/misc/getsmilies/';
-    var Buckets = {
-      kplus: {smilies: []},
-      kecil: {smilies: []},
-      besar: {smilies: []}
-    };
-    var match_map = [
-      {
-        match: 'Plus',
-        name: 'kplus',
-      },
-      {
-        match: 'Small',
-        name: 'kecil',
-      },
-      {
-        match: 'Standart',
-        name: 'kecil',
-      },
-      {
-        match: 'Only in',
-        unmatch: 'Small',
-        name: 'besar',
-      },
-    ];
+    var url = '/misc/getsmilies/',
+        Buckets = {
+          kplus: {smilies: []},
+          kecil: {smilies: []},
+          besar: {smilies: []}
+        },
+        // identify smilies mapping in new Buckets category 
+        // compare text dom matching w/ regex [match, unmatch]
+        match_map = [
+          {
+            match: 'Plus',
+            name: 'kplus',
+          },
+          {
+            match: 'Small',
+            name: 'kecil',
+          },
+          {
+            match: 'Standart',
+            name: 'kecil',
+          },
+          {
+            match: 'Only in',
+            unmatch: 'Small',
+            name: 'besar',
+          }
+        ]
+    ;
 
     $.get(url, function(ret){
       var $page, nItem, isTH,
@@ -4997,7 +5003,8 @@ var _UPD_SMILIES = {
       if( $caller && $caller.length )
         $caller
           .prop("disabled", false)
-          .text($caller.attr('data-deftext'))
+          .removeClass("goog-btn-disabled")
+          .text( $caller.attr('data-deftext') )
         ;
 
       if( ret ){
@@ -5006,6 +5013,7 @@ var _UPD_SMILIES = {
         clog("Found "+nItem+" images");
         if( nItem > 0 ){
           var last_bucket_name, iTr=0;
+          
           $page.find("tr").each(function(){
             var $tr = $(this), $isTH, $imgs, $th, lastText;
             $isTH = $tr.find(">th");
@@ -8740,12 +8748,12 @@ function init(){
 }
 
 // precheck smilies-bulk in localstorage
+// me being called before triggering getSettings
 function smilies_precheck(){
   clog('inside smilies_precheck..');
   var cb_alldone = (function(args){
     return function(){
-      clog("inside cb_alldone..");
-      clog( args );
+      clog("inside cb_alldone..; load settings..");
       if( args.length )
       for(var i=0, iL=args.length; i<iL; i++){
         if( 'function' == typeof args[i] ){
@@ -8760,8 +8768,41 @@ function smilies_precheck(){
 
   getValue(KS + 'SMILIES_BULK', function(ret){
     if( ret ){
-      clog('smilies_bulk found');
-      cb_alldone();
+      var smldata = null,
+          lasUpdate = 0,
+          counts = 0,
+          smlbulk_interval = parseInt(1000 * 60 * 60 * 24 * 3) // 3-days?
+      ;
+
+      try{
+        smldata = JSON.parse(ret);
+        lasUpdate = parseFloat(smldata.lastupdate);
+      }catch(e){}
+
+      if( smldata ){
+        if( smldata.ksk_smiley ){
+          for(var smltype in smldata.ksk_smiley)
+            if( smldata.ksk_smiley[smltype]['smilies'] )
+              counts += smldata.ksk_smiley[smltype]['smilies'].length;
+        }
+
+        // either expired or count is zero
+        if( ((parseFloat(smlbulk_interval)+lasUpdate ) < (new Date().getTime())) || counts <= 0 ){
+          // running update
+          clog('smilies_bulk expired or is blank, running update');
+          _UPD_SMILIES.run( cb_alldone );
+        }
+        else{
+          // good-togo
+          clog('smilies_bulk Found, lastupdate: '+new Date(lasUpdate));
+          cb_alldone();
+        }
+      }
+      else{
+        // blank-data from storage, run update anyway
+        clog('smilies_bulk got blank from localstorage, running update..');
+        _UPD_SMILIES.run( cb_alldone );
+      }
     }
     else{
       clog("smilies_bulk not found, running update...");
