@@ -1353,9 +1353,7 @@ var rSRC = {
       +  'var host = "'+gvar.kkcdn+'";' + nn
       +  'var textarea_selector = "#'+gvar.tID+'";' + nn
       +  'var smilies_ = \''+JSON.stringify(smilies_)+'\';' + nn
-
-      +  'console.log("isDonatur="+isDonatur);' + nn
-      +  'var smilies = JSON.parse(smilies_);' + nn
+      +  'var smilies = (smilies_ ? JSON.parse(smilies_) : []);' + nn
       +  'var kskemojis = $.map(smilies, function(item, i){' + nn
       +    'var set = {' + nn
       +      'fn: item[0],' + nn
