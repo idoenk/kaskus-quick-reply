@@ -79,7 +79,7 @@ gvar.sversion = 'v' + '5.3.7';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
    timestamp: 1456413533819 // version.timestamp
-  ,dtversion: 1602065370 // version.date
+  ,dtversion: 1602255370 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -91,7 +91,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = 1; // development debug, author purpose
+gvar.__DEBUG__ = !1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -8903,7 +8903,7 @@ if( _$ ){
 }
 
 if( "undefined" === typeof $ ){
-  console.log("Unable to load jQuery, QR halted");
+  console.warn("Unable to load jQuery, QR script halted");
   return !1;
 }
 else{
