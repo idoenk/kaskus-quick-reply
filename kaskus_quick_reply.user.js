@@ -16,9 +16,9 @@
 // @include        /^https?://www.kaskus.co.id/thread/*/
 // @include        /^https?://www.kaskus.co.id/lastpost/*/
 // @include        /^https?://www.kaskus.co.id/post/*/
-// @include        /^https?://www.kaskus.co.id/group/discussion/*/
 // @include        /^https?://www.kaskus.co.id/show_post/*/
-// @include        /^https?://fjb.kaskus.co.id/(thread|product|post)/*/
+// @include        /^https?://www.kaskus.co.id/group/discussion/*/
+// @include        /^https?://fjb.kaskus.co.id/(thread|product|post)\b/*/
 // @author         Idx
 // @exclude        /^https?://www.kaskus.co.id/post_reply/*/
 // @contributor    S4nJi, riza_kasela, p1nk3d_books, b3g0, fazar, bagosbanget, eric., bedjho, Piluze, intruder.master, Rh354, gr0, hermawan64, slifer2006, gzt, Duljondul, reongkacun, otnaibef, ketang8keting, farin, drupalorg, .Shana, t0g3, & all-kaskuser@t=3170414
@@ -30,9 +30,9 @@
 // -!--latestupdate
 //
 // v5.3.7 - 2016-02-25 . 1456413533819
+//   css update.
 //   AtWho switch to img on kplus;
 //   deprecated key:IMGBBCODE_KASKUS_PLUS; non-donat will always be with imgbbcode;
-//   css update.
 //   At.js, a github-like autocomplete library :s
 //   normalize asset sub-domain for smilies.
 // 
@@ -91,7 +91,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = !1; // development debug, author purpose
+gvar.__DEBUG__ = 1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -1353,9 +1353,7 @@ var rSRC = {
       +  'var host = "'+gvar.kkcdn+'";' + nn
       +  'var textarea_selector = "#'+gvar.tID+'";' + nn
       +  'var smilies_ = \''+JSON.stringify(smilies_)+'\';' + nn
-
-      +  'console.log("isDonatur="+isDonatur);' + nn
-      +  'var smilies = JSON.parse(smilies_);' + nn
+      +  'var smilies = (smilies_ ? JSON.parse(smilies_) : []);' + nn
       +  'var kskemojis = $.map(smilies, function(item, i){' + nn
       +    'var set = {' + nn
       +      'fn: item[0],' + nn
@@ -1932,6 +1930,8 @@ var _BOX = {
         rSRC.getSmileySet(true);
     
     myfadeIn( $('#'+_BOX.e.boxpreview), 130, function(){
+      swapCol();
+
       var query = _BOX.buildQuery();
       
       query["preview"] = encodeURI('Preview' + (gvar.thread_type == 'group' ? '' : ' Post'));
@@ -4373,6 +4373,8 @@ var _STG = {
     resize_popup_container(720);
   },
   design:function(){
+    swapCol();
+
     var mnus, mL, idx=0, tpl = '';
     var $box_setting = $('#qr-box_setting');
     mnus = {
@@ -4404,7 +4406,7 @@ var _STG = {
         .css('min-height', $box_setting.find(".cs_left").height()+'px')
         .removeClass("hide")
       ;
-    }, 123)
+    }, 123);
   },
   event_main:function(){
     var $box = $('#modal_setting_box');
@@ -4965,7 +4967,7 @@ var _UPD_SMILIES = {
   },
   check: function( cb ){
     clog("inside check update smilies...");
-    var url = '/misc/getsmilies/',
+    var url = gvar.getsmilies_url,
         Buckets = {
           kplus: {smilies: []},
           kecil: {smilies: []},
@@ -5382,6 +5384,8 @@ var _UPD = {
       cb_early();
   },
   design: function(){
+    swapCol();
+
     var tpl = ''
       +'<b>New'+' '+gvar.titlename+'</b> (v'+ _UPD.meta.cvv[1]+') is available'
       +'<div style="float:right;"><a class="qbutton" href="https://'+ 'greasyfork.org'
@@ -6186,6 +6190,11 @@ function myfadeOut(el,d, cb){
   }else{
     $(el).fadeOut(d, cb);
   }
+}
+function swapCol(){
+  setTimeout(function(){
+    $(".modal-dialog-title").addClass("swpcolor");
+  }, 123);
 }
 
 // load and prep paired kaskus smiley to do quick-quote parsing 
@@ -8257,21 +8266,25 @@ function start_Main(){
   clog('type:'+gvar.thread_type+'; classbody:'+gvar.classbody+'; fresh_st:'+gvar.fresh_st);
 
   // do readonly if [not login, locked thread]
-  if( !gvar.user.id || $('.fa.fa-lock').length || !gvar.fresh_st ){
+  if( !gvar.user.id || $('.fa.fa-lock').length || !gvar.fresh_st || $("#preview-post").length ){
 
     clog('Readonly mode on, coz:['
       +(!gvar.user.id ? 'user-not-login,':'')
       +($('.fa.fa-lock').length ? 'thread-locked,':'')
       +(!gvar.fresh_st ? 'missing-securitytoken,':'')
+      +($("#preview-post").length ? "can't run in advanced reply-page":'')
       +']');
     gvar.readonly = true;
   }
   
-  clog("Injecting getCSS");
-  GM_addGlobalStyle(rSRC.getCSS(), 'kqr-dynamic-css');
+  if( !$("#preview-post").length ){
 
-  // pre, before removing it..
-  $('#quick-reply').addClass('hide');
+    // clog("Injecting getCSS");
+    // GM_addGlobalStyle(rSRC.getCSS(), 'kqr-dynamic-css');
+
+    // // pre, before removing it..
+    // $('#quick-reply').addClass('hide');
+  }
   
   // getSettings( gvar.settings );
   
@@ -8287,18 +8300,20 @@ function start_Main(){
       // setting done? lets roll..
       clog(gvar.settings);
 
+      var $_1stlanded, mq_class = 'multi-quote';
+
+      clog("Injecting getCSS");
+      GM_addGlobalStyle(rSRC.getCSS(), 'kqr-dynamic-css');
+
+      // pre, before removing it..
+      $('#quick-reply').addClass('hide');
+
+
       set_theme_fixups();
 
       if( gvar.settings.hide_greylink )
         $('body').addClass('kqr-nogreylink');
 
-      // main identifier identify, or forget it.. 
-      if( !$(".user-tools").length || ( $("#thread_post_list").length && !gvar.user.id ) ){
-        clog("QR not support on this page"+(!gvar.user.id ? "/not-login":"")+", halted...");
-        return !1;
-      }
-
-      var $_1stlanded, mq_class = 'multi-quote';
       
       // need a delay to get all this settings
       gvar.$w.setTimeout(function(){
@@ -8350,6 +8365,7 @@ function start_Main(){
 
 
         // remove quickreply original dom
+        clog("removing original form quick-reply");
         $('#quick-reply').remove();
 
 
@@ -8616,8 +8632,21 @@ function start_Main(){
       // settimeout pra-loaded settings 
     }
   };
-  // wait_settings_done();
-  smilies_precheck(getSettings, wait_settings_done);
+
+
+  // main identifier identify, or forget it.. 
+  if( !$(".user-tools").length || ( $("#thread_post_list").length && !gvar.user.id ) ){
+    clog("QR not support on this page"+(!gvar.user.id ? "/not-login":"")+", halted...");
+    return !1;
+  }
+  else{
+
+    if( !gvar.readonly && !$("#preview-post").length )
+      smilies_precheck(getSettings, wait_settings_done);
+    else
+      wait_settings_done();
+  }
+
 }
 
 // outside kaskus host
@@ -8679,6 +8708,7 @@ function init(){
   gvar.domain = kdomain.prot + '//' + kdomain.host +'/';
   gvar.kask_domain = kdomain.prot+'//kask.us/';
   gvar.kkcdn = kdomain.prot + '//'+ kdomain.assets + '/';
+  gvar.getsmilies_url = 'http://www.kaskus.co.id/misc/getsmilies/';
 
   // set true to simulate using css from googlecode, [debug-purpose]
   gvar.force_live_css = null;
