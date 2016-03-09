@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.7.2
+// @version        5.3.7.3
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1603105370
-// @timestamp      1457555538331
+// @dtversion      1603105373
+// @timestamp      1457556636122
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -29,12 +29,16 @@
 //
 // -!--latestupdate
 //
-// v5.3.7.2 - 2016-03-10 . 1457555538331
-//   Hotfix: match/unmatch find smilies
+// v5.3.7.3 - 2016-03-10 . 1457556636122
+//   Reactivate KPlus Exclusive with IMG BBCode
+//   Patch FJB preview_post_ajax not rendering smilies
 // 
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.7.2 - 2016-03-10 . 1457555538331
+//   Hotfix: match/unmatch find smilies
+// 
 // v5.3.7 - 2016-03-10 . 1457549755373
 //   Autocomplete smiley settings;
 //   css update.
@@ -69,10 +73,10 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.7.2';
+gvar.sversion = 'v' + '5.3.7.3';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1457555538331 // version.timestamp
+   timestamp: 1457556636122 // version.timestamp
   ,dtversion: 1603105370 // version.date
 
   ,titlename: 'Quick Reply'
@@ -118,6 +122,7 @@ var KS = 'KEY_SAVE_',
     ,KEY_SAVE_HIDE_GREYLINK:    ['1'] // hide grey origin link
     ,KEY_SAVE_ALWAYS_NOTIFY:    ['1'] // activate user notification
     ,KEY_SAVE_SHOW_KASKUS_PLUS: ['1'] // show kaskus plus smiley
+    ,KEY_SAVE_IMGBBCODE_KASKUS_PLUS: ['0'] // use img bbcode for kaskus plus smiley
 
     ,KEY_SAVE_SCUSTOM_NOPARSE:  ['0'] // dont parse custom smiley tag. eg. tag=babegenit. BBCODE=[[babegenit]
 
@@ -924,6 +929,9 @@ var rSRC = {
        +  '<div class="checkbox">'
        +   '<input id="misc_smiley_kplus" class="optchk" type="checkbox" '+(GVS.show_kaskusplus ? ' checked="checked"' : '')+'/>  <em class="checkbox-text checkbox-desc">(require reload page)</em>'
        +  '</div>'
+       +  '<div id="misc_smiley_kplus_child" class="fg-sub'+(GVS.show_kaskusplus ? '':' hide')+'">'
+       +  '<label><input id="misc_smiley_kplus_bbcode_img" class="optchk" type="checkbox" '+(GVS.kaskusplus_bbcode_img ? ' checked="checked"' : '')+'/> Use [IMG][/IMG] BBCODE</label>'
+       +  '</div>'
        + '</div>' // cls_cont
        +'</div>' // fg
 
@@ -1358,7 +1366,7 @@ var rSRC = {
       +  '}' + nn
       +  '$.fn.atwho.debug = !1;' + nn
 
-      +  'var isDonatur = '+(gvar.user.isDonatur ? '1' : '!1')+';' + nn
+      +  'var kPlusBBcodeIMG = '+(gvar.settings.kaskusplus_bbcode_img ? '1' : '!1')+';' + nn
       +  'var host = "'+gvar.kkcdn+'";' + nn
       +  'var textarea_selector = "#'+gvar.tID+'";' + nn
       +  'var smilies_ = \''+JSON.stringify(smilies_)+'\';' + nn
@@ -1370,7 +1378,7 @@ var rSRC = {
       +      'name: (item[3] ? item[3] : item[2])' + nn
       +    '};' + nn
       +    'if( set.name.indexOf("[Ps]") !== -1 )' + nn
-      +    ' set.bbcode = (isDonatur ? set.bbcode : "[IMG]"+host+"images/smilies/"+item[0]+"[/IMG]");' + nn
+      +    ' set.bbcode = (!kPlusBBcodeIMG ? set.bbcode : "[IMG]"+host+"images/smilies/"+item[0]+"[/IMG]");' + nn
       +    'return set;' + nn
       +  '});' + nn
       
@@ -1693,78 +1701,89 @@ var _BOX = {
       }
       try{
         
-        _BOX.e.boxaction = location.protocol+'//'+location.hostname+'/misc/preview_post_ajax';
+        _BOX.e.boxaction = location.protocol+'//'+gvar.kaskus_domain+'/misc/preview_post_ajax';
 
         if( query!="" )
-        gvar.sTryRequest = $.post( _BOX.e.boxaction, query, function(data) {
-          var valid, parsed, mH, imgTitle, titleStr, msg, func;
-          var $box_preview, $btn_prepost;
+          gvar.sTryRequest = $.ajax({
+            url: _BOX.e.boxaction,
+            type: 'post',
+            data: query,
+            xhrFields: {
+              withCredentials: true
+            },
+            dataType: 'json',
+            success: function(data){
+              var valid, parsed, mH, imgTitle, titleStr, msg, func;
+              var $box_preview, $btn_prepost;
 
-          // over-ride handler
-          parsed = JSON.parse(data);
-          mH = ( parseInt( getHeight() ) - gvar.offsetMaxHeight - gvar.offsetLayer );
+              // over-ride handler
+              if( 'string' == typeof data )
+                parsed = $.parseJSON(data);
+              else
+                parsed = data;
+              mH = ( parseInt( getHeight() ) - gvar.offsetMaxHeight - gvar.offsetLayer );
 
-          $box_preview = $('#box_preview');
-          $btn_prepost = $('#box_prepost');
-          $box_preview.css('max-height', mH + 'px');
+              $box_preview = $('#box_preview');
+              $btn_prepost = $('#box_prepost');
+              $box_preview.css('max-height', mH + 'px');
 
-          if( parsed && !parsed.error && parsed.message ){
-            $box_preview.html( parsed.message );
+              if( parsed && !parsed.error && parsed.message ){
+                $box_preview.html( parsed.message );
 
-            // render mls-img to its data-src
-            $box_preview.find(".mls-img").each(function(){
-              var $img = $(this);
-              $img
-                .attr("src", $img.attr("data-src"))
-                .removeClass("mls-img")
-                .removeAttr("data-src")
-                .addClass("rjn-img")
-              ;
-            });
-            $('#cont_button').show();
+                // render mls-img to its data-src
+                $box_preview.find(".mls-img").each(function(){
+                  var $img = $(this);
+                  $img
+                    .attr("src", $img.attr("data-src"))
+                    .removeClass("mls-img")
+                    .removeAttr("data-src")
+                    .addClass("rjn-img")
+                  ;
+                });
+                $('#cont_button').show();
 
-            $btn_prepost.click(function(e){
-              _BOX.init(e);
-              _BOX.presubmit();
-            });
+                $btn_prepost.click(function(e){
+                  _BOX.init(e);
+                  _BOX.presubmit();
+                });
 
-            // wait for image being loaded, restore top position of dialog to 10px
-            setTimeout(function(){
-              var $kdb = $(".kqr-dialog-base");
-              if( $kdb.get(0).scrollHeight > $kdb.height() ){
+                // wait for image being loaded, restore top position of dialog to 10px
+                setTimeout(function(){
+                  var $kdb = $(".kqr-dialog-base");
+                  if( $kdb.get(0).scrollHeight > $kdb.height() ){
 
-                $("#modal_dialog_box").css("top", gvar.offsetLayer+"px")
+                    $("#modal_dialog_box").css("top", gvar.offsetLayer+"px")
+                  }
+                }, 10);
               }
-            }, 10);
-          }
-          else{
-            msg = (parsed.message ? parsed.message : 'something went wrong');
-            func = function(){
-              $box_preview
-                .html('<div class="qrerror">'+msg+'</div>');
-            };
-            _NOFY.btnset = false;
-            _NOFY.init({mode:'error', msg:msg, cb:func});
-          }
+              else{
+                msg = (parsed.message ? parsed.message : 'something went wrong');
+                func = function(){
+                  $box_preview
+                    .html('<div class="qrerror">'+msg+'</div>');
+                };
+                _NOFY.btnset = false;
+                _NOFY.init({mode:'error', msg:msg, cb:func});
+              }
 
-          // std-operation
-          _BOX.attach_userphoto('#cont_button .qr_current_user', 'Signed in as ');
+              // std-operation
+              _BOX.attach_userphoto('#cont_button .qr_current_user', 'Signed in as ');
 
-          if( !gvar.user.isDonatur ){
-            if( gvar.edit_mode || gvar.is_solvedrobot )
-              $btn_prepost.addClass('goog-btn-primary').removeClass('goog-btn-red');
-            else
-              $btn_prepost.removeClass('goog-btn-primary').addClass('goog-btn-red');
-          }
-          $btn_prepost.focus().delay(1200);
-          
-          // eof--over-ride handler
-          // -=-=--=-=--=-=--=-=--=-=--=-=-
-        })
-          .fail(function(){
-            _AJAX.refetch_current_page();
-          })
-        ;
+              if( !gvar.user.isDonatur ){
+                if( gvar.edit_mode || gvar.is_solvedrobot )
+                  $btn_prepost.addClass('goog-btn-primary').removeClass('goog-btn-red');
+                else
+                  $btn_prepost.removeClass('goog-btn-primary').addClass('goog-btn-red');
+              }
+              $btn_prepost.focus().delay(1200);
+              
+              // eof--over-ride handler
+              // -=-=--=-=--=-=--=-=--=-=--=-=-
+            },
+            error: function(){
+              _AJAX.refetch_current_page();
+            }
+          });
       }catch(e){}
     });
   },
@@ -4431,6 +4450,11 @@ var _STG = {
         setValue(KS+'SCUSTOM_NOPARSE', String( value ));
         gvar.settings.scustom_noparse = (value == '1' ? true : false);
 
+        // IMGBBCODE_KASKUS_PLUS   
+        value = (isChk( '#misc_smiley_kplus_bbcode_img' ) ? '1' : '0');   
+        setValue(KS+'IMGBBCODE_KASKUS_PLUS', String( value ));    
+        gvar.settings.kaskusplus_bbcode_img = (value == '1' ? true : false);
+
 
         // THEME_FIXUP
         value = $box.find('#misc_theme_fixups').val();
@@ -4580,6 +4604,7 @@ var _STG = {
       ,'QR_HOTKEY_KEY','QR_HOTKEY_CHAR','QR_DRAFT'
       ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP','HIDE_GREYLINK','ALWAYS_NOTIFY'
       ,'SHOW_SMILE','TABFIRST_SMILE','AUTOCOMPLETE_SML','LAYOUT_CONFIG','LAYOUT_TPL','SCUSTOM_NOPARSE','CUSTOM_SMILEY'
+      ,'IMGBBCODE_KASKUS_PLUS'
     ];
     var keykomeng = {
        'UPDATES':'Check Update enabled? validValue=[1,0]'
@@ -4601,6 +4626,7 @@ var _STG = {
       ,'SHOW_KASKUS_PLUS':'Show Kaskus Plus Smilies; validValue=[1,0]'
       ,'SCUSTOM_NOPARSE':'Smiley Custom Tags will not be parsed; validValue=[1,0]'
       ,'CUSTOM_SMILEY':'Smiley Custom\'s Raw-Data; [tagname|smileylink]'
+      ,'IMGBBCODE_KASKUS_PLUS':'Use IMG BBCode for Kaskus Plus Smilies; validValue=[1,0]'
     };
     
     var uplkeys = ['UPLOAD_LOG'];
@@ -4686,10 +4712,8 @@ var _STG = {
           ,'UPLOAD_LOG','SMILIES_BULK','CSS_BULK','CSS_META','SCUSTOM_NOPARSE'
           ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP'
           ,'HIDE_GREYLINK','ALWAYS_NOTIFY'
-          ,'SHOW_SMILE','TABFIRST_SMILE','AUTOCOMPLETE_SML','SHOW_KASKUS_PLUS'
-
-          // deprecated on-next release...
-          ,'IMGBBCODE_KASKUS_PLUS'
+          ,'SHOW_SMILE','TABFIRST_SMILE','AUTOCOMPLETE_SML'
+          ,'SHOW_KASKUS_PLUS','IMGBBCODE_KASKUS_PLUS'
         ];
         var kL=keys.length, waitfordel, alldone=0;
         for(var i=0; i<kL; i++){
@@ -6578,7 +6602,7 @@ function do_smile(Obj, nospace){
 
     // intervene to force use img-bbcode on particular condition
     iskplus = Obj.attr('data-kplus');
-    if( !gvar.user.isDonatur && 'undefined' != typeof iskplus && iskplus ){
+    if( gvar.settings.kaskusplus_bbcode_img && 'undefined' != typeof iskplus && iskplus ){
       _src=Obj.attr("src");
       _TEXT.setValue( '['+tagIMG+']'+_src+'[/'+tagIMG+']' + (!nospace ? ' ':''));
     }
@@ -7699,6 +7723,7 @@ function getSettings(stg){
   getValue(KS+'HIDE_GREYLINK', function(ret){ settings.hide_greylink=(ret=='1') });
   getValue(KS+'ALWAYS_NOTIFY', function(ret){ settings.always_notify=(ret=='1') });
   getValue(KS+'SHOW_KASKUS_PLUS', function(ret){ settings.show_kaskusplus=(ret=='1') });
+  getValue(KS+'IMGBBCODE_KASKUS_PLUS', function(ret){ settings.kaskusplus_bbcode_img=(ret=='1') });
 
   // recount smilies;
   rSRC.getSmileyBulkInfo();
@@ -8394,7 +8419,6 @@ function start_Main(){
     else
       wait_settings_done();
   }
-
 }
 
 // outside kaskus host
@@ -8454,9 +8478,10 @@ function init(){
   var kdomain = domainParse();
 
   gvar.domain = kdomain.prot + '//' + kdomain.host +'/';
+  gvar.kaskus_domain = 'www.kaskus.co.id';
   gvar.kask_domain = kdomain.prot+'//kask.us/';
   gvar.kkcdn = kdomain.prot + '//'+ kdomain.assets + '/';
-  gvar.getsmilies_url = 'http://www.kaskus.co.id/misc/getsmilies/';
+  gvar.getsmilies_url = 'http://'+gvar.kaskus_domain+'/misc/getsmilies/';
 
   // set true to simulate using css from googlecode, [debug-purpose]
   gvar.force_live_css = null;
