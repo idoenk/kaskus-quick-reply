@@ -5,10 +5,6 @@ Kaskus Quick Reply is a userscript designed for donatur or regular user in Kasku
 # About this branch 
 This master branch is development stage of [Kaskus Quick Reply - Greasyfork](https://greasyfork.org/en/scripts/96-kaskus-quick-reply-evo).
 
-Fork it on github:
-[https://github.com/ichord/At.js](https://github.com/ichord/At.js)
-
-
 # Contribute
 You can contribute in any different way. There are several channels you can involved in discussion. Main thread in Kaskus-CCPB [:: All About Mozilla Firefox (Add-ons, Scripts, Fans Club) ::](http://kask.us/hCZmM), report issues of stable-stage in [Greasyfork](https://greasyfork.org/en/forum/discussion/196/x), or you can also help find bugs (and directly report them in [issue tracker](https://github.com/idoenk/kaskus-quick-reply/issues))
 
