@@ -8,8 +8,8 @@
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1602255370
-// @timestamp      1456413533819
+// @dtversion      1603105370
+// @timestamp      1457549755373
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -29,7 +29,7 @@
 //
 // -!--latestupdate
 //
-// v5.3.7 - 2016-02-25 . 1456413533819
+// v5.3.7 - 2016-03-10 . 1457549755373
 //   Autocomplete smiley settings;
 //   css update.
 //   AtWho switch to IMG BBCode on kplus smilies (regular user);
@@ -51,16 +51,6 @@
 // 
 // v5.3.5.1 - 2015-11-02 . 1446473529196
 //   Paired emoted Kaskus Plus
-// 
-// v5.3.4 - 2015-10-12 . 1444660624069
-//   Patch unnecessary encoded string, applied to IMG and LINK;
-//   Patch parsing redirect url with quick-quote;
-// 
-// v5.3.3 - 2015-07-09 . 1436375672078
-//   fix jump-around textarea, kill sti on typing avoid lag-timing;
-//   patch fixed BBCode toolbar, change top-elemen orientation in fixed_markItUp;
-//   BBCode Setting only when Elastic Editor enabled;
-// 
 //
 //
 // v0.1 - 2010-06-29
@@ -79,8 +69,8 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.7';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1456413533819 // version.timestamp
-  ,dtversion: 1602255370 // version.date
+   timestamp: 1457549755373 // version.timestamp
+  ,dtversion: 1603105370 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -92,7 +82,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = 1; // development debug, author purpose
+gvar.__DEBUG__ = !1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
