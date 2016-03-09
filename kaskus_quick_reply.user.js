@@ -122,7 +122,7 @@ var KS = 'KEY_SAVE_',
     ,KEY_SAVE_HIDE_GREYLINK:    ['1'] // hide grey origin link
     ,KEY_SAVE_ALWAYS_NOTIFY:    ['1'] // activate user notification
     ,KEY_SAVE_SHOW_KASKUS_PLUS: ['1'] // show kaskus plus smiley
-    ,KEY_SAVE_IMGBBCODE_KASKUS_PLUS: ['0'] // use img bbcode for kaskus plus smiley
+    ,KEY_SAVE_IMGBBCODE_KASKUS_PLUS: ['1'] // use img bbcode for kaskus plus smiley
 
     ,KEY_SAVE_SCUSTOM_NOPARSE:  ['0'] // dont parse custom smiley tag. eg. tag=babegenit. BBCODE=[[babegenit]
 
@@ -4023,7 +4023,7 @@ var _SML_ = {
 
             tmp_smilies = smilies;
             for(var j=0, jL=segment.length; j<jL; j++){
-              tpl += '<div class="bbsection"><strong>'+segment[j]['label']+(target == '#tkplus' && !gvar.user.isDonatur ? ' <div class="kplus-bbhelp" title="Smiley Shortcode is only for KASKUS Plus Membership">&mdash;BBCode-Mode <i class="stage stage-help"></i></div>':'')+'</strong></div>';
+              tpl += '<div class="bbsection"><strong>'+segment[j]['label']+(target == '#tkplus' && gvar.settings.kaskusplus_bbcode_img ? ' <div class="kplus-bbhelp" title="Smiley Shortcode is only for KASKUS Plus Membership">&mdash;BBCode-Mode <i class="stage stage-help"></i></div>':'')+'</strong></div>';
               smilies = tmp_smilies.slice(parseFloat(segment[j]['index']), (segment[j]['n'] ? parseFloat(segment[j]['n']) : undefined));
               $.each(smilies, function(i, img){
 
