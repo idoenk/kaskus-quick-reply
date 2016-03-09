@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.7
+// @version        5.3.7.1
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -29,6 +29,12 @@
 //
 // -!--latestupdate
 //
+// v5.3.7.1 - 2016-03-10 . 1457549755373
+//   Hotfix: match/unmatch find smilies
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.7 - 2016-03-10 . 1457549755373
 //   Autocomplete smiley settings;
 //   css update.
@@ -37,9 +43,6 @@
 //   deprecated key:IMGBBCODE_KASKUS_PLUS; non-donat will always be with imgbbcode;
 //   normalize asset sub-domain for smilies.
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.6.1 - 2015-12-17 . 1450371144167
 //   +New Kaskus Emotes; Rearrange smilies;
 //   Kplus in option of [autoshow, first-tab]
@@ -66,7 +69,7 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.7';
+gvar.sversion = 'v' + '5.3.7.1';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
    timestamp: 1457549755373 // version.timestamp
@@ -4742,7 +4745,7 @@ var _UPD_SMILIES = {
             name: 'kplus',
           },
           {
-            match: 'Small',
+            match: 'small',
             name: 'kecil',
           },
           {
@@ -4751,7 +4754,7 @@ var _UPD_SMILIES = {
           },
           {
             match: 'Only in',
-            unmatch: 'Small',
+            unmatch: 'small',
             name: 'besar',
           }
         ]
