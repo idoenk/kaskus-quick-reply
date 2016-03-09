@@ -30,10 +30,11 @@
 // -!--latestupdate
 //
 // v5.3.7 - 2016-02-25 . 1456413533819
+//   Autocomplete smiley settings;
 //   css update.
-//   AtWho switch to img on kplus;
-//   deprecated key:IMGBBCODE_KASKUS_PLUS; non-donat will always be with imgbbcode;
+//   AtWho switch to IMG BBCode on kplus smilies (regular user);
 //   At.js, a github-like autocomplete library :s
+//   deprecated key:IMGBBCODE_KASKUS_PLUS; non-donat will always be with imgbbcode;
 //   normalize asset sub-domain for smilies.
 // 
 // -/!latestupdate---
@@ -117,6 +118,7 @@ var KS = 'KEY_SAVE_',
 
     ,KEY_SAVE_SHOW_SMILE:       ['0,kecil'] // [flag,type] of autoshow_smiley
     ,KEY_SAVE_TABFIRST_SMILE:   ['kecil'] // first tab of smilies, preference of first load
+    ,KEY_SAVE_AUTOCOMPLETE_SML: ['1,kecil,besar,kplus'] // autocomplete smilies
     ,KEY_SAVE_LAYOUT_CONFIG:    ['']  // flag of template_on
     ,KEY_SAVE_LAYOUT_TPL:       ['']  // template layout, must contain: "{message}". eg. [B]{message}[/B]
     ,KEY_SAVE_THEME_FIXUP:      ['']  // theme fixer, hack css theme for viewing purpose
@@ -786,18 +788,19 @@ var rSRC = {
 
 
   _TPLSettingGeneral: function(){
-    var GVS = gvar.settings;
-     nb = '&nbsp;',
-     hk = String(gvar.settings.hotkeykey).split(','),
-     cUL = String(gvar.settings.userLayout.config).split(','),
-     cls_label = 'col-sm-4 control-label',
-     cls_cont = 'col-sm-8',
-     GVS_aus = GVS.autoload_smiley,
-     GVS_ftab = GVS.tabfirst_smiley,
-     gen_helplink = function(hash, title){
-      var url = 'https://greasyfork.org/en/forum/discussion/3164/kaskus-quick-reply-features-how-to#'+hash;
-      return '<a href="'+url+'" title="'+(title ? title : '')+'" target="_blank"><i class="stage stage-help"></i></a>';
-     }
+    var GVS = gvar.settings,
+        nb = '&nbsp;',
+        hk = String(gvar.settings.hotkeykey).split(','),
+        cUL = String(gvar.settings.userLayout.config).split(','),
+        cls_label = 'col-sm-4 control-label',
+        cls_cont = 'col-sm-8',
+        GVS_aus = GVS.autoload_smiley,
+        GVS_auc = GVS.autocomplete_smiley,
+        GVS_ftab = GVS.tabfirst_smiley,
+        gen_helplink = function(hash, title){
+          var url = 'https://greasyfork.org/en/forum/discussion/3164/kaskus-quick-reply-features-how-to#'+hash;
+          return '<a href="'+url+'" title="'+(title ? title : '')+'" target="_blank"><i class="stage stage-help"></i></a>';
+        }
     ;
     clog(GVS_ftab);
 
@@ -923,34 +926,32 @@ var rSRC = {
        // -=-=-=-=-=-=-=-
 
        +'<div class="form-group">'
-       + '<label class="'+cls_label+'">Update Smiley'+gen_helplink("updatesmilies")+'</label>'
-       + '<div class="'+cls_cont+'">'
-       +  '<div class="checkbox last-update-smilies">'
-       +   (gvar.smiley_bulk && gvar.smiley_bulk.counts ? gvar.smiley_bulk.counts : 0)+' smilies, '
-       +   'updated: '+(gvar.smiley_bulk && gvar.smiley_bulk.lastupdate ? gvar.smiley_bulk.lastupdate : 'n/a')
-       +  '</div>'
-       +  '<div class="checkbox" style="padding-top:0; min-height:auto;">'
-       +   '<a id="chk_upd_smilies" class="goog-btn goog-btn-default goog-btn-xs btn_upd_smilies" href="javascript:;" title="Update Kaskus Smilies" data-deftext="Update Smilies">Update Smilies</a>'
-       +  '</div>'
-       + '</div>' // cls_cont
-       +'</div>' // fg
-
-       +'<div class="form-group">'
-       + '<label class="'+cls_label+'" for="misc_smiley_kplus">KaskusPlus Smiley'+gen_helplink("kaskusplus")+'</label>'
+       + '<label class="'+cls_label+'" for="misc_smiley_kplus">KaskusPlus Exclusive'+gen_helplink("kaskusplus")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox">'
        +   '<input id="misc_smiley_kplus" class="optchk" type="checkbox" '+(GVS.show_kaskusplus ? ' checked="checked"' : '')+'/>  <em class="checkbox-text checkbox-desc">(require reload page)</em>'
        +  '</div>'
-       +(!gvar.user.isDonatur ? ''
-        +  '<div id="misc_smiley_kplus_child" class="fg-sub'+(GVS.show_kaskusplus ? '':' hide')+'">'
-        // +  '<label><input id="misc_smiley_kplus_bbcode_img" class="optchk" type="checkbox" '+(GVS.kaskusplus_bbcode_img ? ' checked="checked"' : '')+'/> Use [IMG][/IMG] BBCODE</label>'
-        +  '</div>'
-        : '')
        + '</div>' // cls_cont
        +'</div>' // fg
 
        +'<div class="form-group">'
-       + '<label class="'+cls_label+'" for="misc_autoshow_smile">AutoShow Smiley'+gen_helplink("autoshowsmiley")+'</label>'
+       + '<label class="'+cls_label+'" for="misc_smiley_autocomplete">Auto Complete (<a href="https://github.com/ichord/At.js/tree/gh-pages" target="_blank">At.js</a>)'+gen_helplink("autocomplete")+'</label>'
+       + '<div class="'+cls_cont+'">'
+       +  '<div class="checkbox">'
+       +   '<input id="misc_smiley_autocomplete" class="optchk" type="checkbox" '+(GVS_auc[0]=='1' ? ' checked="checked"' : '')+'/> <em class="checkbox-text checkbox-desc">(require reload page)</em>'
+       +  '</div>'
+       +  '<div id="misc_smiley_autocomplete_child" class="fg-sub'+(GVS_auc[0]=='1' ? '':' hide')+'">'
+       +   '<div class="checkbox">'
+       +    '<label><input name="auc" type="checkbox" value="kecil" '+( GVS_auc[1].indexOf('kecil') !== -1 ? 'checked':'')+'/> Kecil</label>'
+       +    '<label><input name="auc" type="checkbox" value="besar" '+( GVS_auc[1].indexOf('besar') !== -1 ? 'checked':'')+'/> Besar</label>'
+       +    '<label class="kplus_first'+(GVS.show_kaskusplus ? '':' hide')+'"><input name="auc" type="checkbox" value="kplus" '+(GVS_auc[1].indexOf('kplus') !== -1 ? 'checked':'')+'/> KPlus</label>'
+       +   '</div>'
+       +  '</div>'
+       + '</div>' // cls_cont
+       +'</div>' // fg
+
+       +'<div class="form-group">'
+       + '<label class="'+cls_label+'" for="misc_autoshow_smile">Auto Show'+gen_helplink("autoshowsmiley")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox">'
        +   '<input id="misc_autoshow_smile" class="optchk" type="checkbox" '+(GVS_aus[0]=='1' ? 'checked="checked"':'')+'/>'
@@ -967,7 +968,7 @@ var rSRC = {
        +'</div>' // fg
 
        +'<div class="form-group">'
-       + '<label class="'+cls_label+'">First Tab Smiley'+gen_helplink("tabfirst")+'</label>'
+       + '<label class="'+cls_label+'">First Tab'+gen_helplink("tabfirst")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="fg-sub">'
        +   '<div class="radio">'
@@ -988,6 +989,21 @@ var rSRC = {
        +  '</div>'
        + '</div>' // cls_cont
        +'</div>' // fg
+
+       +'<div class="form-group">'
+       + '<label class="'+cls_label+'">Update Kaskus Smilies'+gen_helplink("update-kaskus-smilies")+'</label>'
+       + '<div class="'+cls_cont+'">'
+       +  '<div class="checkbox last-update-smilies">'
+       +   (gvar.smiley_bulk && gvar.smiley_bulk.counts ? gvar.smiley_bulk.counts : 0)+' smilies, '
+       +   'updated: '+(gvar.smiley_bulk && gvar.smiley_bulk.lastupdate ? gvar.smiley_bulk.lastupdate : 'n/a')
+       +  '</div>'
+       +  '<div class="checkbox" style="padding-top:0; min-height:auto;">'
+       +   '<a id="chk_upd_smilies" class="goog-btn goog-btn-default goog-btn-xs btn_upd_smilies" href="javascript:;" title="Update Kaskus Smilies" data-deftext="Update Smilies">Update Smilies</a>'
+       +  '</div>'
+       + '</div>' // cls_cont
+       +'</div>' // fg
+
+
       +'</div>' // .itemtabcon
     +'</div>' // role[form]
     ;
@@ -1459,6 +1475,35 @@ var rSRC = {
       default: return false; break;
     }
   },
+  getSmileyBulkInfo: function(cb){
+    getValue(KS+'SMILIES_BULK', function(ret){
+      var smilies = {}, counter=0;
+      if( ret ){
+        try{
+          ret = JSON.parse( ret );
+        }catch(e){}
+
+        smilies = (ret.ksk_smiley ? ret.ksk_smiley : null);
+        clog( smilies );
+        if( smilies ){
+          for(var smtype in smilies){
+
+            gvar['sm'+smtype] = smilies[smtype];
+            counter += smilies[smtype]['smilies'].length;
+          }
+        }
+
+        gvar.smiley_bulk = {
+          lastupdate: (ret.lastupdate ? getHumanDate(parseFloat(ret.lastupdate)) : null),
+          counts: (counter ? counter : 0)
+        };
+        smilies = null;
+      }
+
+      if('function' == typeof cb)
+        cb();
+    });
+  },
   getSmileySet: function(onlyCustom, cb){
     //Format will be valid like this:
     // 'keyname1|link1,keyname2|link2'
@@ -1521,33 +1566,7 @@ var rSRC = {
 
 
 
-    getValue(KS+'SMILIES_BULK', function(ret){
-      var smilies = {}, counter=0;
-      if( ret ){
-        try{
-          ret = JSON.parse( ret );
-        }catch(e){}
-
-        smilies = (ret.ksk_smiley ? ret.ksk_smiley : null);
-        clog( smilies );
-        if( smilies ){
-          for(var smtype in smilies){
-
-            gvar['sm'+smtype] = smilies[smtype];
-            counter += smilies[smtype]['smilies'].length;
-          }
-        }
-
-        gvar.smiley_bulk = {
-          lastupdate: (ret.lastupdate ? getHumanDate(parseFloat(ret.lastupdate)) : null),
-          counts: (counter ? counter : 0)
-        };
-        smilies = null;
-      }
-
-      if('function' == typeof cb)
-        cb();
-    });
+    rSRC.getSmileyBulkInfo( cb );
   },
   getSmileySet_OLD: function(custom, cb){
     //Format will be valid like this:
@@ -4630,6 +4649,20 @@ var _STG = {
           value[1] = 'kecil';
         setValue(KS+'SHOW_SMILE', String( value ));
 
+        // autocomplete smiley
+        value = [];
+        if( $inner_setting.find("[name='auc']:checked").length ){
+          value.push( isChk( '#misc_smiley_autocomplete' ) ? '1' : '0' );
+          $inner_setting.find("[name='auc']:checked").each(function(){
+            var val_ = $(this).val();
+            if( misc.indexOf(val_) !== -1 )
+              value.push( val_ );
+          });
+        }else{
+          value.push('0');
+        }
+        setValue(KS+'AUTOCOMPLETE_SML', String( value ));
+
         // tabfirst_smile
         value = '';
         value = $inner_setting.find("[name='ftab']:checked").val();
@@ -4816,7 +4849,7 @@ var _STG = {
        'UPDATES','UPDATES_INTERVAL','SHOW_KASKUS_PLUS'
       ,'QR_HOTKEY_KEY','QR_HOTKEY_CHAR','QR_DRAFT'
       ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP','HIDE_GREYLINK','ALWAYS_NOTIFY'
-      ,'SHOW_SMILE','TABFIRST_SMILE','LAYOUT_CONFIG','LAYOUT_TPL','SCUSTOM_NOPARSE','CUSTOM_SMILEY'
+      ,'SHOW_SMILE','TABFIRST_SMILE','AUTOCOMPLETE_SML','LAYOUT_CONFIG','LAYOUT_TPL','SCUSTOM_NOPARSE','CUSTOM_SMILEY'
     ];
     var keykomeng = {
        'UPDATES':'Check Update enabled? validValue=[1,0]'
@@ -4829,7 +4862,8 @@ var _STG = {
       ,'HIDE_GREYLINK':'Hide grey origin link; validValue=[1,0]'
       ,'ALWAYS_NOTIFY':'Trigger Notification of Quoted Post; validValue=[1,0]'
       ,'SHOW_SMILE':'Autoload smiley; [isEnable,smileytype]; validValue1=[1,0]; validValue2=[kecil,besar,custom]'
-      ,'TABFIRST_SMILE':'Set First Tab on smilies boxset; validValue2=[kecil,besar,custom]'
+      ,'TABFIRST_SMILE':'Set First Tab on smilies boxset; validValue=[kecil,besar,custom]'
+      ,'AUTOCOMPLETE_SML':'Auto Complete smiley; [isEnable,smiletype,..] validValue1=[1,0]; validValue2=[kecil,besar,kplus]'
       ,'QR_HOTKEY_KEY':'Key of QR-Hotkey; [Ctrl,Shift,Alt]; validValue=[1,0]'
       ,'QR_HOTKEY_CHAR':'Char of QR-Hotkey; validValue=[A-Z0-9]'
       ,'LAYOUT_CONFIG':'Layout Config; [userid=isNaN,isEnable_autoLAYOUT]; isEnable\'s validValue=[1,0]'
@@ -4922,7 +4956,7 @@ var _STG = {
           ,'UPLOAD_LOG','SMILIES_BULK','CSS_BULK','CSS_META','SCUSTOM_NOPARSE'
           ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP'
           ,'HIDE_GREYLINK','ALWAYS_NOTIFY'
-          ,'SHOW_SMILE','TABFIRST_SMILE','SHOW_KASKUS_PLUS'
+          ,'SHOW_SMILE','TABFIRST_SMILE','AUTOCOMPLETE_SML','SHOW_KASKUS_PLUS'
 
           // deprecated on-next release...
           ,'IMGBBCODE_KASKUS_PLUS'
@@ -7927,6 +7961,7 @@ function getSettings(stg){
   getValue(KS+'SCUSTOM_NOPARSE', function(ret){ settings.scustom_noparse=(ret=='1') });
   getValue(KS+'SHOW_SMILE', function(ret){ settings.autoload_smiley=ret });
   getValue(KS+'TABFIRST_SMILE', function(ret){ settings.tabfirst_smiley=ret });
+  getValue(KS+'AUTOCOMPLETE_SML', function(ret){ settings.autocomplete_smiley=ret });
 
   getValue(KS+'ELASTIC_EDITOR', function(ret){ settings.elastic_editor=(ret=='1') });
   getValue(KS+'FIXED_TOOLBAR', function(ret){ settings.fixed_toolbar=(ret=='1') });
@@ -7934,6 +7969,9 @@ function getSettings(stg){
   getValue(KS+'HIDE_GREYLINK', function(ret){ settings.hide_greylink=(ret=='1') });
   getValue(KS+'ALWAYS_NOTIFY', function(ret){ settings.always_notify=(ret=='1') });
   getValue(KS+'SHOW_KASKUS_PLUS', function(ret){ settings.show_kaskusplus=(ret=='1') });
+
+  // recount smilies;
+  rSRC.getSmileyBulkInfo();
 
   settings.plusquote = null;
   
@@ -7975,7 +8013,7 @@ function getSettings(stg){
     hVal = trimStr(settings.hotkeychar);
     settings.hotkeychar = ( !hVal.match(/^[A-Z0-9]{1}/) ? 'Q' : hVal.toUpperCase() );
     
-    // smiley
+    // autoload_smiley
     hVal = settings.autoload_smiley;
     settings.autoload_smiley = (hVal && hVal.match(/^([01]{1}),(kecil|besar|kplus|custom)+/) ? hVal.split(',') : '0,kecil'.split(',') );
 
@@ -7983,13 +8021,23 @@ function getSettings(stg){
     hVal = settings.tabfirst_smiley;
     settings.tabfirst_smiley = (hVal && hVal.match(/(kecil|besar|kplus|custom)/) ? hVal : 'kecil');
 
+    // autocomplete-smiley
+    hVal = settings.autocomplete_smiley;
+    var autocomplete_smiley = (hVal && hVal.match(/^([01]{1}),(?:(kecil|besar|kplus),?)+/) ? hVal.split(',') : '0,kecil,besar,kplus'.split(',') ),
+        tmp_autoc = String(autocomplete_smiley).split(',')
+    ;
+    autocomplete_smiley.shift();
+    settings.autocomplete_smiley = [parseInt(tmp_autoc[0]), autocomplete_smiley];
+    gvar.autocomplete_smilies = (settings.autocomplete_smiley[0] && settings.autocomplete_smiley[1] && settings.autocomplete_smiley[1].length );
+
+
     // is there any saved text
     gvar.tmp_text = settings.tmp_text;
     if( gvar.tmp_text!='' && !settings.qrdraft ){
       setValue(KS+'TMP_TEXT', ''); //set blank to nulled it
       gvar.tmp_text = null;
     }
-    delete (settings.tmp_text);
+    delete settings.tmp_text;
     
     capsulate_done = true;
     gvar.settings = settings;
@@ -8276,18 +8324,8 @@ function start_Main(){
       +']');
     gvar.readonly = true;
   }
-  
-  if( !$("#preview-post").length ){
 
-    // clog("Injecting getCSS");
-    // GM_addGlobalStyle(rSRC.getCSS(), 'kqr-dynamic-css');
 
-    // // pre, before removing it..
-    // $('#quick-reply').addClass('hide');
-  }
-  
-  // getSettings( gvar.settings );
-  
 
   var maxTry = 50, iTry=0,
   wait_settings_done = function(){
@@ -8297,6 +8335,7 @@ function start_Main(){
       gvar.$w.setTimeout(function(){ wait_settings_done() }, 100);
       iTry++;
     }else{
+      clog("all settings loaded.");
       // setting done? lets roll..
       clog(gvar.settings);
 
@@ -8531,36 +8570,15 @@ function start_Main(){
         }
 
 
-        // test with direct value 
-        // dummy value setting of autocomplete_smiley
-        // eg. 1,besar,kecil,kplus
-        var _ls_autocomplete_smiley = '1,besar,kecil,kplus';
-
-
-        var setting_autocomplete_smiley = (_ls_autocomplete_smiley && _ls_autocomplete_smiley.match(/^([01]{1}),(\w+)+/) ? _ls_autocomplete_smiley.split(',') : '0,kecil'.split(',') );
-        clog(setting_autocomplete_smiley);
-        var newval, tmpval = String(setting_autocomplete_smiley).split(',');
-        
-        setting_autocomplete_smiley.shift();
-        newval = [parseInt(tmpval[0]), setting_autocomplete_smiley];
-        gvar.settings.autocomplete_smiley = newval;
-        clog(gvar.settings.autocomplete_smiley);
-
-        gvar.autocomplete_smilies = (gvar.settings.autocomplete_smiley[0] && gvar.settings.autocomplete_smiley[1] && gvar.settings.autocomplete_smiley[1].length );
-
         if( gvar.autocomplete_smilies ){
 
-          // origin
-          // GM_addGlobalStyle('http://ichord.github.io/At.js/dist/css/jquery.atwho.css');
-          // GM_addGlobalScript('http://ichord.github.io/Caret.js/src/jquery.caret.js');
-          // GM_addGlobalScript('http://ichord.github.io/At.js/dist/js/jquery.atwho.js');
-          var olmode = !(!gvar.force_live_css && gvar.__DEBUG__);
-          var base_path = 'http://'+(!olmode ? 'localhost/GITs/github/idoenk/kaskus-quick-reply/assets/vendor/' : 'ichord.github.io/At.js/dist/');
-
+          var olmode = !( !gvar.force_live_css && gvar.__DEBUG__ ),
+              base_path = 'http://'+(
+                olmode?'ichord.github.io/At.js/dist/':'localhost/GITs/github/idoenk/kaskus-quick-reply/assets/vendor/'
+              )
+          ;
           GM_addGlobalStyle(base_path+(olmode ? 'css/':'')+'jquery.atwho.css', 'css-AtWho');
           
-          // anti-cache-anyone?
-          // rnd = Math.random().toString().replace(/0\./g, '').substring(0, 3);
           if( olmode )
             GM_addGlobalScript('http://ichord.github.io/Caret.js/src/jquery.caret.js', 'js-caret');
           else
