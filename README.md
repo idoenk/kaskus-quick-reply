@@ -3,7 +3,7 @@ Kaskus Quick Reply is a userscript designed for donatur or regular user in Kasku
  <a class="btn btn-primary" href="kaskus_quick_reply.user.js?raw=true" title="Install Dev.Version KQR"><img src="https://dl.dropboxusercontent.com/u/33009152/btn-install-min.png"/ alt="Install Script"></a>
 
 # About this branch 
-Implementing a feature with [At.js](http://ichord.github.io/At.js/), <i>a github-like autocomplete library :s</i>
+This master branch is development stage of [Kaskus Quick Reply - Greasyfork](https://greasyfork.org/en/scripts/96-kaskus-quick-reply-evo).
 
 Fork it on github:
 [https://github.com/ichord/At.js](https://github.com/ichord/At.js)
@@ -28,4 +28,3 @@ $ compass watch assets
 
 # License
 Licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 License](http://creativecommons.org/licenses/by-nc-sa/3.0)
-.
