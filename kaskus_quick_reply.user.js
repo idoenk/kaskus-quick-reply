@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.7.3
+// @version        5.3.7.4
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1603105373
-// @timestamp      1457556636122
+// @dtversion      1603105374
+// @timestamp      1457559140131
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -29,13 +29,16 @@
 //
 // -!--latestupdate
 //
-// v5.3.7.3 - 2016-03-10 . 1457556636122
-//   Reactivate KPlus Exclusive with IMG BBCode
-//   Patch FJB preview_post_ajax not rendering smilies
+// v5.3.7.4 - 2016-03-10 . 1457559140131
+//   Default use img bbcode for kaskus plus exclusive
 // 
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.7.3 - 2016-03-10 . 1457556636122
+//   Reactivate KPlus Exclusive with IMG BBCode
+//   Patch FJB preview_post_ajax not rendering smilies
+// 
 // v5.3.7.2 - 2016-03-10 . 1457555538331
 //   Hotfix: match/unmatch find smilies
 // 
@@ -73,10 +76,10 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.7.3';
+gvar.sversion = 'v' + '5.3.7.4';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1457556636122 // version.timestamp
+   timestamp: 1457559140131 // version.timestamp
   ,dtversion: 1603105370 // version.date
 
   ,titlename: 'Quick Reply'
@@ -122,7 +125,7 @@ var KS = 'KEY_SAVE_',
     ,KEY_SAVE_HIDE_GREYLINK:    ['1'] // hide grey origin link
     ,KEY_SAVE_ALWAYS_NOTIFY:    ['1'] // activate user notification
     ,KEY_SAVE_SHOW_KASKUS_PLUS: ['1'] // show kaskus plus smiley
-    ,KEY_SAVE_IMGBBCODE_KASKUS_PLUS: ['0'] // use img bbcode for kaskus plus smiley
+    ,KEY_SAVE_IMGBBCODE_KASKUS_PLUS: ['1'] // use img bbcode for kaskus plus smiley
 
     ,KEY_SAVE_SCUSTOM_NOPARSE:  ['0'] // dont parse custom smiley tag. eg. tag=babegenit. BBCODE=[[babegenit]
 
@@ -4023,7 +4026,7 @@ var _SML_ = {
 
             tmp_smilies = smilies;
             for(var j=0, jL=segment.length; j<jL; j++){
-              tpl += '<div class="bbsection"><strong>'+segment[j]['label']+(target == '#tkplus' && !gvar.user.isDonatur ? ' <div class="kplus-bbhelp" title="Smiley Shortcode is only for KASKUS Plus Membership">&mdash;BBCode-Mode <i class="stage stage-help"></i></div>':'')+'</strong></div>';
+              tpl += '<div class="bbsection"><strong>'+segment[j]['label']+(target == '#tkplus' && gvar.settings.kaskusplus_bbcode_img ? ' <div class="kplus-bbhelp" title="Smiley Shortcode is only for KASKUS Plus Membership">&mdash;BBCode-Mode <i class="stage stage-help"></i></div>':'')+'</strong></div>';
               smilies = tmp_smilies.slice(parseFloat(segment[j]['index']), (segment[j]['n'] ? parseFloat(segment[j]['n']) : undefined));
               $.each(smilies, function(i, img){
 
