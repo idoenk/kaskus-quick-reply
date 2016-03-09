@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.7.3
+// @version        5.3.7.4
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1603105373
-// @timestamp      1457556636122
+// @dtversion      1603105374
+// @timestamp      1457559140131
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -29,13 +29,16 @@
 //
 // -!--latestupdate
 //
-// v5.3.7.3 - 2016-03-10 . 1457556636122
-//   Reactivate KPlus Exclusive with IMG BBCode
-//   Patch FJB preview_post_ajax not rendering smilies
+// v5.3.7.4 - 2016-03-10 . 1457559140131
+//   Default use img bbcode for kaskus plus exclusive
 // 
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.7.3 - 2016-03-10 . 1457556636122
+//   Reactivate KPlus Exclusive with IMG BBCode
+//   Patch FJB preview_post_ajax not rendering smilies
+// 
 // v5.3.7.2 - 2016-03-10 . 1457555538331
 //   Hotfix: match/unmatch find smilies
 // 
@@ -73,10 +76,10 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.7.3';
+gvar.sversion = 'v' + '5.3.7.4';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1457556636122 // version.timestamp
+   timestamp: 1457559140131 // version.timestamp
   ,dtversion: 1603105370 // version.date
 
   ,titlename: 'Quick Reply'
