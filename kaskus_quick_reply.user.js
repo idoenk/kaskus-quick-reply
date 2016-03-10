@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.7.4
+// @version        5.3.7.5
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1603105374
-// @timestamp      1457559140131
+// @dtversion      1603105375
+// @timestamp      1457608034623
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -29,12 +29,15 @@
 //
 // -!--latestupdate
 //
-// v5.3.7.4 - 2016-03-10 . 1457559140131
-//   Default use img bbcode for kaskus plus exclusive
+// v5.3.7.5 - 2016-03-11 . 1457608034623
+//   Patch QuickQuote parse shortcode kaskus smilies; store full-path smilies to localstorage;
 // 
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.7.4 - 2016-03-10 . 1457559140131
+//   Default use img bbcode for kaskus plus exclusive
+// 
 // v5.3.7.3 - 2016-03-10 . 1457556636122
 //   Reactivate KPlus Exclusive with IMG BBCode
 //   Patch FJB preview_post_ajax not rendering smilies
@@ -76,10 +79,10 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.7.4';
+gvar.sversion = 'v' + '5.3.7.5';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1457559140131 // version.timestamp
+   timestamp: 1457608034623 // version.timestamp
   ,dtversion: 1603105370 // version.date
 
   ,titlename: 'Quick Reply'
@@ -1267,8 +1270,6 @@ var rSRC = {
     + 'if("undefined" !== typeof grecaptcha)'
     +  'grecaptcha.render("kqr_recaptcha2", {'
     +    '"sitekey": "6LdPZPoSAAAAANzOixEawpyggAQ6qtzIUNRTxJXZ",'
-    //$("#recaptcha_widget").append("<i class=\'left-arrow\'></i><span>Click to Post</span>")
-    +    '"onload": function(){alert(9)},'
     +    '"callback": function(){$("#box_post").trigger("click") },'
     +    '"expired-callback": function(){ $("#box_prepost, #sbutton").removeClass("goog-btn-primary").addClass("goog-btn-red"); $("#resetrecap_btn").trigger("click") }'
     +  '});'
@@ -1370,7 +1371,6 @@ var rSRC = {
       +  '$.fn.atwho.debug = !1;' + nn
 
       +  'var kPlusBBcodeIMG = '+(gvar.settings.kaskusplus_bbcode_img ? '1' : '!1')+';' + nn
-      +  'var host = "'+gvar.kkcdn+'";' + nn
       +  'var textarea_selector = "#'+gvar.tID+'";' + nn
       +  'var smilies_ = \''+JSON.stringify(smilies_)+'\';' + nn
       +  'var smilies = (smilies_ ? JSON.parse(smilies_) : []);' + nn
@@ -1381,14 +1381,14 @@ var rSRC = {
       +      'name: (item[3] ? item[3] : item[2])' + nn
       +    '};' + nn
       +    'if( set.name.indexOf("[Ps]") !== -1 )' + nn
-      +    ' set.bbcode = (!kPlusBBcodeIMG ? set.bbcode : "[IMG]"+host+"images/smilies/"+item[0]+"[/IMG]");' + nn
+      +    ' set.bbcode = (!kPlusBBcodeIMG ? set.bbcode : item[0]);' + nn
       +    'return set;' + nn
       +  '});' + nn
       
       +  'var emoji_config = {' + nn
       +    'at: ":",' + nn
       +    'data: kskemojis,' + nn
-      +    'displayTpl: "<li><img src=\'"+host+"images/smilies/${fn}\' height=\'20\' width=\'20\' /> ${name}</li>",' + nn
+      +    'displayTpl: "<li><img src=\'${fn}\' height=\'20\' width=\'20\' /> ${name}</li>",' + nn
       +    'insertTpl: "${bbcode}",' + nn
       +    'delay: 200' + nn
       +  '};' + nn
@@ -1487,6 +1487,8 @@ var rSRC = {
           ret = JSON.parse( ret );
         }catch(e){}
 
+        clog(ret);
+
         smilies = (ret.ksk_smiley ? ret.ksk_smiley : null);
         clog( smilies );
         if( smilies ){
@@ -1536,6 +1538,7 @@ var rSRC = {
           }
           return customs;
         };
+
         if(buff.indexOf('<!!>')==-1){ // old raw-data
           ret = extractSmiley(buff);
           if(ret){
@@ -1567,8 +1570,6 @@ var rSRC = {
 
     if( isDefined(onlyCustom) && onlyCustom )
       return;
-
-
 
     rSRC.getSmileyBulkInfo( cb );
   }
@@ -4030,7 +4031,8 @@ var _SML_ = {
               smilies = tmp_smilies.slice(parseFloat(segment[j]['index']), (segment[j]['n'] ? parseFloat(segment[j]['n']) : undefined));
               $.each(smilies, function(i, img){
 
-                tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+                // tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+                tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+img[0]+'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
               });
             }
           }
@@ -4038,7 +4040,8 @@ var _SML_ = {
             // failover
             $.each(smilies, function(i, img){
 
-              tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+              // tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
+              tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+img[0]+'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
             });
           }
 
@@ -4865,7 +4868,8 @@ var _UPD_SMILIES = {
               $tr.find("img").each(function(){
                 var $img = $(this);
                 Buckets[last_bucket_name]['smilies'].push([
-                  basename( $img.attr('src') ),
+                  // basename( $img.attr('src') ),
+                  $img.attr('src'),
                   $img.attr('alt'),
                   $img.attr('title')
                 ]);
@@ -5648,11 +5652,8 @@ var _QQparse = {
           } else
           if( cucok = $2.match(/img\s*(?:(?:alt|src|class|border)=['"](?:[^'"]+)?.\s*)*title=['"]([^'"]+)/i)){
             // is kaskus emotes?
-            if(cucok){
-              var pos, smilies = '/smilies/';
-              pos = mct[1].indexOf(smilies);
-              tag = mct[1].substring( pos + smilies.length );
-              tag = tag.replace(/[^\w]/g,'').toString();
+            if( cucok ){
+              tag = mct[1].replace(/[^\w]/g,'').toString();
               
               if( !pairedEmote )
                 pairedEmote = prep_paired_emotes();
@@ -6005,12 +6006,14 @@ function prep_paired_emotes(){
   for(var i=0; i < tmp.length; i++){
     sml = tmp[i];
     paired[sml[0].replace(/[^\w]/g,'').toString()] = sml[1].toString();
-  } 
+  }
   tmp = (gvar.smkplus && gvar.smkplus.smilies ? gvar.smkplus.smilies : []);
   for(var i=0; i < tmp.length; i++){
     sml = tmp[i];
     paired[sml[0].replace(/[^\w]/g,'').toString()] = sml[1].toString();
-  } 
+  }
+  clog("prep_paired_emotes done.");
+  clog(paired);
   return paired;
 }
 
@@ -8361,13 +8364,15 @@ function start_Main(){
             for(var i=0, iL=gvar.settings.autocomplete_smiley[1].length; i<iL; i++){
               var smkey, smtmp, bb;
               smkey = gvar.settings.autocomplete_smiley[1][i];
-              if( smkey == 'kplus' && !gvar.user.isDonatur && !gvar.settings.show_kaskusplus )
+              // if( smkey == 'kplus' && !gvar.user.isDonatur && !gvar.settings.show_kaskusplus )
+              if( smkey == 'kplus' && !gvar.settings.show_kaskusplus )
                 continue;
 
               if( 'undefined' != typeof gvar['sm'+smkey] && gvar['sm'+smkey].smilies ){
                 smtmp = gvar['sm'+gvar.settings.autocomplete_smiley[1][i]].smilies;
 
-                // eg. ["smilies_fb5ogiimgq21.gif", ":wow", "Wow"]
+                // v5.3.7.5
+                // eg. ["<full-path>/smilies_fb5ogiimgq21.gif", ":wow", "Wow"]
                 if( smtmp.length )
                 for(var j=0, jL=smtmp.length; j<jL; j++){
                   bb = String(smtmp[j][1]).replace(/\:/g, '');
@@ -8382,6 +8387,7 @@ function start_Main(){
                 smilies = smilies.concat( smtmp );
               }
             }
+            clog(smilies);
 
             if( smilies && smilies.length )
               GM_addGlobalScript( rSRC.getSCRIPT_AtWho(smilies), 'script-at-who' );
@@ -8393,7 +8399,7 @@ function start_Main(){
 
 
           // preload smilies if not loaded yet
-          if( !gvar.smbesar || !gvar.smkecil || !gvar.smkplus ){
+          if( !gvar.smbesar || !gvar.smkecil || (gvar.settings.show_kaskusplus && !gvar.smkplus) ){
 
             rSRC.getSmileySet(!1, function(){
               initAtWho()
@@ -8461,7 +8467,7 @@ function outSideForumTreat(){
 
   return false;
 }
- 
+
 
 
 function init(){
