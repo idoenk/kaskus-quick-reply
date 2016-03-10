@@ -1487,8 +1487,6 @@ var rSRC = {
           ret = JSON.parse( ret );
         }catch(e){}
 
-        clog(ret);
-
         smilies = (ret.ksk_smiley ? ret.ksk_smiley : null);
         clog( smilies );
         if( smilies ){
@@ -4031,7 +4029,6 @@ var _SML_ = {
               smilies = tmp_smilies.slice(parseFloat(segment[j]['index']), (segment[j]['n'] ? parseFloat(segment[j]['n']) : undefined));
               $.each(smilies, function(i, img){
 
-                // tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
                 tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+img[0]+'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
               });
             }
@@ -4040,7 +4037,6 @@ var _SML_ = {
             // failover
             $.each(smilies, function(i, img){
 
-              // tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+ gvar.kkcdn + 'images/smilies/' + img[0] +'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
               tpl+= '<img '+(target=='#tkplus' ? ' data-kplus="1"':'')+' src="'+img[0]+'" alt="'+ img[1] +'" title="'+ img[1] + ' &#8212;' + img[2] +'" /> '
             });
           }
@@ -4868,7 +4864,6 @@ var _UPD_SMILIES = {
               $tr.find("img").each(function(){
                 var $img = $(this);
                 Buckets[last_bucket_name]['smilies'].push([
-                  // basename( $img.attr('src') ),
                   $img.attr('src'),
                   $img.attr('alt'),
                   $img.attr('title')
@@ -8364,7 +8359,6 @@ function start_Main(){
             for(var i=0, iL=gvar.settings.autocomplete_smiley[1].length; i<iL; i++){
               var smkey, smtmp, bb;
               smkey = gvar.settings.autocomplete_smiley[1][i];
-              // if( smkey == 'kplus' && !gvar.user.isDonatur && !gvar.settings.show_kaskusplus )
               if( smkey == 'kplus' && !gvar.settings.show_kaskusplus )
                 continue;
 
@@ -8387,7 +8381,7 @@ function start_Main(){
                 smilies = smilies.concat( smtmp );
               }
             }
-            clog(smilies);
+
 
             if( smilies && smilies.length )
               GM_addGlobalScript( rSRC.getSCRIPT_AtWho(smilies), 'script-at-who' );
