@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.7.5
+// @version        5.3.7.6
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1603105375
+// @dtversion      1603125376
 // @timestamp      1457608034623
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
@@ -29,12 +29,15 @@
 //
 // -!--latestupdate
 //
-// v5.3.7.5 - 2016-03-11 . 1457608034623
-//   Patch QuickQuote parse shortcode kaskus smilies; store full-path smilies to localstorage;
+// v5.3.7.6 - 2016-03-12 . 1457608034623
+//   Patch jump around textarea on [enter,backspace,delete]
 // 
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.7.5 - 2016-03-11 . 1457608034623
+//   Patch QuickQuote parse shortcode kaskus smilies; store full-path smilies to localstorage;
+// 
 // v5.3.7.4 - 2016-03-10 . 1457559140131
 //   Default use img bbcode for kaskus plus exclusive
 // 
@@ -52,18 +55,6 @@
 //   At.js, a github-like autocomplete library :s
 //   deprecated key:IMGBBCODE_KASKUS_PLUS; non-donat will always be with imgbbcode;
 //   normalize asset sub-domain for smilies.
-// 
-// v5.3.6.1 - 2015-12-17 . 1450371144167
-//   +New Kaskus Emotes; Rearrange smilies;
-//   Kplus in option of [autoshow, first-tab]
-// 
-// v5.3.6 - 2015-12-07 . 1446473529196
-//   +New Kaskus Plus. Thanks:[coolkips]
-//   Deprecated uploader services: [imgur,imgzzz]
-//   Allow non-donat kaskuser use IMG-BBCode for KaskusPlus smilies
-// 
-// v5.3.5.1 - 2015-11-02 . 1446473529196
-//   Paired emoted Kaskus Plus
 //
 //
 // v0.1 - 2010-06-29
@@ -79,11 +70,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.7.5';
+gvar.sversion = 'v' + '5.3.7.6';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1457608034623 // version.timestamp
-  ,dtversion: 1603105370 // version.date
+   timestamp: 1457716255328 // version.timestamp
+  ,dtversion: 1603125376 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -3054,7 +3045,7 @@ var _TEXT = {
         clog("setElasticEvent[resizeEv]:before="+yPos);
 
         a.style.height = 'auto';
-        a.style.height = parseInt(a.scrollHeight)+'px';
+        a.style.height = (parseInt(a.scrollHeight)+2)+'px';
         a.style.setProperty('overflow-y', (!gvar.settings.elastic_editor && a.scrollHeight > max ? 'auto' : 'hidden'), 'important');
         
         if( !isNaN(yPos) && yPos > 0 && getCurrentYPos() != yPos )
