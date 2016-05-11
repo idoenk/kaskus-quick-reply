@@ -7,9 +7,11 @@
 // @grant          GM_deleteValue
 // @grant          GM_xmlhttpRequest
 // @grant          GM_log
+// @connect        githubusercontent.com
+// @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
 // @dtversion      1603125376
-// @timestamp      1457608034623
+// @timestamp      1462977849732
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -29,8 +31,12 @@
 //
 // -!--latestupdate
 //
-// v5.3.7.6 - 2016-03-12 . 1457608034623
+// v5.3.7.6 - 2016-05-11 . 1462977849732
 //   Patch jump around textarea on [enter,backspace,delete]
+//   Keep notify_wrap visible on minimized QR
+//   Init QR minimized to avoid getting focused
+//   Add @connect host: [githubusercontent.com, greasyfork.org]
+//   Hide QuickQuote button when no quoted post in current page
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -73,7 +79,7 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.7.6';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1457716255328 // version.timestamp
+   timestamp: 1462977849732 // version.timestamp
   ,dtversion: 1603125376 // version.date
 
   ,titlename: 'Quick Reply'
@@ -339,8 +345,6 @@ var rSRC = {
       + '</div>' // .entry-head
 
       + '<div class="reply-thread">'
-      + '<div id="formqr">'
-
       + '<div id="notify_wrap" class="icon-button" style="display:none; ">'
       +  '<div class="notify_box">'
       +    '<div class="g_notice" id="notify_msg"></div>'
@@ -353,6 +357,8 @@ var rSRC = {
       +    '</div>' // .qr-m-panel
       +  '</div>' // .notify_box
       + '</div>' // #notify_wrap
+
+      + '<div id="formqr">'
 
       + '<form method="post" id="formform" role="form" name="qr_form" action="#">'
         // hidden-values
@@ -2723,9 +2729,16 @@ var _NOFY = {
         $nmsg.addClass('qrerror');
       break;
       case "quote":
-        var $qb = $('#quote_btnset');
+        var $qb = $('#quote_btnset'),
+            $qq_btn = $qb.find("#squick_quote");
+
         $qb.show();
         $qb.find(".goog-btn").prop("disabled", false);
+
+        if( _ME.no_quickquote )
+          $qq_btn.hide();
+        else
+          $qq_btn.show();
       break;
       case "edit":
         $('#scancel_edit', $par).show();
@@ -6539,7 +6552,8 @@ function precheck_quoted( injected ){
     mode: 'quote',
     msg: 'You have selected one or more posts, <a id="sdismiss_quote" class="btn-dismiss" href="javascript:;">dismiss</a>',
     cb: cb_after,
-    btnset: true
+    btnset: true,
+    no_quickquote: no_mqs
   });
 }
 
@@ -8394,6 +8408,14 @@ function start_Main(){
             initAtWho()
           }
         }
+
+
+        // make sure this run after css_validate done check everything is ok
+        setTimeout(function(){
+          // init minimized QR Editor
+          if( $('#formqr').is(':visible') )
+            $("#qrtoggle-button").trigger('click');
+        }, 1235);
 
       }, 50);
       // settimeout pra-loaded settings 
