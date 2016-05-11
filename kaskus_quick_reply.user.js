@@ -37,6 +37,7 @@
 //   Init QR minimized to avoid getting focused
 //   Add @connect host: [githubusercontent.com, greasyfork.org]
 //   Hide QuickQuote button when no quoted post in current page
+//   Autocomplete KPlus emotes with [IMG][/IMG]
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -1378,7 +1379,7 @@ var rSRC = {
       +      'name: (item[3] ? item[3] : item[2])' + nn
       +    '};' + nn
       +    'if( set.name.indexOf("[Ps]") !== -1 )' + nn
-      +    ' set.bbcode = (!kPlusBBcodeIMG ? set.bbcode : item[0]);' + nn
+      +    ' set.bbcode = (!kPlusBBcodeIMG ? set.bbcode : "[IMG]"+item[0]+"[/IMG]");' + nn
       +    'return set;' + nn
       +  '});' + nn
       
