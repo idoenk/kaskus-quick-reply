@@ -38,6 +38,8 @@
 //   Add @connect host: [githubusercontent.com, greasyfork.org]
 //   Hide QuickQuote button when no quoted post in current page
 //   Autocomplete KPlus emotes with [IMG][/IMG]
+//   Fix broken link: Kaskus Hotkeys
+//   Open collapsed QR editor on-click Draft button
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -1036,7 +1038,7 @@ var rSRC = {
     +'<div class="form-group fg-tabify fg-kbd">'
     +'<div class="goog-tab-bar goog-tab-white">'
      +'<div id="tkbd-qr" data-target="tabs-itemkbd-qr" class="goog-tab goog-tab-selected">KQR Hotkeys</div>'
-     +'<div id="tkbd-kaskus" data-target="tabs-itemkbd-kaskus" class="goog-tab">Kaskus Hotkeys <a target="_blank" href="http://help.kaskus.co.id/kaskus-basic/kaskus_hotkeys.html" style="float:right; margin:0 4px; line-height: 13px;" title="Kaskus Hotkeys, Goto Help Center.."><i class="fa fa-question-circle"></i></a></div>'
+     +'<div id="tkbd-kaskus" data-target="tabs-itemkbd-kaskus" class="goog-tab">Kaskus Hotkeys <a target="_blank" href="https://help.kaskus.co.id/kaskus_hotkeys.php" style="float:right; margin:0 4px; line-height: 13px;" title="Help Center: Goto Kaskus Hotkeys.."><i class="fa fa-question-circle"></i></a></div>'
      +'<div class="clearfix"></div>'
     +'</div>'
     +'<div class="goog-tab-bar-clear"></div>'
@@ -1050,7 +1052,7 @@ var rSRC = {
        +'<p><tt><kbd>Alt</kbd> + <kbd>C</kbd></tt><span>Quick Quote Selected Post</span></p>'
        +'<p><tt><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Q</kbd></tt><span>Deselect All Quoted Post</span></p>'
        +'<p><tt><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></tt><span>Load/Save Draft</span></p>'
-       +'<em>While focus on Editor / textarea</em>'
+       +'<em>While focus on QR Editor</em>'
        +'<p><tt><kbd>Ctrl</kbd> + <kbd>Enter</kbd></tt><span>Post Reply</span></p>'
        +'<p><tt><kbd>Alt</kbd> + <kbd>S</kbd></tt><span>Post Reply</span></p>'
        +'<p><tt><kbd>Alt</kbd> + <kbd>P</kbd></tt><span>Preview Quick Reply</span></p>'
@@ -7638,6 +7640,12 @@ function eventsTPL(){
       disb = 'goog-btn-disabled';
       if( $me.hasClass(disb) ) return;
       if( $me.attr('data-state') == 'idle' ){
+        
+        if( !$('#formqr').is(':visible') ){
+          $('#formqr').show();
+          toggleTitle();
+        }
+
         _TEXT.init();
         if( !text ){
           _TEXT.set( gvar.tmp_text );
