@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1602215370
+ cssREV:1605125376
 */
 
 /**
@@ -139,13 +139,6 @@ body{
       bottom: 100%;
       left: 12px;
       top: initial;
-    }
-  }
-  .markItUp {
-    .markItUpButton22 > a:before, .markItUpButton23 > a:before, .markItUpButton24 > a:before {
-      font-size: 18px;
-      line-height: 16px;
-      top: 2px;
     }
   }
 }
@@ -536,12 +529,37 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
           border-color: #4d90fe;
           a {
             opacity: 1;
+            .fa{
+              &.fa-youtube{
+                color: red;
+              }
+              &.fa-vimeo-square{
+                color: #4bf;
+              }
+              &.fa-soundcloud{
+                color: #f50;
+              }
+            }
           }
         }
         a {
           outline: 0;
-          height: 20px;
+          height: 26px;
           opacity: .785;
+        }
+        &.markItUpButton-fa{
+          a {
+            text-indent: -6px;
+            > .fa{
+              font-size: 2.2em;
+              line-height: 16px;
+              display: inline-block;
+              color: #555;
+              &.fa-soundcloud{
+                font-size: 1.5em;
+              }
+            }
+          }
         }
       }
     }
@@ -558,22 +576,8 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
         padding-right: 10px;
       }
     }
-    .markItUpButton22 > a:before {
-      content: "\e835";
-      left: 4px;
-      color: #f30808;
-    }
-    .markItUpButton23 > a:before {
-      content: "\e834";
-      color: #009cc2;
-    }
-    .markItUpButton24 > a:before {
-      content: "\e832";
-      color: #ef3f23;
-      font-size: 17px;
-      left: 2px;
-    }
-    .markItUpButton98 > a:before, .markItUpButton99 > a:before {
+    .markItUpButton98 > a:before,
+    .markItUpButton99 > a:before {
       left: 6px;
     }
     .markItUpButton94 > a {
