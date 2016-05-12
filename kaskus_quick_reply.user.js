@@ -42,6 +42,7 @@
 //   Open collapsed QR editor on-click Draft button
 //   Fix broken icon: youtube,vimeo,soundcloud
 //   Add window.onbeforeunload on appending iframe
+//   Simplify uploader services in `gvar.service_uploader`
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -92,6 +93,15 @@ gvar.scriptMeta = {
   ,scriptID_GF: 96 // script-Id @Greasyfork
   ,cssREV: 1605125376 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
+
+// Define uploader services simply by its url
+// this might be saved in localstorage for use to manage
+gvar.service_uploader = [
+  'http://cubeupload.com/',
+  'http://imagevenue.com/host.php',
+  'http://www.imagebam.com/',
+];
+
 /*
 window.alert(new Date().getTime());
 */
@@ -3368,14 +3378,14 @@ var _UPL_ = {
   },
   menus: function(){
     var idx=0, ret='';
-    if( gvar.upload_sel ){
+    if( gvar.uploader ){
       ret+=''
         +'<li><div><b>:: Services :: </b></div></li>'
         +'<li><div class="spacer"></div></li>'
         +'<li class="qrt'+("undefined" != typeof gvar.upload_tipe && gvar.upload_tipe == 'kaskus' ? ' curent':'')+'"><div id="tphost_0" title="kaskus.us" data-host="kaskus">kaskus</div></li>'
       ;
-      for(var host in gvar.upload_sel){
-        ret+='<li class="qrt'+("undefined" != typeof gvar.upload_tipe && gvar.upload_tipe == host ? ' curent':'')+'"><div id="tphost_'+(idx+1)+'" title="'+gvar.upload_sel[host]+'" data-host="'+host+'">' + host + ' <a class="externurl right" title="Goto this site" target="_blank" href="http://'+gvar.upload_sel[host]+'"><i class="fa fa-arrow-circle-right"></i></a></div></li>';
+      for(var host in gvar.uploader){
+        ret+='<li class="qrt'+("undefined" != typeof gvar.upload_tipe && gvar.upload_tipe == host ? ' curent':'')+'"><div id="tphost_'+(idx+1)+'" data-host="'+host+'">' + host + ' <a class="externurl right" title="Goto this site" target="_blank" href="'+gvar.uploader[host]['url']+'"><i class="fa fa-arrow-circle-right"></i></a></div></li>';
         idx++;
       }
     }
@@ -3385,13 +3395,15 @@ var _UPL_ = {
     $('#'+_UPL_.tcui+' .qrt').each(function(){
       $(this).click(function(e){
         if( (e.target||e).nodeName === 'DIV' ){
-          var $me = $(this);
-          var subtpl, ch = $me.find('div:first'), id, lbl, gL, host;
-          id = ch.attr('id').replace(/tphost_/gi,'');
-          host = ch.attr('data-host');
+          var $me = $(this),
+              ch = $me.find('div:first'),
+              subtpl, id, lbl, gL, datahost;
 
-          setValue(KS+'LAST_UPLOADER', host, function(){
-            _UPL_.switch_tab( host );
+          id = ch.attr('id').replace(/tphost_/gi,'');
+          datahost = ch.attr('data-host');
+
+          setValue(KS+'LAST_UPLOADER', datahost, function(){
+            _UPL_.switch_tab( datahost );
             $me.closest('#ul_group').find('.curent').removeClass('curent');
             $me.addClass('curent');
           });
@@ -3419,7 +3431,7 @@ var _UPL_ = {
   },
   tplcont: function(host){
 
-    return '<div id="content_uploader_'+host+'" class="content_uploader" style="display:none" />';
+    return '<div id="content_uploader_'+host.replace(/\W/g, '-')+'" data-host="'+host+'" class="content_uploader" style="display:none" />';
   },
   main: function(){
     var tpl = '', iner = _UPL_.tcui, $target = $('#'+iner);
@@ -3428,8 +3440,9 @@ var _UPL_ = {
     _UPL_.event_menus();
     
     tpl = _UPL_.tplcont(_UPL_.def);
-    for(var host in gvar.upload_sel)
-      tpl+=_UPL_.tplcont(host);
+    for(var host in gvar.uploader){
+      tpl+=_UPL_.tplcont( host );
+    }
       
     $target.find('#uploader_container').html( tpl );
     _UPL_.switch_tab("undefined" != typeof gvar.upload_tipe ? gvar.upload_tipe : _UPL_.def);
@@ -3438,13 +3451,15 @@ var _UPL_ = {
   },
   switch_tab: function(target){
     if( !target ) return;
-    var tpl, ifname, options, tgt = 'content_uploader_'+ target;
-    var $partab = $('#'+tgt);
+    var tgt_selector = '.content_uploader[data-host="'+target+'"]',
+        $partab = $(tgt_selector),
+        tpl, ifname, options, upload_url
+    ;
     
     if( $partab.html()=='' ){
       options = {
         mode: '',
-        parent_selector: '#'+tgt,
+        parent_selector: tgt_selector,
         preview_wrap_selector: '.preview-image-inner'
       };
 
@@ -3498,28 +3513,31 @@ var _UPL_ = {
         });
       }
       else{
-        ifname = 'ifrm_' + gvar.upload_sel[target].replace(/\W/g,'');
+        upload_url = gvar.uploader[target]['url'];
+        ifname = 'ifrm_' + gvar.uploader[target]['name'].replace(/\W/g,'');
         tpl=''
           +'<div class="host">'
-          +'<a target="_blank" title="Goto '+ target +'" href="http://'+gvar.upload_sel[target]+'"><b>http://' + gvar.upload_sel[target] + '</b></a>'
+          +'<a target="_blank" title="Goto '+ target +'" href="'+upload_url+'"><b>' + upload_url + '</b></a>'
           +'</div>'
-          +'<a class="btn_ifrm_reload" href="javascript:;" id="ifrm_reload_'+target+'" data-src="'+gvar.uploader[target]['src']+'">reload</a>'
-          +'<ifr'+'ame id="'+ ifname +'" src="http://'+ gvar.uploader[target]['src'] +'" onload="ifrReleaseLock(this)"></if'+'rame>'
+          +'<a class="btn_ifrm_reload" href="javascript:;" id="ifrm_reload_'+target+'" data-src="'+upload_url+'">reload</a>'
+          +'<ifr'+'ame id="'+ ifname +'" src="'+ upload_url +'" data-host="'+target+'" onload="ifrReleaseLock(this)"></if'+'rame>'
         ;
         _UPL_.toggleSecurePage( true );
-        $('#'+tgt).html( tpl );
+        $(tgt_selector).html( tpl );
 
         // Events
         $('#ifrm_reload_'+target).click(function(){
-          var itgt = $(this).attr('id').replace(/ifrm_reload_/,''),
-              _src = $(this).data('src');
+          var $me = $(this),
+              itgt = $me.data('host');
           _UPL_.toggleSecurePage( true );
-          $('#' + 'ifrm_' + gvar.upload_sel[itgt].replace(/\W/g,'') ).attr('src', 'http://' + _src);
+
+          $('#' + 'ifrm_' + gvar.uploader[itgt]['name'].replace(/\W/g,'') )
+            .attr('src', $me.data('src'));
         });
       }
     }
-    $('#' + tgt).parent().find('.content_uploader.curent').removeClass('curent').hide();
-    $('#' + tgt).addClass('curent').show()
+    $(tgt_selector).parent().find('.content_uploader.curent').removeClass('curent').hide();
+    $(tgt_selector).addClass('curent').show()
   },
   toggletab: function(doshow){
     var $XK = $("#"+gvar.qID);
@@ -7876,34 +7894,27 @@ function getSettings(stg){
 }
 
 function getUploaderSetting(){
-  // uploader properties
-  gvar.upload_sel = {
-    cubeupload:'cubeupload.com',
-    imagevenue:'imagevenue.com',
-    imagebam:'imagebam.com',
-    postimage: 'postimage.org'
-  };
-  gvar.uploader = {
-    cubeupload:{
-      src:'cubeupload.com',noCross:'1' 
-    },
-    imagevenue:{
-      src:'imagevenue.com/host.php',noCross:'1' 
-    },
-    imagebam:{
-      src:'www.imagebam.com',noCross:'1' 
-    },
-    postimage:{
-      src:'postimage.org',noCross:'1' 
-    }
-  };
-  // set last-used host
+
+  gvar.uploader = {};
+  for(var i=0, iL=gvar.service_uploader.length; i<iL; i++){
+    var name = gvar.service_uploader[i];
+    name = name.replace(/^https?\:\/\//gi, '');
+    name = name.replace(/\/.*/g, '');
+
+    gvar.uploader[name] = {
+      name: name,
+      url : sample_raw_uploader[i],
+    };
+  }
+
+  // // set last-used host
   try{
     if( gvar.settings.lastused.uploader )
-      gvar.upload_tipe= gvar.settings.lastused.uploader;
-    if( isUndefined( gvar.upload_sel[gvar.upload_tipe] ) )
-      gvar.upload_tipe='kaskus';
-  }catch(e){ gvar.upload_tipe='kaskus' }
+      gvar.upload_tipe = gvar.settings.lastused.uploader;
+
+    if( isUndefined( gvar.uploader[gvar.upload_tipe] ) )
+      gvar.upload_tipe = 'kaskus';
+  }catch(e){ gvar.upload_tipe = 'kaskus' }
 }
 
 
@@ -8504,7 +8515,8 @@ function outSideForumTreat(){
     var _src, ret=false;
     getUploaderSetting();
     for(var host in gvar.uploader){
-      _src = gvar.uploader[host]['src'] || null;
+      // _src = gvar.uploader[host]['src'] || null;
+      _src = gvar.uploader[host]['url'] || null;
       if( _src && self.location.href.indexOf( _src )!=-1 ){
         ret= String(host); break;
       }
@@ -8593,7 +8605,9 @@ function init(){
   gvar.B  = rSRC.getSetOf('button');
   
   gvar.freshload = 1;
-  gvar.uploader = gvar.upload_sel = gvar.settings = {};
+  gvar.uploader = null;
+  // gvar.upload_sel = null;
+  gvar.settings = {};
   gvar.user = {id:null, name:"", isDonatur:false};
   gvar._securitytoken_prev = gvar._securitytoken= null;
   gvar.ajax_pid = {}; // each ajax performed {preview: timestamp, post: timestamp, edit: timestamp }
