@@ -40,6 +40,7 @@
 //   Autocomplete KPlus emotes with [IMG][/IMG]
 //   Fix broken link: Kaskus Hotkeys
 //   Open collapsed QR editor on-click Draft button
+//   Fix broken icon: youtube,vimeo,soundcloud
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -88,14 +89,14 @@ gvar.scriptMeta = {
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1602215370 // css revision date; only change this when you change your external css
+  ,cssREV: 1605125376 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 /*
 window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = !1; // development debug, author purpose
+gvar.__DEBUG__ = 1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -275,24 +276,35 @@ var rSRC = {
   },
   menuGen: function(mnuData){
     var mCls = rSRC.mCls;
-    var mnu, addcls, buff = '', cls_sp = "markItUpSeparator";
+    var mnu, addcls, cucok,
+        inner = '',
+        buff = '',
+        cls_sp = "markItUpSeparator";
+
     for(var i=0, iL=mnuData.length; i<iL; i++){
       mnu = mnuData[i];
       if( mnu["id"] ){
         if( "function" == typeof mnu["cb"] )
           buff += mnu["cb"]( mnu["id"] );
-        else
+        else{
+          if( mnu["id"] == '-fa' ){
+            if( cucok = /\bmnu-(fa-[^\s]+)/i.exec(mnu["class"]) )
+              inner = '<i class="fa '+cucok[1]+'"></i>';
+          }
           buff += ''
             +'<li class="'+mCls[0]+' '+mCls[0]+mnu["id"]+'">'
-            +'<a href="" title="'+mnu["title"]+'" class="'+mnu["class"]+'"'
+            +'<a href="" title="'+mnu["title"]+'" '
+              +(mnu["class"] ? ' class="'+mnu["class"]+'"' : '')
+              +(mnu["cat"] ? ' data-cat="'+mnu["cat"]+'"' : '')
               +(mnu["bb"] ? ' data-bb="'+mnu["bb"]+'"' : '')
               +(mnu["shortcut"] && mnu["shortcut"]["key"] && mnu["shortcut"]["csa"] ? ''
                 +' data-shortcut=\'{"key":"'+mnu["shortcut"]["key"]+'","csa":"'+mnu["shortcut"]["csa"]+'"}\''
                : '' // no-shortcut
               )
-            +'></a>'
+            +'>'+inner+'</a>'
             +'</li>'
           ;
+        }
       }
       else{
         addcls = (mnu["class"] ? mnu["class"] : "");
@@ -444,44 +456,44 @@ var rSRC = {
       
       + rSRC.menuGen([
         {id:null, 'class': 'sp_add_title'}, // spacer
-        {id:1, 'class': 'ev_biu', bb: 'B', title: 'Bold [Ctrl+B]', shortcut: {key: 'B', csa: 'ctrl'}},
-        {id:2, 'class': 'ev_biu', bb: 'I', title: 'Italic [Ctrl+I]', shortcut: {key: 'I', csa: 'ctrl'}},
-        {id:3, 'class': 'ev_biu', bb: 'U', title: 'Underline [Ctrl+U]', shortcut: {key: 'U', csa: 'ctrl'}},
+        {id:1, 'cat': 'ev_biu', bb: 'B', title: 'Bold [Ctrl+B]', shortcut: {key: 'B', csa: 'ctrl'}},
+        {id:2, 'cat': 'ev_biu', bb: 'I', title: 'Italic [Ctrl+I]', shortcut: {key: 'I', csa: 'ctrl'}},
+        {id:3, 'cat': 'ev_biu', bb: 'U', title: 'Underline [Ctrl+U]', shortcut: {key: 'U', csa: 'ctrl'}},
         {id:null}, // spacer
-        {id:4, 'class': 'ev_align', bb: 'LEFT', title: 'Align Left'},
-        {id:5, 'class': 'ev_align', bb: 'CENTER', title: 'Align Center [Ctrl+E]', shortcut: {key: 'E', csa: 'ctrl'}},
-        {id:6, 'class': 'ev_align', bb: 'RIGHT', title: 'Align Right [Ctrl+R]', shortcut: {key: 'R', csa: 'ctrl'}},
+        {id:4, 'cat': 'ev_align', bb: 'LEFT', title: 'Align Left'},
+        {id:5, 'cat': 'ev_align', bb: 'CENTER', title: 'Align Center [Ctrl+E]', shortcut: {key: 'E', csa: 'ctrl'}},
+        {id:6, 'cat': 'ev_align', bb: 'RIGHT', title: 'Align Right [Ctrl+R]', shortcut: {key: 'R', csa: 'ctrl'}},
         {id:null}, // spacer
-        {id:7, 'class': 'ev_list', bb: 'LIST-bullet', title: 'Bulleted list'},
-        {id:8, 'class': 'ev_list', bb: 'LIST-numeric', title: 'Numeric list'},
-        {id:9, 'class': 'ev_indent', bb: 'INDENT', title: 'Increase Indent'},
+        {id:7, 'cat': 'ev_list', bb: 'LIST-bullet', title: 'Bulleted list'},
+        {id:8, 'cat': 'ev_list', bb: 'LIST-numeric', title: 'Numeric list'},
+        {id:9, 'cat': 'ev_indent', bb: 'INDENT', title: 'Increase Indent'},
         {id:null}, // spacer
-        {id:11, 'class': 'ev_custom', bb: 'URL', title: 'Insert Link [Ctrl+L]', shortcut: {key: 'L', csa: 'ctrl'}},
-        {id:13, 'class': 'ev_custom', bb: 'EMAIL', title: 'Insert Email Link'},
-        {id:14, 'class': 'ev_custom', bb: 'IMG', title: 'Picture [Ctrl+P]', shortcut: {key: 'P', csa: 'ctrl'}},
+        {id:11, 'cat': 'ev_custom', bb: 'URL', title: 'Insert Link [Ctrl+L]', shortcut: {key: 'L', csa: 'ctrl'}},
+        {id:13, 'cat': 'ev_custom', bb: 'EMAIL', title: 'Insert Email Link'},
+        {id:14, 'cat': 'ev_custom', bb: 'IMG', title: 'Picture [Ctrl+P]', shortcut: {key: 'P', csa: 'ctrl'}},
         {id:null}, // spacer
-        {id:15, 'class': 'ev_custom', bb: 'QUOTE', title: 'Wrap [QUOTE] around text'},
-        {id:16, 'class': 'ev_custom', bb: 'CODE', title: 'Wrap [CODE] around text'},
-        {id:50, 'class': 'ev_custom', bb: 'HTML', title: 'Wrap [HTML] around text'},
-        {id:51, 'class': 'ev_custom', bb: 'PHP', title: 'Wrap [PHP] around text'},
+        {id:15, 'cat': 'ev_custom', bb: 'QUOTE', title: 'Wrap [QUOTE] around text'},
+        {id:16, 'cat': 'ev_custom', bb: 'CODE', title: 'Wrap [CODE] around text'},
+        {id:50, 'cat': 'ev_custom', bb: 'HTML', title: 'Wrap [HTML] around text'},
+        {id:51, 'cat': 'ev_custom', bb: 'PHP', title: 'Wrap [PHP] around text'},
         {id:null}, // spacer
-        {id:95, 'class': 'ev_color', cb: rSRC.menuColor},
-        {id:19, 'class': 'ev_font', cb: rSRC.menuFont},
-        {id:20, 'class': 'ev_size', cb: rSRC.menuSize},
+        {id:95, 'cat': 'ev_color', cb: rSRC.menuColor},
+        {id:19, 'cat': 'ev_font', cb: rSRC.menuFont},
+        {id:20, 'cat': 'ev_size', cb: rSRC.menuSize},
         {id:null}, // spacer
-        {id:21, 'class': 'ev_custom', bb: 'SPOILER', title: 'Wrap [SPOILER] around text'},
-        {id:97, 'class': 'ev_custom', bb: 'TRANSPARENT', title: 'Wrap [TRANSPARENT] around text'},
-        {id:52, 'class': 'ev_custom', bb: 'NOPARSE', title: 'Wrap [NOPARSE] around text'},
-        {id:53, 'class': 'ev_custom', bb: 'STRIKE', title: 'Strikethrough text'},
+        {id:21, 'cat': 'ev_custom', bb: 'SPOILER', title: 'Wrap [SPOILER] around text'},
+        {id:97, 'cat': 'ev_custom', bb: 'TRANSPARENT', title: 'Wrap [TRANSPARENT] around text'},
+        {id:52, 'cat': 'ev_custom', bb: 'NOPARSE', title: 'Wrap [NOPARSE] around text'},
+        {id:53, 'cat': 'ev_custom', bb: 'STRIKE', title: 'Strikethrough text'},
         {id:null}, // spacer
-        {id:22, 'class': 'ev_custom', bb:'YOUTUBE', title: 'Embedding video from Youtube'},
-        {id:23, 'class': 'ev_custom', bb:'VIMEO', title: 'Embedding video from Vimeo'},
-        {id:24, 'class': 'ev_custom', bb:'SOUNDCLOUD', title: 'Embedding audio from Soundcloud'},
+        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-youtube', bb:'YOUTUBE', title: 'Embedding video from Youtube'},
+        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-vimeo-square', bb:'VIMEO', title: 'Embedding video from Vimeo'},
+        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-soundcloud', bb:'SOUNDCLOUD', title: 'Embedding audio from Soundcloud'},
       ])
 
       + _sp 
-      + '<li class="' + lc + " " + lc + '99 "><a class="ev_smiley" title="Smiley List" href="" aria-label="Smiley List "></a></li>'
-      + '<li class="' + lc + " " + lc + '98 "><a class="ev_upload" title="Uploader" href="" aria-label="Uploader"></a></li>' 
+      + '<li class="' + lc + " " + lc + '99 "><a id="btn_smiley" data-cat="ev_smiley" title="Smiley List" href="" aria-label="Smiley List "></a></li>'
+      + '<li class="' + lc + " " + lc + '98 "><a id="btn_upload" data-cat="ev_upload" title="Uploader" href="" aria-label="Uploader"></a></li>' 
       + '</ul>'
       + '<div id="qr_plugins_container"></div>'
       + '</ul>'
@@ -637,8 +649,8 @@ var rSRC = {
       // -=-=-=eof-tpl
 
       // debug-text fontawesome
-      // + '<div class="clearfix"><br/><br/></div>'
-      // + '<div style="font-size:14px">'+rSRC.menuTestFoo()+'</div>'
+      + '<div class="clearfix"><br/><br/></div>'
+      + '<div style="font-size:14px">'+rSRC.menuTestFoo()+'</div>'
     ;
   },
 
@@ -6641,6 +6653,7 @@ function do_insertTag(tag, value, $caleer){
 //  [IMG,CODE,INDENT,QUOTE,CODE,PHP,HTML,URL,SPOILER,NOPARSE,YOUTUBE]
 // Including mod to [Transparent, Strikethrough]
 function do_insertCustomTag($el){
+  clog('do_insertCustomTag');
   _TEXT.init();
   
   var BBCode = ( "string" !== typeof $el && $el  ? $el.attr("data-bb") : $el );
@@ -7005,17 +7018,27 @@ function eventsController(){
   // main-controller
   clog("events for markItUpButton a");
   $XK.find('.markItUpButton a').each(function(){
-    var par, $el = $(this), _cls = $el.attr('class');
-    if( _cls && _cls.indexOf('ev_') == -1 || "undefined" == typeof _cls)
+    var par,
+        $el = $(this),
+        cat = $el.data('cat')
+    ;
+    //     _cls = $el.attr('class');
+
+    // if( _cls && _cls.indexOf('ev_') == -1 || "undefined" == typeof _cls)
+    //   return true;
+    if( cat && !/^ev_/.test(cat) || "undefined" == typeof cat)
       return true;
+
 
     // good-togo
     par = $el.parent();
-    _cls = _cls.replace(/ev_/,'');
+    // _cls = _cls.replace(/ev_/,'');
+    cat = cat.replace(/ev_/,'');
+
     var tag, title, pTag;
 
     //click_BIU, do_insertCustomTag
-    switch(_cls){
+    switch( cat ){
       case "biu": case "align":
         $el.click(function(){
 
@@ -8319,7 +8342,7 @@ function start_Main(){
         clog("Injecting getSCRIPT");
         GM_addGlobalScript( rSRC.getSCRIPT() );
         (gvar.settings.autoload_smiley[0] == 1) && window.setTimeout(function(){
-          do_click($('.ev_smiley:first').get(0));
+          do_click($('#btn_smiley').get(0));
         }, 50);
 
 
