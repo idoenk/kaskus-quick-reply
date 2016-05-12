@@ -3508,8 +3508,12 @@ var _UPL_ = {
         ;
         _UPL_.toggleSecurePage( true );
         $('#'+tgt).html( tpl );
+
+        // Events
         $('#ifrm_reload_'+target).click(function(){
-          var itgt = $(this).attr('id').replace(/ifrm_reload_/,''), _src = $(this).data('src');
+          var itgt = $(this).attr('id').replace(/ifrm_reload_/,''),
+              _src = $(this).data('src');
+          _UPL_.toggleSecurePage( true );
           $('#' + 'ifrm_' + gvar.upload_sel[itgt].replace(/\W/g,'') ).attr('src', 'http://' + _src);
         });
       }
