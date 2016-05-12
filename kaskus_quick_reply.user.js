@@ -1123,7 +1123,7 @@ var rSRC = {
         +'<a href="'+'https://greasyfork.org/scripts/'+gvar.scriptMeta.scriptID_GF+'" class="brandlink" target="_blank">'+ gvar.scriptMeta.fullname +'</a> &#8212; '+ gvar.sversion +' &middot; <em>'+gvar.scriptMeta.dtversion+'</em>'
         +'<a href="https://github.com/idoenk/kaskus-quick-reply" target="_blank" class="repolink pull-right"><img src="https://dl.dropboxusercontent.com/s/alzoyd0s4r2ekrd/github-64-min.png" title="Kaskus Quick Reply on GitHub" height="33"></a>'
        +'</h3>'
-       +'<p><a href="http://creativecommons.org/licenses/by-nc-sa/3.0" target="_blank"><img src="http://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png" /></a> <span class="cpr">&copy;</span> 2010-15 Idx. '
+       +'<p><a href="http://creativecommons.org/licenses/by-nc-sa/3.0" target="_blank"><img src="http://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png" /></a> <span class="cpr">&copy;</span> 2010-16 Idx. '
        +'Licensed under a Creative Commons&nbsp;<a href="http://creativecommons.org/licenses/by-nc-sa/3.0" target="_blank">NC-SA 3.0 License</a></p>'
        +_sp
        +'<p>KASKUS brand is a registered trademark of '+ksk+'</p>'
