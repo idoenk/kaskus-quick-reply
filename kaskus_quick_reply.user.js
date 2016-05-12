@@ -95,7 +95,7 @@ gvar.scriptMeta = {
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
-// this might be saved in localstorage for use to manage
+// Might saved this in localstorage for user to manage
 gvar.service_uploader = [
   'http://cubeupload.com/',
   'http://imagevenue.com/host.php',
