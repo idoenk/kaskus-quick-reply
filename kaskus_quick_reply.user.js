@@ -7897,13 +7897,14 @@ function getUploaderSetting(){
 
   gvar.uploader = {};
   for(var i=0, iL=gvar.service_uploader.length; i<iL; i++){
-    var name = gvar.service_uploader[i];
+    var uploader_url = gvar.service_uploader[i],
+        name = uploader_url;
     name = name.replace(/^https?\:\/\//gi, '');
     name = name.replace(/\/.*/g, '');
 
     gvar.uploader[name] = {
       name: name,
-      url : sample_raw_uploader[i],
+      url : uploader_url,
     };
   }
 
