@@ -41,6 +41,7 @@
 //   Fix broken link: Kaskus Hotkeys
 //   Open collapsed QR editor on-click Draft button
 //   Fix broken icon: youtube,vimeo,soundcloud
+//   Add window.onbeforeunload on appending iframe
 // 
 // -/!latestupdate---
 // ==/UserScript==
@@ -96,7 +97,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = 1; // development debug, author purpose
+gvar.__DEBUG__ = !1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -1324,6 +1325,22 @@ var rSRC = {
     + '}'
     + '$(el).remove(); SimulateMouse( $(cb_elclick).get(0), "click", true);'
     +'}'
+
+    +'function ifrReleaseLock(e){'
+    + 'setTimeout(function(){'
+    +  '$("html").removeClass("qr-secure-bounce")'
+    + '}, 1)'
+    +'};'
+
+    +'window.onbeforeunload = function(e){'
+    + 'if("undefined" == typeof $) return !1;'
+    + 'if( $("html").hasClass("qr-secure-bounce") ){'
+    +  'e = e || window.event;'
+    +  'e.preventDefault = true;'
+    +  'e.cancelBubble = true;'
+    +  'e.returnValue = "Wingardium Leviosa, you are about to jump to another location..."; '
+    + '}'
+    +'};'
 
     +'function kqrmailto(el){'
     +'var pwin, p_url = el.getAttribute("href")+"?subject="+encodeURIComponent("#KQR: suggestion, bugs")+"&body=%0A%0A"+encodeURIComponent("UAString: "+window.navigator.userAgent)+"%0A"+encodeURIComponent("Via: QR-'+gvar.sversion+'");'
@@ -3487,8 +3504,9 @@ var _UPL_ = {
           +'<a target="_blank" title="Goto '+ target +'" href="http://'+gvar.upload_sel[target]+'"><b>http://' + gvar.upload_sel[target] + '</b></a>'
           +'</div>'
           +'<a class="btn_ifrm_reload" href="javascript:;" id="ifrm_reload_'+target+'" data-src="'+gvar.uploader[target]['src']+'">reload</a>'
-          +'<ifr'+'ame id="'+ ifname +'" src="http://'+ gvar.uploader[target]['src'] +'"></if'+'rame>'
+          +'<ifr'+'ame id="'+ ifname +'" src="http://'+ gvar.uploader[target]['src'] +'" onload="ifrReleaseLock(this)"></if'+'rame>'
         ;
+        _UPL_.toggleSecurePage( true );
         $('#'+tgt).html( tpl );
         $('#ifrm_reload_'+target).click(function(){
           var itgt = $(this).attr('id').replace(/ifrm_reload_/,''), _src = $(this).data('src');
@@ -3508,6 +3526,10 @@ var _UPL_ = {
     }else{
       $XK.find(bu + ', ' + bb).hide();
     }
+  },
+  toggleSecurePage: function(flag){
+    var act = (flag ? 'add':'remove')+'Class';
+    $('html')[act]('qr-secure-bounce');
   }
 };
 
@@ -7506,7 +7528,6 @@ function eventsTPL(){
     resize_popup_container();
   });
 
-
   // editor events: [focus,blur,keydown,keyup]
   // assigning several action, eg. watch draft, fixed toolbar martItUp,
   $XK.find('#'+gvar.tID).focus(function(){
@@ -7855,7 +7876,8 @@ function getUploaderSetting(){
   gvar.upload_sel = {
     cubeupload:'cubeupload.com',
     imagevenue:'imagevenue.com',
-    imagebam:'imagebam.com'
+    imagebam:'imagebam.com',
+    postimage: 'postimage.org'
   };
   gvar.uploader = {
     cubeupload:{
@@ -7866,6 +7888,9 @@ function getUploaderSetting(){
     },
     imagebam:{
       src:'www.imagebam.com',noCross:'1' 
+    },
+    postimage:{
+      src:'postimage.org',noCross:'1' 
     }
   };
   // set last-used host
