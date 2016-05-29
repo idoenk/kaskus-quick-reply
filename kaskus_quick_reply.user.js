@@ -4950,9 +4950,12 @@ var _STG = {
       
       // export/import setting==
       else{
-        var rL, raw, btn='#box_action', tgt = '#textarea_rawdata', disb = 'goog-btn-disabled';
+        var btn = '#box_action',
+            tgt = '#textarea_rawdata',
+            disb = 'goog-btn-disabled',
+            raw = trimStr( $(tgt).val() )
+        ;
         $(tgt).addClass(disb);
-        raw = trimStr( $(tgt).val() );
         
         if( gvar.buftxt && raw == trimStr(gvar.buftxt) ){
           $box.find(btn).val('Nothing changed..');
@@ -4966,20 +4969,26 @@ var _STG = {
         }
         else{
           if( !confirm(''
-              +'Are you sure to update these settings?'+'\n'
-              +'Your current settings will be lost.'+'\n\n'
-              +'Page may need to reload to apply new Settings.'+'\n') ){
+              +'Are you sure to update these settings?'+"\n"
+              +'Your current settings will be lost.'+"\n\n"
+              +'Page may need to reload to apply new Settings.'+"\n") ){
+
             $box.find(tgt).removeClass(disb);
             return;
           }else{
           
             $box.find(btn).val('Saving..');
-            raw = raw.split('\n'), rL = raw.length;
-            var cucok, lastkey = false, line = 0;
-            var uplkeys = ['UPLOAD_LOG'];
-            
+            raw = raw.split('\n');
+
+            var uplkeys = ['UPLOAD_LOG'],
+                lastkey = false,
+                rL = raw.length,
+                line = 0;
+            ;
             var query_save_setting = function(line){
-              var newval = trimStr( raw[line] );
+              var newval = trimStr( raw[line] ),
+                  cucok = !1;
+
               if( cucok = newval.match(/^\[([^\]]+)]/) ){
                 // is this a defined key?
                 cucok[1] = trimStr(cucok[1]);
