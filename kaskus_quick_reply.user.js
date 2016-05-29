@@ -3519,6 +3519,16 @@ var _UPL_ = {
               setStorageUploader(services.join(","), wrapFn)
             }
           }
+          else{
+            // nothing changed
+            hostname = getSlugFromUrl(oldUrl);
+            itemHost.oldName = hostname;
+            itemHost.name = hostname;
+            itemHost.url = oldUrl;
+            itemHost.unchanged = true;
+            if('function' == typeof cb)
+              cb( itemHost );
+          }
         },
         deleteUploader = function(url, cb){
           var services = gvar.settings.service_uploader,
@@ -3547,28 +3557,31 @@ var _UPL_ = {
             if( !(ret && ret.name && ret.oldName) )
               return !1;
 
-            // update-dom
-            var oldHost = ret.oldName,
-                newHost = ret.name
-            ;
-            $unitli
-              .attr('data-host', newHost)
-              .data('host', newHost)
-              .attr('data-url', newUrl)
-              .data('url', newUrl)
-              .find(".inner-host").text(newHost)
-            ;
-            $unitli.find(".btn-gotolink").attr('href', newUrl);
-            $form
-              .attr('data-host', newHost)
-              .data('host', newHost)
-            ;
+            if( !ret.unchanged ){
+              
+              // update-dom
+              var oldHost = ret.oldName,
+                  newHost = ret.name
+              ;
+              $unitli
+                .attr('data-host', newHost)
+                .data('host', newHost)
+                .attr('data-url', newUrl)
+                .data('url', newUrl)
+                .find(".inner-host").text(newHost)
+              ;
+              $unitli.find(".btn-gotolink").attr('href', newUrl);
+              $form
+                .attr('data-host', newHost)
+                .data('host', newHost)
+              ;
 
-            // container
-            $wrapper.find('.content_uploader[data-host="'+oldHost+'"]')
-              .attr('data-host', newHost)
-              .html('')
-            ;
+              // container
+              $wrapper.find('.content_uploader[data-host="'+oldHost+'"]')
+                .attr('data-host', newHost)
+                .html('')
+              ;
+            }
 
             // at-last..
             $form.find("[role=close]").trigger('click');
@@ -3679,8 +3692,16 @@ var _UPL_ = {
       // load service to iframe
       $qrt.click(function(e){
         var $el = $(e.target||e);
-        if( !($el.hasClass('unitli') || $el.hasClass('inner-host')) )
+        if(!( $el.hasClass('unitli') || $el.hasClass('inner-host') || $el.hasClass('btn-gotolink') || $el.hasClass('fa') )){
+
           return !1;
+        }
+        if( $el.hasClass('btn-gotolink') || $el.hasClass('fa') ){
+          if( $el.hasClass('fa') )
+            $el = $el.parent();
+
+          return $el.hasClass('btn-gotolink');
+        }
 
         var $me = $el.closest('.qrt'),
             $par_mnu = $me.closest('.qrset_mnu'),
