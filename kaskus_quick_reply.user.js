@@ -32,6 +32,7 @@
 // -!--latestupdate
 //
 // v5.3.8 - 2016-05-30 . 1464545253904
+//   Rollback minimized QR-Editor, patch editor got focus onkeypress onload
 //   Manageable uploader services
 //   Get rid inline style on list of fonts
 //   Fix broken onclick: [Font,Size,Color]
@@ -527,7 +528,7 @@ var rSRC = {
 
       + '<div class="form-group fg-message">'
       +  '<span id="clear_text" class="kqr-icon-close" title="Clear Editor" style="display:none"/>'
-      +  '<textarea id="kqr-reply-messsage" class="twt-glow kqr-editor" name="message" rows="2" cols="60" tabindex="1" dir="ltr"></textarea>'
+      +  '<textarea id="kqr-reply-messsage" class="twt-glow kqr-editor" name="message" rows="2" cols="60" dir="ltr"></textarea>'
       + '</div>' // .form-group.fg-message
 
 
@@ -3047,7 +3048,7 @@ var _TEXT = {
       _TEXT.focus();
     }, 200);
   },
-  focus: function(){ 
+  focus: function(){
     $('#'+gvar.tID).focus() 
   },
   lastsroll: function (){
@@ -3055,7 +3056,7 @@ var _TEXT = {
     !_TEXT.e && (_TEXT.e = $('#'+gvar.tID));
     _TEXT.e && _TEXT.e.scrollTop(_TEXT.e[0].scrollHeight);
   },
-  lastfocus: function (){
+  lastfocus: function(){
     var eText, nl, pos, txt = String($('#'+gvar.tID).val()); // use the actual content
     pos = txt.length;
     nl = txt.split('\n');
@@ -3300,12 +3301,16 @@ var _DRAFT = {
     if( _DRAFT.el.get(0) && _DRAFT.el.attr('data-state')=='idle'){
       gvar.timeOld = new Date().getTime();
       clearInterval(gvar.sITryKeepDrafting);
+
       // default interval should be 120 sec || 2 minutes (120000)
-      gvar.sITryKeepDrafting= window.setInterval(function() { _DRAFT.check() }, 120000);
+      gvar.sITryKeepDrafting = window.setInterval(function() { _DRAFT.check() }, 120000);
     }
 
-    var tmp_text= $('#'+gvar.tID).val(), timeNow=new Date().getTime()
-    ,selisih=(timeNow-gvar.timeOld), minuten=Math.floor(selisih/(1000*60));
+    var tmp_text = $('#'+gvar.tID).val(),
+        timeNow = new Date().getTime(),
+        selisih = (timeNow-gvar.timeOld),
+        minuten = Math.floor(selisih/(1000*60))
+    ;
 
     if( _DRAFT.provide_draft() ) return false;
     if( !tmp_text ) return false;
@@ -5449,6 +5454,7 @@ var _CSS = {
     !c && ( gvar.on_demand_csscheck = _CSS.dom_css_validate );
   },
   dom_css_validate: function(){
+    clog("inside dom_css_validate..");
     window.setTimeout(function(){
       var $tgt, _id = _CSS.DialogId;
       $tgt = $('#'+gvar.qID);
@@ -7892,15 +7898,19 @@ function eventsTPL(){
   for(var j=0, jL=CSA_tasks.length; j<jL; j++)
     CSA_index_reserved[CSA_tasks[j]["csa"]] = CSA_tasks[j]["fn"];
 
+  clog(CSA_index_reserved);
   
 
   // window events
   // global-window-shortcut
   $(window).keydown(function (ev) {
-    var A = ev.keyCode, doThi=0, CSA_tasks, pCSA_Code, pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0');
+    var A = ev.keyCode,
+        doThi=0,
+        CSA_tasks, elTgt,
+        pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0'),
+        pCSA_Code = pCSA+'_'+A
+    ;
 
-    // clog("input:"+pCSA+'_'+A);
-    
     if( A == 27 ){
       if( $("#" + _BOX.e.dialogname).is(":visible") && $("#" + _BOX.e.dialogname).css('visibility')=='visible' ){
         close_popup();
@@ -7908,10 +7918,10 @@ function eventsTPL(){
       }
 
       do_an_e(ev);
-      return;
+      return !1;
     }
 
-    if( pCSA == '1,0,0' && A == 192 && gvar.readonly ){ // 192 for `: open the hive
+    if( pCSA_Code == '1,0,0_'+'192' && gvar.readonly ){ // 192 for `: open the hive
       $('.button_qrmod,.button_qq,.xkqr').removeClass('hide');
       doThi = 1;
       scrollToQR();
@@ -7919,16 +7929,11 @@ function eventsTPL(){
 
     // panic-button reset_settings then reload page
     // Ctrl+Shift+` = Panic Reset Settings
-    if( pCSA == '1,1,0' && A == 192 ){ // 192 for `
+    if( pCSA_Code == '1,1,0' + '192' ){ // 192 for `
       _STG.reset_settings( true );
       doThi = 1;
       return !1;
     }
-    
-    if( (pCSA=='0,0,0' || pCSA=='0,1,0') || A < 65 || A > 90 )
-      return;
-    
-
 
     if( !gvar.readonly ){
 
@@ -7945,6 +7950,18 @@ function eventsTPL(){
       do_an_e(ev);
       return !1;
     }
+
+    if( pCSA=='0,0,0' || pCSA=='0,1,0' || A < 65 || A > 90 ){
+      elTgt = (ev.target||ev);
+
+      if( ['INPUT', 'TEXTAREA'].indexOf(elTgt.nodeName) == -1 && !( A < 65 || A > 90 ) ){
+        do_an_e(ev);
+        return !1;
+      }
+      else{
+        return A;
+      }
+    }
   }).resize(function () {
 
     resize_popup_container();
@@ -7952,7 +7969,7 @@ function eventsTPL(){
 
   // editor events: [focus,blur,keydown,keyup]
   // assigning several action, eg. watch draft, fixed toolbar martItUp,
-  $XK.find('#'+gvar.tID).focus(function(){
+  $XK.find('#'+gvar.tID).on('focus', function(e){
     if( gvar.settings.txtcount ){
       $XK.find('.counter').first().addClass('kereng');
       _TEXTCOUNT.init('#'+gvar.qID+' .counter')
@@ -7967,7 +7984,7 @@ function eventsTPL(){
         fixed_markItUp()
       }, 50);
     }
-  }).blur(function(){
+  }).on('blur', function(){
     clog("blur editor, gvar.settings.txtcount="+gvar.settings.txtcount);
     if( gvar.settings.txtcount ){
       $XK.find('.counter').first().removeClass('kereng');
@@ -7985,7 +8002,7 @@ function eventsTPL(){
         }, 789);
       }
     }
-  }).keydown(function(ev){
+  }).on('keydown', function(ev){
     var B, pCSA_Code,
       A = ev.keyCode || ev.keyChar,
       pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0');
@@ -8070,10 +8087,10 @@ function eventsTPL(){
       do_an_e(ev);
       do_click( $XK.find('#' + asocKey[Acsa]).get(0));
     }
-  }).keyup(function(ev){
+  }).on('keyup', function(ev){
 
     $XK.find('#clear_text').toggle( $(this).val()!=="" );
-  });
+  }).blur();
     
 
 
@@ -8086,7 +8103,7 @@ function eventsTPL(){
 
 
   if( gvar.settings.qrdraft ){
-    $('#'+gvar.tID).keypress(function(e){
+    $('#'+gvar.tID).on('keypress', function(e){
       var A = e.keyCode;
       if( A>=37 && A<=40 ) return; // not an arrow
       if( $('#qrdraft').get(0) )
@@ -8890,15 +8907,6 @@ function start_Main(){
             initAtWho()
           }
         }
-
-
-        // make sure this run after css_validate done check everything is ok
-        setTimeout(function(){
-          // init minimized QR Editor
-          if( $('#formqr').is(':visible') )
-            $("#qrtoggle-button").trigger('click');
-        }, 1235);
-
       }, 50);
       // settimeout pra-loaded settings 
     }
