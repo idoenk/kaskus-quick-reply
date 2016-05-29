@@ -7462,12 +7462,6 @@ function eventsController(){
       $("#hid_iconid", $XK).prop("checked", true)
     }
   });
-  
-  // render font's fonts
-  // $XK.find('.fonts ul li a').each(function(){
-  //   var $me = $(this);
-  //   $me.css('font-family', $me.attr('title'));
-  // });
     
   // main-controller
   clog("events for markItUpButton a");
@@ -7476,17 +7470,13 @@ function eventsController(){
         $el = $(this),
         cat = $el.data('cat')
     ;
-    //     _cls = $el.attr('class');
 
-    // if( _cls && _cls.indexOf('ev_') == -1 || "undefined" == typeof _cls)
-    //   return true;
     if( cat && !/^ev_/.test(cat) || "undefined" == typeof cat)
       return true;
 
 
     // good-togo
     par = $el.parent();
-    // _cls = _cls.replace(/ev_/,'');
     cat = cat.replace(/ev_/,'');
 
     var tag, title, pTag;
