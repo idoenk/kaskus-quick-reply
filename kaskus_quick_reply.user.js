@@ -112,7 +112,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = 1; // development debug, author purpose
+gvar.__DEBUG__ = !1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -1377,7 +1377,7 @@ var rSRC = {
   getSCRIPT_UPL: function(){
     return ''
     +'function ajaxFileUpload() {'
-    +'var $parent = $("#content_uploader_kaskus");'
+    +'var $parent = $(".content_uploader[data-host=kaskus]");'
     +'var $throb = $parent.find(".throbber_wrp");'
     +'var $imgc = $parent.find(".image-control");'
     +'$throb.show(); $imgc.addClass("blured");'
@@ -3558,7 +3558,7 @@ var _UPL_ = {
               return !1;
 
             if( !ret.unchanged ){
-              
+
               // update-dom
               var oldHost = ret.oldName,
                   newHost = ret.name
@@ -7929,8 +7929,6 @@ function eventsTPL(){
   for(var j=0, jL=CSA_tasks.length; j<jL; j++)
     CSA_index_reserved[CSA_tasks[j]["csa"]] = CSA_tasks[j]["fn"];
 
-  clog(CSA_index_reserved);
-  
 
   // window events
   // global-window-shortcut
@@ -7986,6 +7984,8 @@ function eventsTPL(){
       elTgt = (ev.target||ev);
 
       if( ['INPUT', 'TEXTAREA'].indexOf(elTgt.nodeName) == -1 && !( A < 65 || A > 90 ) ){
+        clog('killed for ,'+elTgt.nodeName+'; A='+A);
+
         do_an_e(ev);
         return !1;
       }
