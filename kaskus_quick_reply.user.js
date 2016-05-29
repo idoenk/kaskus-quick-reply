@@ -3424,7 +3424,7 @@ var _UPL_ = {
       ret+=''
         +'<li><div>'
         + '<b>:: Services :: </b>'
-        + '<span class="goog-btn goog-btn-default goog-btn-xs goog-btn-flat btn-addservice"><i class="fa fa-plus-circle" title="Add Host"></i></span>'
+        + '<span class="goog-btn goog-btn-default goog-btn-xs goog-btn-flat btn-addservice" title="Add Host"><i class="fa fa-plus-circle"></i></span>'
         +'</div></li>'
         +'<li><div class="spacer"></div></li>'
         +'<li class="qrt '+("undefined" != typeof gvar.upload_tipe && gvar.upload_tipe == 'kaskus' ? ' curent':'')+'"><div title="Kaskus Uploader" data-host="kaskus" class="unitli">kaskus</div></li>'
