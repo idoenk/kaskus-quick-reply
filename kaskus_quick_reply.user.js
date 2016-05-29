@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.7.6
+// @version        5.3.8
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1603125376
-// @timestamp      1462977849732
+// @dtversion      1605305380
+// @timestamp      1464545253904
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,7 +31,10 @@
 //
 // -!--latestupdate
 //
-// v5.3.7.6 - 2016-05-11 . 1462977849732
+// v5.3.8 - 2016-05-30 . 1464545253904
+//   Manageable uploader services
+//   Get rid inline style on list of fonts
+//   Fix broken onclick: [Font,Size,Color]
 //   Patch jump around textarea on [enter,backspace,delete]
 //   Keep notify_wrap visible on minimized QR
 //   Init QR minimized to avoid getting focused
@@ -82,21 +85,21 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.7.6';
+gvar.sversion = 'v' + '5.3.8';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1462977849732 // version.timestamp
-  ,dtversion: 1603125376 // version.date
+   timestamp: 1464545253904 // version.timestamp
+  ,dtversion: 1605305380 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1605125376 // css revision date; only change this when you change your external css
+  ,cssREV: 1605305380 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
 // Might saved this in localstorage for user to manage
-gvar.service_uploader = [
+gvar.service_uploader_default = [
   'http://cubeupload.com/',
   'http://imagevenue.com/host.php',
   'http://www.imagebam.com/',
@@ -141,6 +144,7 @@ var KS = 'KEY_SAVE_',
     ,KEY_SAVE_ALWAYS_NOTIFY:    ['1'] // activate user notification
     ,KEY_SAVE_SHOW_KASKUS_PLUS: ['1'] // show kaskus plus smiley
     ,KEY_SAVE_IMGBBCODE_KASKUS_PLUS: ['1'] // use img bbcode for kaskus plus smiley
+    ,KEY_SAVE_SERVICE_UPLOADER: [null] // list of service uploader
 
     ,KEY_SAVE_SCUSTOM_NOPARSE:  ['0'] // dont parse custom smiley tag. eg. tag=babegenit. BBCODE=[[babegenit]
 
@@ -250,18 +254,23 @@ var Dom = {
 var rSRC = {
   mCls: ['markItUpButton','markItUpDropMenu','<li class="markItUpSeparator">---------------</li>'],
   menuFont: function(id){
-    var li_cls = rSRC.mCls, item, buff, lf;
+    var li_cls = rSRC.mCls,
+        item, buff, lf, fontClass;
     //item = ['Arial','Arial Black','Arial Narrow','Book Antiqua','Century Gothic','Comic Sans MS','Courier New','Georgia','Impact','Lucida Console','Times New Roman','Trebuchet MS','Verdana'], 
 
     item = ['Arial','Georgia','Arial Black','Impact','Arial Narrow','Lucida Console','Book Antiqua','Times New Roman','Century Gothic','Trebuchet MS','Comic Sans MS','Verdana','Courier New'];
     lf = item.length;
     buff='<li class="'+li_cls[0]+' '+li_cls[0] + id + ' fonts '+li_cls[1]+'"><a title="Fonts" href="" data-noevent="1">F</a>';
     buff+='<ul class="markItUpButton'+id+'-wrapper mtarrow" data-bb="FONT">';
-    for(var i=0; i<lf; i++)
+    for(var i=0; i<lf; i++){
+      fontClass = item[i].toLowerCase().replace(/\s/g,'');
+      if( /\btrebuche/.test(fontClass) )
+        fontClass += ' font-Trebucher';
       buff += ''
-        +'<li class="'+li_cls[0]+' '+li_cls[0] + id +'-'+(i+1)+' font-'+item[i].toLowerCase().replace(/\s/g,'')+'">'
-        +'<a title="'+item[i]+'" class="ev_font" href="">'+item[i]+'</a>'
+        +'<li class="'+li_cls[0]+' '+li_cls[0] + id +'-'+(i+1)+' font-'+fontClass+'">'
+        +'<a title="'+item[i]+'" data-cat="ev_font" href="">'+item[i]+'</a>'
         +'</li>';
+    }
     buff+='</ul></li>';
     return buff;
   },
@@ -270,7 +279,7 @@ var rSRC = {
     buff='<li class="'+li_cls[0]+' '+li_cls[0] + id + ' size '+li_cls[1]+'"><a title="Size" href="" data-noevent="1">Size</a>';
     buff+='<ul class="markItUpButton'+id+'-wrapper mtarrow" data-bb="SIZE">';
     for(var i=1; i<=7; i++)
-      buff+='<li class="'+li_cls[0]+' size-'+i+'"><a title="'+i+'" class="ev_size" href="">'+i+'</a></li>';
+      buff+='<li class="'+li_cls[0]+' size-'+i+'"><a title="'+i+'" data-cat="ev_size" href="">'+i+'</a></li>';
     buff+='</ul></li>';
     return buff;
   },
@@ -280,7 +289,7 @@ var rSRC = {
     buff+='<ul class="markItUpButton'+id+'-wrapper mtarrow" data-bb="COLOR">';
     for(hex in kolors){
       capt = kolors[hex];
-      buff+='<li class="'+li_cls[0] +'"><a title="'+capt+'" class="ev_color"  style="width:0; background-color:'+hex+'" href="">'+capt+'</a></li>';
+      buff+='<li class="'+li_cls[0] +'"><a title="'+capt+'" data-cat="ev_color"  style="width:0; background-color:'+hex+'" href="">'+capt+'</a></li>';
     }
     buff+='</ul></li>';
     return buff;
@@ -750,7 +759,7 @@ var rSRC = {
     return ''
     +'<div class="wraper_custom">'
     +'<div class="col-xs-2 cs_left">'
-    + '<div id="dv_menu_disabler" class="hide" style="position:absolute; padding:0;margin:0;border:0; opacity:.15; filter:alpha(opacity=15); background:#000; width:100%; height:100%"></div>'
+    + '<div id="dv_menu_disabler" class="hide" style="position:absolute; padding:0;margin:0;border:0; opacity:.15; filter:alpha(opacity=15); background:#000; width:100%; height:100%; z-index: 1;"></div>'
     + '<ul id="ul_group" class="qrset_mnu">'
     +   menus
     + '</ul>'
@@ -771,9 +780,9 @@ var rSRC = {
      +'<div id="custom_addgroup_container" class="hide">'
       +'<div id="manage_container">'
         +'<div class="form-group">'
-         +'<label id="label_group" for="input_grupname">Group</label>'
+         +'<label id="label_group" for="input_grupname">Name</label>'
          +'<input id="input_grupname" tabindex="500" class="twt-glow input_title" title="Group Name" style="width: 200px;"  />'
-         +'<a id="delete_grupname" tabindex="506" href="javascript:;" class="goog-btn goog-btn-red goog-btn-xs" style="margin-left:20px;" title="Delete this Group">delete</a>'
+         +'<a id="delete_grupname" tabindex="506" href="javascript:;" class="goog-btn goog-btn-red goog-btn-xs" style="margin-left:20px;" title="Delete this Collection">delete</a>'
         +'</div>' // .form-group
         +'<div class="form-group">'
          +'<textarea id="textarea_scustom_container" tabindex="501" class="twt-glow kqr-txta_editor"></textarea>'
@@ -804,7 +813,7 @@ var rSRC = {
      +  '<li><div class="spacer" /></li>' // end list
      + '</ul>'
      +'</div>' // cs_left
-     +'<div class="col-xs-10 cs_right sid_beloweditor" style="padding:0 10px;">'
+     +'<div class="opened col-xs-10 cs_right sid_beloweditor">'
      + '<div id="uploader_container"></div>'
      +'</div>' // cs_right
      +'<span id="toggle-sideuploader" class="goog-btn goog-btn-default goog-btn-xs goog-btn-flat toggle-sidebar" data-state="hide">&#9664;</span>'
@@ -3376,62 +3385,433 @@ var _UPL_ = {
     
     _UPL_.main();
   },
+  getTplUploader: function(theHost){
+    return ''
+      +'<li class="qrt'+(theHost.isCurent ? ' curent':'')+'">'
+      +'<div role="view" data-host="'+theHost.host+'" class="unitli" data-url="'+theHost.url+'">'
+      + '<span class="inner-host">'+theHost.host+'</span>'
+      + ' <span class="externurl wrap-optionservice">'
+      +  '<a href="javascript:;" class="hbtn btn-optionservice"><i class="fa fa-vertical-tripledot"></i></a>'
+      +  '<span class="wrap-btnoptions">'
+      +   '<a href="javascript:;" title="Remove" class="hbtn btn-removeservice"><i class="fa fa-trash"></i></a>'
+      +   '<a href="javascript:;" title="Edit" class="hbtn btn-editservice"><i class="fa fa-pencil"></i></a>'
+      +   '<a href="'+theHost.url+'" target="_blank" title="Goto this site" class="hbtn btn-gotolink"><i class="fa fa-arrow-circle-right"></i></a>'
+      +  '</span>'
+      + '</span>'
+      +'</div>'
+      +'</li>';
+  },
+  getTplUploaderForm: function(theHost){
+    return ''
+      +'<div role="form" data-host="'+theHost.host+'">'
+      + '<input type="text" placeholder="http://" value="'+(theHost.url ? theHost.url : '')+'" />'
+      + '<div class="form-action right">'
+      +  '<a href="javascript:;" class="btn-editservice-abort" role="close">Cancel</a>'
+      +  '<button type="button" class="goog-btn goog-btn-xs goog-btn-primary btn-editservice-save" title="Save"><i class="fa fa-edit"></i></button>'
+      + '</div>'
+      + '<div class="clearfix"></div>'
+      +'</div>';
+  },
   menus: function(){
-    var idx=0, ret='';
+    var ret='';
     if( gvar.uploader ){
       ret+=''
-        +'<li><div><b>:: Services :: </b></div></li>'
+        +'<li><div>'
+        + '<b>:: Services :: </b>'
+        + '<span class="goog-btn goog-btn-default goog-btn-xs goog-btn-flat btn-addservice"><i class="fa fa-plus-circle" title="Add Host"></i></span>'
+        +'</div></li>'
         +'<li><div class="spacer"></div></li>'
-        +'<li class="qrt'+("undefined" != typeof gvar.upload_tipe && gvar.upload_tipe == 'kaskus' ? ' curent':'')+'"><div id="tphost_0" title="kaskus.us" data-host="kaskus">kaskus</div></li>'
+        +'<li class="qrt '+("undefined" != typeof gvar.upload_tipe && gvar.upload_tipe == 'kaskus' ? ' curent':'')+'"><div title="Kaskus Uploader" data-host="kaskus" class="unitli">kaskus</div></li>'
       ;
       for(var host in gvar.uploader){
-        ret+='<li class="qrt'+("undefined" != typeof gvar.upload_tipe && gvar.upload_tipe == host ? ' curent':'')+'"><div id="tphost_'+(idx+1)+'" data-host="'+host+'">' + host + ' <a class="externurl right" title="Goto this site" target="_blank" href="'+gvar.uploader[host]['url']+'"><i class="fa fa-arrow-circle-right"></i></a></div></li>';
-        idx++;
+        ret += _UPL_.getTplUploader({
+          isCurent: ("undefined" != typeof gvar.upload_tipe && gvar.upload_tipe == host),
+          host: host,
+          url: gvar.uploader[host]['url']
+        });
       }
     }
     return ret;
   },
   event_menus:function(){
-    $('#'+_UPL_.tcui+' .qrt').each(function(){
-      $(this).click(function(e){
-        if( (e.target||e).nodeName === 'DIV' ){
+    var $XK = $("#"+gvar.qID);
+    var setStorageUploader = function(text, cb){
+          setValue(KS+'SERVICE_UPLOADER', text, function(ret){
+            if('function' == typeof cb)
+              cb( ret || true );
+          });
+        },
+        saveUploader = function(url, cb){
+          var services = gvar.settings.service_uploader,
+              indexFound = !1,
+              hostname,
+              itemHost = {},
+              wrapFn = function(){}
+          ;
+          indexFound = services.indexOf(url);
+          if( indexFound == -1 ){
+
+            hostname = genRenamedHost(url, gvar.uploader);
+            if( hostname ){
+              itemHost.name = hostname;
+              itemHost.url = url;
+              gvar.uploader[hostname] = itemHost;
+              wrapFn = (function(_host){
+                return function(ret){
+                  if('function' == typeof cb)
+                    cb(_host, ret)
+                }
+              })(itemHost);
+            }
+
+
+            services.push(url);
+
+            setStorageUploader(services.join(","), wrapFn)
+          }
+          else{
+            // Error: already there..
+            if('function' == typeof cb)
+              cb( !1 );
+          }
+        },
+        updateUploader = function(oldUrl, newUrl, cb){
+          var services = gvar.settings.service_uploader,
+              indexFound = !1,
+              hostname = null,
+              itemHost = {},
+              wrapFn = function(){}
+          ;
+
+          if( newUrl && oldUrl != newUrl ){
+            indexFound = services.indexOf(oldUrl);
+            if( indexFound > -1 ){
+
+              hostname = getSlugFromUrl(oldUrl);
+              if( hostname && 'undefined' != typeof gvar.uploader[hostname] ){
+                itemHost.oldName = hostname;
+                delete gvar.uploader[hostname];
+              }
+
+              hostname = genRenamedHost(newUrl, gvar.uploader);
+              if( hostname ){
+                itemHost.name = hostname;
+                itemHost.url = newUrl;
+                gvar.uploader[hostname] = itemHost;
+                wrapFn = (function(_host){
+                  return function(ret){
+                    if('function' == typeof cb)
+                      cb(_host, ret)
+                  }
+                })(itemHost);
+              }
+              
+
+              services[indexFound] = newUrl;
+
+              gvar.settings.service_uploader = services;
+              setStorageUploader(services.join(","), wrapFn)
+            }
+          }
+        },
+        deleteUploader = function(url, cb){
+          var services = gvar.settings.service_uploader,
+              indexFound = services.indexOf(url)
+          ;
+          if( indexFound > -1 ){
+            services.splice(indexFound, 1);
+
+            setStorageUploader(services.join(","), cb)
+          }
+        },
+        clickBtnEditUploaderSave = function($el){
+          var $me = $el,
+              $li = $me.closest(".qrt"),
+              $form = $me.closest("[role=form]"),
+              $unitli = $li.find(".unitli"),
+              $wrapper = $li.closest(".wraper_custom"),
+              oldUrl = $unitli.data('url'),
+              newUrl = $form.find("[type=text]").val()
+          ;
+          newUrl = trimStr( newUrl );
+          if( !newUrl )
+            return !1;
+          updateUploader(oldUrl, newUrl, function(ret){
+
+            if( !(ret && ret.name && ret.oldName) )
+              return !1;
+
+            // update-dom
+            var oldHost = ret.oldName,
+                newHost = ret.name
+            ;
+            $unitli
+              .attr('data-host', newHost)
+              .data('host', newHost)
+              .attr('data-url', newUrl)
+              .data('url', newUrl)
+              .find(".inner-host").text(newHost)
+            ;
+            $unitli.find(".btn-gotolink").attr('href', newUrl);
+            $form
+              .attr('data-host', newHost)
+              .data('host', newHost)
+            ;
+
+            // container
+            $wrapper.find('.content_uploader[data-host="'+oldHost+'"]')
+              .attr('data-host', newHost)
+              .html('')
+            ;
+
+            // at-last..
+            $form.find("[role=close]").trigger('click');
+          });
+          return !1;
+        },
+        clickAbortEditUploader = function($el){
+          var $li = $el.closest('.qrt'),
+              $par = $li.closest('.qrset_mnu')
+          ;
+          $li
+            .removeClass('currently-edit')
+            .find(".unitli").removeClass('hide');
+          $li.find("[role=form]").remove();
+
+          if( !$par.find("[role=form]").length )
+            $par.removeClass('form-mode');
+
+          return !1;
+        },
+        keydownText = function(e, $me){
+          var $form = $me.closest('[role=form]');
+          if( e.keyCode === 13 ){
+            if( $me.val() )
+              $form.find(".btn-editservice-save").trigger('click');
+
+            return !1;
+          }
+          else if( e.keyCode === 27 ){
+            $form.find(".btn-editservice-abort").trigger('click');
+            return !1;
+          }
+          return true;
+        }
+    ;
+    $XK.find('#'+_UPL_.tcui+' .qrt').each(function(){
+      var $qrt = $(this);
+      if( $qrt.hasClass('events') )
+        return true;
+
+      $qrt.find(".btn-removeservice").click(function(e){
+        if( confirm("Agan yakin?") ){
           var $me = $(this),
-              ch = $me.find('div:first'),
-              subtpl, id, lbl, gL, datahost;
+              $unitli = $me.closest('.unitli'),
+              $li = $unitli.closest('.qrt'),
+              $par = $me.closest('.wraper_custom'),
+              is_curent = $li.hasClass('curent'),
+              hostname = $unitli.data('host'),
+              $li_first
+          ;
+          if( is_curent )
+            $li_first = $par.find('.qrset_mnu [data-host="kaskus"]');
 
-          id = ch.attr('id').replace(/tphost_/gi,'');
-          datahost = ch.attr('data-host');
 
-          setValue(KS+'LAST_UPLOADER', datahost, function(){
-            _UPL_.switch_tab( datahost );
-            $me.closest('#ul_group').find('.curent').removeClass('curent');
-            $me.addClass('curent');
+          // updating storage...
+          deleteUploader($unitli.data('url'), function(){
+            $par.find('#uploader_container .content_uploader[data-host="'+hostname+'"]').remove();
+            $li.remove();
+
+            // the very last, reset to first position
+            if( is_curent )
+              $li_first.trigger('click');
           });
         }
       });
-    });
-    $('#toggle-sideuploader').click(function(){
-      var $me, $sb, $uc, todo;
-      $me = $(this);
-      $sb = $me.closest('.wraper_custom').find('.cs_left');
-      $uc = $('#uploader_container');
-      todo = $me.attr('data-state')
+      $qrt.find(".btn-editservice").click(function(e){
+        e.preventDefault();
+        var $btn = $(this),
+            $qrt = $btn.closest('.qrt'),
+            $ulmenu = $btn.closest('.qrset_mnu'),
+            $tphost = $qrt.find('.unitli'),
+            hostname = $tphost.data('host'),
+            url = $tphost.data('url')
+        ;
+        $tphost.addClass('hide');
+        $ulmenu.addClass('form-mode');
+        $qrt
+          .append($(''
+            +_UPL_.getTplUploaderForm({
+              host: hostname,
+              url: (url ? url : '')
+            })
+          ))
+          .addClass('currently-edit')
+        ;
 
-      if(todo=='hide'){
-        $sb.hide();
-        $uc.parent().removeClass('col-xs-10');
-      }else{
-        $sb.show();
-        $uc.parent().addClass('col-xs-10');
-      }
+        // Events-form
+        $qrt.find(".btn-editservice-save").click(function(e){
+          e.preventDefault();
 
-      $me.html( HtmlUnicodeDecode(todo=='hide' ? '&#9658;' : '&#9664;') );
-      $me.attr('data-state', todo=='hide' ? 'show' : 'hide' );
+          return clickBtnEditUploaderSave( $(this) )
+        });
+        $qrt.find(".btn-editservice-abort").click(function(e){
+          e.preventDefault();
+
+          return clickAbortEditUploader( $(this) )
+        });
+        $qrt.find("[type=text]").on('keydown', function(e){
+
+          return keydownText( e, $(this) );
+        });
+
+        setTimeout(function(){
+          $qrt.find('[role=form] [type=text]').focus().select();
+        }, 0);
+      });
+
+      // load service to iframe
+      $qrt.click(function(e){
+        var $el = $(e.target||e);
+        if( !($el.hasClass('unitli') || $el.hasClass('inner-host')) )
+          return !1;
+
+        var $me = $el.closest('.qrt'),
+            $par_mnu = $me.closest('.qrset_mnu'),
+            $ch, datahost
+        ;
+        if( $par_mnu.hasClass('form-mode') )
+          return true;
+
+        $ch = $me.find('.unitli');
+        datahost = $ch.attr('data-host');
+
+        setValue(KS+'LAST_UPLOADER', datahost, function(){
+          _UPL_.switch_tab( datahost );
+          $me.closest('#ul_group').find('.curent').removeClass('curent');
+          $me.addClass('curent');
+        });
+      });
+
+      $qrt.addClass('events');
     });
+
+    if( !$XK.find('#toggle-sideuploader').hasClass('events') )
+      $XK.find('#toggle-sideuploader').click(function(){
+        var $me, $sb, $uc, todo;
+        $me = $(this);
+        $sb = $me.closest('.wraper_custom').find('.cs_left');
+        $uc = $('#uploader_container');
+        todo = $me.attr('data-state')
+
+        if(todo=='hide'){
+          $sb.hide();
+          $uc.parent().removeClass('opened col-xs-10');
+        }else{
+          $sb.show();
+          $uc.parent().addClass('opened col-xs-10');
+        }
+
+        $me.html( HtmlUnicodeDecode(todo=='hide' ? '&#9658;' : '&#9664;') );
+        $me.attr('data-state', todo=='hide' ? 'show' : 'hide' );
+      }).addClass('events');
+
+    if( !$XK.find('.btn-addservice').hasClass('events') )
+      $XK.find(".btn-addservice").click(function(){
+        var $me = $(this),
+            $ulmenu = $me.closest('ul'),
+            theHost = {
+              isCurent: !1,
+              host: 'Add New',
+              url: ''
+            },
+            $newLi
+        ;
+        $ulmenu.addClass('form-mode');
+        $newLi = $( _UPL_.getTplUploader(theHost) );
+        $newLi.append( $(_UPL_.getTplUploaderForm(theHost)) );
+        $newLi
+          .addClass('currently-edit')
+          .find(".unitli").addClass('hide')
+        ;
+
+        // events particularly for add-new
+        $newLi.find(".btn-editservice-abort").click(function(e){
+          e.preventDefault();
+          var $li = $(this).closest('.qrt'),
+              $par = $li.closest('.qrset_mnu')
+          ;
+          $li.remove();
+          if( !$par.find("[role=form]").length )
+            $par.removeClass('form-mode');
+        });
+        $newLi.find(".btn-editservice-save").click(function(e){
+          e.preventDefault();
+          var $me = $(this),
+              $li = $me.closest(".qrt"),
+              $form = $me.closest("[role=form]"),
+              $unitli = $li.find(".unitli"),
+              $wrapper = $li.closest(".wraper_custom"),
+              url = $form.find("[type=text]").val()
+          ;
+          url = trimStr( url );
+          if( !url )
+            return !1;
+
+          saveUploader(url, function(ret){
+            if( !(ret && ret.name && ret.url) )
+              return !1;
+
+            $unitli
+              .attr('data-host', ret.name)
+              .data('host', ret.name)
+              .attr('data-url', url)
+              .data('url', url)
+              .find(".inner-host").text(ret.name)
+            ;
+            $unitli.find(".btn-gotolink").attr('href', url);
+            $form
+              .attr('data-host', ret.name)
+              .data('host', ret.name)
+            ;
+
+            // container
+            $wrapper.find("#uploader_container").append(''
+              +'<div data-host="'+ret.name+'" class="content_uploader" style="display:none"></div>'
+            );
+
+            // replace dom form-action..
+            var $action = $li.find(".form-action").clone(false);
+            $action.find(".btn-editservice-save").click(function(e){
+              e.preventDefault();
+
+              return clickBtnEditUploaderSave( $(this) )
+            });
+            $action.find(".btn-editservice-abort").click(function(e){
+              e.preventDefault();
+
+              return clickAbortEditUploader( $(this) )
+            });
+            $li.find(".form-action").replaceWith( $action );
+            $action.find("[role=close]").trigger('click');
+
+            _UPL_.event_menus();
+          });
+        });
+        $newLi.find("[type=text]").on('keydown', function(e){
+
+          return keydownText( e, $(this) );
+        });
+
+        $ulmenu.find(".qrt").last().after( $newLi );
+        setTimeout(function(){
+          $newLi.find('[type=text]').focus();
+        }, 0);
+      }).addClass('events');
   },
   tplcont: function(host){
 
-    return '<div id="content_uploader_'+host.replace(/\W/g, '-')+'" data-host="'+host+'" class="content_uploader" style="display:none" />';
+    return '<div data-host="'+host+'" class="content_uploader" style="display:none" />';
   },
   main: function(){
     var tpl = '', iner = _UPL_.tcui, $target = $('#'+iner);
@@ -3607,14 +3987,14 @@ var _SML_ = {
     var gL, ret, spacer='<div style="height:1px"></div>';
     
     ret='<li class="qrt_first">'+spacer+'</li>'
-      +'<li class="qrt add_group"><div class="add_group">Add Group</div></li>'
+      +'<li class="qrt add_group"><div class="unitli inner_add_group">Add Collection</div></li>'
       +'<li>'+spacer+'</li>';
     ;
     if( gvar.smgroup && gvar.smgroup.length > 0 ){
       gL = gvar.smgroup.length;
       for(var i=0; i<gL; i++){
         ret+=''
-          +'<li class="qrt'+(i==0 ? ' curent':'')+'"><div id="tbgrup_'+i+'" title="'+gvar.smgroup[i].replace(/_/g, ' ')+'">'
+          +'<li class="qrt'+(i==0 ? ' curent':'')+'"><div id="tbgrup_'+i+'" title="'+gvar.smgroup[i].replace(/_/g, ' ')+'" class="unitli">'
           + gvar.smgroup[i] +'<span class="num">'+(i+1)+'</span></div></li>';
       }
       ret+='<li class="qrt_first">'+spacer+'</li>';
@@ -3658,7 +4038,7 @@ var _SML_ = {
       rnd = rnd.replace(/0\./g, '').substring(0, 3);
       $(this).addClass('curent');
 
-      $('#label_group').text('Add Group');
+      $('#label_group').text('Name');
       $('#manage_btn').text('Save');
       $('#textarea_scustom_container').val('').height(100);
       $('#input_grupname').val('untitled_' + rnd);
@@ -3930,7 +4310,7 @@ var _SML_ = {
       else if(task=='manage'){
 
         $(this).text('Save');
-        $('label_group').text('Group');
+        $('label_group').text('Name');
         $('#scustom_todo').val('edit');
         $('#manage_help, #manage_cancel, #custom_bottom, #custom_addgroup_container, #dv_menu_disabler, #position_group, #delete_grupname', $boxSM)
           .removeClass("hide");
@@ -3960,7 +4340,7 @@ var _SML_ = {
     
     $boxSM.find('#delete_grupname').click(function(){
       var cGrp = $('#current_grup').val();
-      if( confirm('You are about to delete this Group.\n'+'Name: '+cGrp+'\n\nContinue delete this group?\n') ){
+      if( confirm('You are about to delete a smiley collection.\n'+'Name: '+cGrp+'\n\nContinue delete collection?\n') ){
         $('#scustom_todel').val( cGrp );
         do_click($('#manage_btn').get(0));
       }
@@ -4222,7 +4602,7 @@ var _STG = {
     for(tipe in mnus){
       if(typeof tipe!='string') continue;
       
-      tpl+= '<li data-ref="'+tipe+'" class="qrt'+(idx==0 ? ' curent': (idx==(mL-1) ? ' qrset_lasttab' : '')) +'"><div>'+mnus[tipe][0]+'</div></li>';
+      tpl+= '<li data-ref="'+tipe+'" class="qrt'+(idx==0 ? ' curent': (idx==(mL-1) ? ' qrset_lasttab' : '')) +'"><div class="unitli">'+mnus[tipe][0]+'</div></li>';
       $box_setting.find('.cs_right')
         .append('<div class="stg_content'+(idx==0 ? ' isopen':'')+'" id="stg_content_'+tipe+'" style="display:none;">'+ (mnus[tipe][1] ? mnus[tipe][1] : '') +'</div>');
       idx++;
@@ -4669,7 +5049,7 @@ var _STG = {
       ,'QR_HOTKEY_KEY','QR_HOTKEY_CHAR','QR_DRAFT'
       ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP','HIDE_GREYLINK','ALWAYS_NOTIFY'
       ,'SHOW_SMILE','TABFIRST_SMILE','AUTOCOMPLETE_SML','LAYOUT_CONFIG','LAYOUT_TPL','SCUSTOM_NOPARSE','CUSTOM_SMILEY'
-      ,'IMGBBCODE_KASKUS_PLUS'
+      ,'IMGBBCODE_KASKUS_PLUS','SERVICE_UPLOADER'
     ];
     var keykomeng = {
        'UPDATES':'Check Update enabled? validValue=[1,0]'
@@ -4692,6 +5072,7 @@ var _STG = {
       ,'SCUSTOM_NOPARSE':'Smiley Custom Tags will not be parsed; validValue=[1,0]'
       ,'CUSTOM_SMILEY':'Smiley Custom\'s Raw-Data; [tagname|smileylink]'
       ,'IMGBBCODE_KASKUS_PLUS':'Use IMG BBCode for Kaskus Plus Smilies; validValue=[1,0]'
+      ,'SERVICE_UPLOADER':'List of uploader services; validValue=url1,url2,url3,..'
     };
     
     var uplkeys = ['UPLOAD_LOG'];
@@ -4778,7 +5159,7 @@ var _STG = {
           ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP'
           ,'HIDE_GREYLINK','ALWAYS_NOTIFY'
           ,'SHOW_SMILE','TABFIRST_SMILE','AUTOCOMPLETE_SML'
-          ,'SHOW_KASKUS_PLUS','IMGBBCODE_KASKUS_PLUS'
+          ,'SHOW_KASKUS_PLUS','IMGBBCODE_KASKUS_PLUS','SERVICE_UPLOADER'
         ];
         var kL=keys.length, waitfordel, alldone=0;
         for(var i=0; i<kL; i++){
@@ -6135,6 +6516,34 @@ function getHumanDate(thedate){
     +(d.getHours().toString().length==1?'0':'')+d.getHours()+':'+(d.getMinutes().toString().length==1?'0':'')+d.getMinutes()+':'+(d.getSeconds().toString().length==1?'0':'')+d.getSeconds()
   );
 }
+function getSlugFromUrl(url){
+  var name = url;
+  name = name.replace(/^https?\:\/\//gi, '');
+  name = name.replace(/\/.*/g, '');
+  return name;
+}
+// generate non-collision host-name slug
+function genRenamedHost(url, sets){
+  var upto = 50,
+      step = 1,
+      gotIt = null,
+      name = getSlugFromUrl(url),
+      newName
+  ;
+  newName = name;
+  gotIt = ( 'undefined' == typeof sets[name] );
+
+  while( !gotIt ){
+    newName = name+'('+step+')';
+    step++;
+    if( 'undefined' == typeof sets[newName] || step >= upto )
+      gotIt = true;
+  }
+  if( !gotIt )
+    newName = null;
+
+  return newName;
+}
 
 // native clean-up fetched post
 function unescapeHtml(text){
@@ -7012,21 +7421,22 @@ function eventsController(){
     $(this).click(function () {
       var $tgt, $me = $(this);
       var img = $me.find("img");
-      $tgt = $("#img_icon");
+      $tgt = $XK.find("#img_icon");
       $("#hid_iconid").prop("checked", true);
       $("#hid_iconid").val( $me.attr("data-id") );
       if( img.length == 0 ){
         $tgt.closest(".modal-dialog-title-pickicon").removeClass("selected");
         $tgt.hide();
-        return
       }
-
-      // assign icon
-      $tgt
-        .attr("src", img.attr("src"))
-        .attr("title", $me.attr("title"))
-        .show();
-      $tgt.closest(".modal-dialog-title-pickicon").addClass("selected");
+      else{
+        // assign icon
+        $tgt
+          .attr("src", img.attr("src"))
+          .attr("title", $me.attr("title"))
+          .show();
+        $tgt.closest(".modal-dialog-title-pickicon").addClass("selected");
+      }
+      $tgt.parent().trigger('click');
     })
   });
   $XK.find("#close_title").click(function () {
@@ -7054,10 +7464,10 @@ function eventsController(){
   });
   
   // render font's fonts
-  $XK.find('.fonts ul li a').each(function(){
-    var $me = $(this);
-    $me.css('font-family', $me.attr('title'));
-  });
+  // $XK.find('.fonts ul li a').each(function(){
+  //   var $me = $(this);
+  //   $me.css('font-family', $me.attr('title'));
+  // });
     
   // main-controller
   clog("events for markItUpButton a");
@@ -7805,6 +8215,7 @@ function getSettings(stg){
   getValue(KS+'ALWAYS_NOTIFY', function(ret){ settings.always_notify=(ret=='1') });
   getValue(KS+'SHOW_KASKUS_PLUS', function(ret){ settings.show_kaskusplus=(ret=='1') });
   getValue(KS+'IMGBBCODE_KASKUS_PLUS', function(ret){ settings.kaskusplus_bbcode_img=(ret=='1') });
+  getValue(KS+'SERVICE_UPLOADER', function(ret){ settings.service_uploader=ret });
 
   // recount smilies;
   rSRC.getSmileyBulkInfo();
@@ -7866,6 +8277,13 @@ function getSettings(stg){
     settings.autocomplete_smiley = [parseInt(tmp_autoc[0]), autocomplete_smiley];
     gvar.autocomplete_smilies = (settings.autocomplete_smiley[0] && settings.autocomplete_smiley[1] && settings.autocomplete_smiley[1].length );
 
+    // uploader simply separated with comma
+    hVal = settings.service_uploader;
+    if( 'string' != typeof hVal )
+      hVal = gvar.service_uploader_default.join(",");    
+    hVal = hVal.split(',');
+    settings.service_uploader = (hVal && hVal.length > 0 ? hVal : []);
+
 
     // is there any saved text
     gvar.tmp_text = settings.tmp_text;
@@ -7894,18 +8312,19 @@ function getSettings(stg){
 }
 
 function getUploaderSetting(){
+  var services = gvar.settings.service_uploader;
 
   gvar.uploader = {};
-  for(var i=0, iL=gvar.service_uploader.length; i<iL; i++){
-    var uploader_url = gvar.service_uploader[i],
-        name = uploader_url;
-    name = name.replace(/^https?\:\/\//gi, '');
-    name = name.replace(/\/.*/g, '');
-
-    gvar.uploader[name] = {
-      name: name,
-      url : uploader_url,
-    };
+  if( services && services.length )
+  for(var i=0, iL=services.length; i<iL; i++){
+    var uploader_url = services[i],
+        name = genRenamedHost(uploader_url, gvar.uploader)
+    ;
+    if( name )
+      gvar.uploader[name] = {
+        name: name,
+        url : uploader_url,
+      };
   }
 
   // // set last-used host
