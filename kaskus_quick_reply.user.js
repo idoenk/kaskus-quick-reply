@@ -32,6 +32,7 @@
 // -!--latestupdate
 //
 // v5.3.8 - 2016-05-30 . 1464545253904
+//   Patch onclick Draft button: Save Now
 //   Rollback minimized QR-Editor, patch editor got focus onkeypress onload
 //   Manageable uploader services
 //   Get rid inline style on list of fonts
@@ -8118,9 +8119,10 @@ function eventsTPL(){
 
     // event click for save_draft
     $("#qrdraft").click(function(){
-      var text, disb, $me=$(this);
-      text = $('#'+gvar.tID).val();
-      disb = 'goog-btn-disabled';
+      var $me = $(this),
+          text = $('#'+gvar.tID).val(),
+          disb = 'goog-btn-disabled'
+      ;
       if( $me.hasClass(disb) ) return;
       if( $me.attr('data-state') == 'idle' ){
         
@@ -8142,7 +8144,7 @@ function eventsTPL(){
         _DRAFT.switchClass(disb);
         _TEXT.setElastic(gvar.maxH_editor, 1);
       }else{
-        if( !text )
+        if( text )
           _DRAFT.save();
       }
     });
