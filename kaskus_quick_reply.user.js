@@ -112,7 +112,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = !1; // development debug, author purpose
+gvar.__DEBUG__ = 1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -8296,6 +8296,7 @@ function getSettings(stg){
     gvar.autocomplete_smilies = (settings.autocomplete_smiley[0] && settings.autocomplete_smiley[1] && settings.autocomplete_smiley[1].length );
 
     // uploader simply separated with comma
+    clog('uploader simply separated with comma');
     hVal = settings.service_uploader;
     if( 'string' != typeof hVal )
       hVal = gvar.service_uploader_default.join(",");    
@@ -8940,20 +8941,25 @@ function start_Main(){
 
 // outside kaskus host
 function outSideForumTreat(){
-  var whereAmId=function(){
-    var _src, ret=false;
+
+  whereAmId = function(){
+    var _src, ret = false;
     getUploaderSetting();
     for(var host in gvar.uploader){
-      // _src = gvar.uploader[host]['src'] || null;
       _src = gvar.uploader[host]['url'] || null;
-      if( _src && self.location.href.indexOf( _src )!=-1 ){
-        ret= String(host); break;
+      if( _src && self.location.href.indexOf( _src ) !=- 1 ){
+        ret = String(host);
+        break;
       }
     }
     return ret;
   };
 
-  var el,els,par,lb,m=20,loc = whereAmId(),CSS="",i="!important";
+  var el,els,par,lb,
+      m = 20,
+      CSS = "",
+      loc = whereAmId(),
+      i = "!important";
   /*
   # do pre-check hostname on location
   */
@@ -9024,7 +9030,11 @@ function init(){
   );
 
   if( !/(?:www\.|)kaskus\./.test(location.hostname) ){
-    return outSideForumTreat();
+    getValue(KS+'SERVICE_UPLOADER', function(ret){
+      gvar.settings.service_uploader = ret
+      outSideForumTreat()
+    });
+    return !1;
   }
   
   gvar.qID= 'qr-content-wrapper';
