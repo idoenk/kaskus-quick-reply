@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.8
+// @version        5.3.8.1
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1605305380
-// @timestamp      1464545253904
+// @dtversion      1605305381
+// @timestamp      1464556517795
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,6 +31,12 @@
 //
 // -!--latestupdate
 //
+// v5.3.8.1 - 2016-05-30 . 1464556517795
+//   Minor patch, malfunction kaskus-uploader;
+// 
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.8 - 2016-05-30 . 1464545253904
 //   Patch onclick Draft button: Save Now
 //   Rollback minimized QR-Editor, patch editor got focus onkeypress onload
@@ -49,9 +55,6 @@
 //   Add window.onbeforeunload on appending iframe
 //   Simplify uploader services in `gvar.service_uploader`
 // 
-// -/!latestupdate---
-// ==/UserScript==
-//
 // v5.3.7.5 - 2016-03-11 . 1457608034623
 //   Patch QuickQuote parse shortcode kaskus smilies; store full-path smilies to localstorage;
 // 
@@ -87,11 +90,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.8';
+gvar.sversion = 'v' + '5.3.8.1';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1464545253904 // version.timestamp
-  ,dtversion: 1605305380 // version.date
+   timestamp: 1464556517795 // version.timestamp
+  ,dtversion: 1605305381 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
