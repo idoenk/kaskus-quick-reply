@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.8.1
+// @version        5.3.8.2
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,7 +10,7 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1605305381
+// @dtversion      1605305382
 // @timestamp      1464556517795
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
@@ -31,11 +31,16 @@
 //
 // -!--latestupdate
 //
-// v5.3.8.1 - 2016-05-30 . 1464556517795
-//   Minor patch, malfunction kaskus-uploader;
-// 
+// v5.3.8.2 - 2016-05-30 . 1464556517795
+//   Patch shortcut BIU;
+//   Patch glitch window keydown;
+//   Patch shortcut [Ctrl+Q] on first time use unreached position (offset top);
+//
 // -/!latestupdate---
 // ==/UserScript==
+//
+// v5.3.8.1 - 2016-05-30 . 1464556517795
+//   Minor patch, malfunction kaskus-uploader;
 //
 // v5.3.8 - 2016-05-30 . 1464545253904
 //   Patch onclick Draft button: Save Now
@@ -54,20 +59,20 @@
 //   Fix broken icon: youtube,vimeo,soundcloud
 //   Add window.onbeforeunload on appending iframe
 //   Simplify uploader services in `gvar.service_uploader`
-// 
+//
 // v5.3.7.5 - 2016-03-11 . 1457608034623
 //   Patch QuickQuote parse shortcode kaskus smilies; store full-path smilies to localstorage;
-// 
+//
 // v5.3.7.4 - 2016-03-10 . 1457559140131
 //   Default use img bbcode for kaskus plus exclusive
-// 
+//
 // v5.3.7.3 - 2016-03-10 . 1457556636122
 //   Reactivate KPlus Exclusive with IMG BBCode
 //   Patch FJB preview_post_ajax not rendering smilies
-// 
+//
 // v5.3.7.2 - 2016-03-10 . 1457555538331
 //   Hotfix: match/unmatch find smilies
-// 
+//
 // v5.3.7 - 2016-03-10 . 1457549755373
 //   Autocomplete smiley settings;
 //   css update.
@@ -115,7 +120,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = !1; // development debug, author purpose
+gvar.__DEBUG__ = 1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -7879,7 +7884,7 @@ function eventsTPL(){
         bb: dts.key,
         el: $me,
         csa: dCSA,
-        fn: (["ev_biu","ev_align"].indexOf($me.attr("class")) !== -1 ? "click_BIU" : "do_insertCustomTag")
+        fn: (["ev_biu","ev_align"].indexOf($me.attr("data-cat")) !== -1 ? "click_BIU" : "do_insertCustomTag")
       };
       DScuts.push( dumy );
     }
@@ -7935,71 +7940,101 @@ function eventsTPL(){
 
   // window events
   // global-window-shortcut
-  $(window).keydown(function (ev) {
+  $(window).on('keydown', function(ev) {
     var A = ev.keyCode,
-        doThi=0,
+        doThi = 0,
         CSA_tasks, elTgt,
         pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0'),
         pCSA_Code = pCSA+'_'+A
     ;
+    // clog('pCSA_Code='+pCSA_Code+'; A='+A);
 
+
+    if( !doThi )
     if( A == 27 ){
       if( $("#" + _BOX.e.dialogname).is(":visible") && $("#" + _BOX.e.dialogname).css('visibility')=='visible' ){
         close_popup();
         $("#" + gvar.tID).focus();
       }
 
-      do_an_e(ev);
-      return !1;
+      doThi = 1;
+      // clog('doThi enabled, coz of A==27');
     }
 
-    if( pCSA_Code == '1,0,0_'+'192' && gvar.readonly ){ // 192 for `: open the hive
+    // Force open editor on readonly mode: view single post
+    // [Ctrl+`] open the hive: 192 for `
+    if( !doThi )
+    if( pCSA_Code == '1,0,0_'+'192' && gvar.readonly ){
       $('.button_qrmod,.button_qq,.xkqr').removeClass('hide');
+
       doThi = 1;
+      // clog('doThi enabled, coz of pCSA_Code==1,0,0_192');
+
       scrollToQR();
     }
 
-    // panic-button reset_settings then reload page
+    // Panic button to reset_settings then reload page
     // Ctrl+Shift+` = Panic Reset Settings
+    if( !doThi )
     if( pCSA_Code == '1,1,0' + '192' ){ // 192 for `
       _STG.reset_settings( true );
+
       doThi = 1;
-      return !1;
+      // clog('doThi enabled, coz of pCSA_Code==1,1,0_192');
     }
 
+
+    if( !doThi )
+    if( pCSA=='0,0,0' || pCSA=='0,1,0' )
+    if( ['INPUT', 'TEXTAREA'].indexOf( (ev.target||ev).nodeName) == -1 ){
+      //Avoid textarea weirdly got focus en keyChar being sent
+      // clog('not writable element!');
+
+      // Printable char (0 - 9)|(A - Z)|(,./`)|([\]'')|[NumpadKeys]|(Tab,Enter,Space,Delete)
+      if( (A > 47 && A < 58) ||
+          (A > 64 && A < 91) ||
+          (A > 95 && A < 112) ||
+          (A > 185 && A < 193) ||
+          (A > 218 && A < 223) ||
+          [9,13,32,46].indexOf(A) !== -1 ){
+
+        doThi = 1;
+        // clog('doThi enabled, coz of (A > 47 && A < 58) || (A > 64 && A < 91) || [13,32,46].indexOf(A) !== -1');
+      }
+    }
+
+
+    if( !doThi )
     if( !gvar.readonly ){
 
+      // Commencing predefined shortcut relate to QR Editor
       pCSA_Code = pCSA+'_'+A;
       
       // comparing...
       if( "undefined" != typeof CSA_index_reserved[pCSA_Code] ){
-        CSA_index_reserved[pCSA_Code]();
+
         doThi = 1;
+        // clog('doThi enabled, predefined function found match:'+pCSA_Code);
+
+        CSA_index_reserved[pCSA_Code]();
       }
     }
+
 
     if( doThi ){
+      // clog('doThi detected, locking event');
       do_an_e(ev);
-      return !1;
     }
+    else{
 
-    if( pCSA=='0,0,0' || pCSA=='0,1,0' || A < 65 || A > 90 ){
-      elTgt = (ev.target||ev);
-
-      if( ['INPUT', 'TEXTAREA'].indexOf(elTgt.nodeName) == -1 && !( A < 65 || A > 90 ) ){
-        clog('killed for ,'+elTgt.nodeName+'; A='+A);
-
-        do_an_e(ev);
-        return !1;
-      }
-      else{
-        return A;
-      }
+      // clog('do nothing, ..');
     }
-  }).resize(function () {
+  }).on('resize', function() {
 
     resize_popup_container();
   });
+
+
 
   // editor events: [focus,blur,keydown,keyup]
   // assigning several action, eg. watch draft, fixed toolbar martItUp,
@@ -8019,7 +8054,6 @@ function eventsTPL(){
       }, 50);
     }
   }).on('blur', function(){
-    clog("blur editor, gvar.settings.txtcount="+gvar.settings.txtcount);
     if( gvar.settings.txtcount ){
       $XK.find('.counter').first().removeClass('kereng');
       _TEXTCOUNT.dismiss();
@@ -8038,8 +8072,8 @@ function eventsTPL(){
     }
   }).on('keydown', function(ev){
     var B, pCSA_Code,
-      A = ev.keyCode || ev.keyChar,
-      pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0');
+        A = ev.keyCode || ev.keyChar,
+        pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0');
 
     if(A === 9){
       do_an_e(ev);
@@ -8064,26 +8098,29 @@ function eventsTPL(){
     }
     
     var asocKey = {
-       '001,83':'sbutton'   // [Alt+S] Submit post
-      ,'001,80':'spreview'  // [Alt+P] Preview
-      ,'001,88':'sadvanced' // [Alt+X] Advanced
-    };
-    var ds, dsL = DScuts.length;
+          '001,83':'sbutton',   // [Alt+S] Submit post
+          '001,80':'spreview',  // [Alt+P] Preview
+          '001,88':'sadvanced' // [Alt+X] Advanced
+        },
+        dsL = DScuts.length,
+        ds
+    ;
     if( dsL ){
       for(var j=0; j<dsL; j++){
         for(var kn in DScuts[j])
           asocKey[String(kn)] = {
-            bb: DScuts[j][kn]["bb"],
-            el: DScuts[j][kn]["el"],
-            csa: DScuts[j][kn]["csa"],
-            fn: DScuts[j][kn]["fn"]
+            bb  : DScuts[j][kn]["bb"],
+            el  : DScuts[j][kn]["el"],
+            csa : DScuts[j][kn]["csa"],
+            fn  : DScuts[j][kn]["fn"]
           };
       }
     }
 
 
     // indexing keys
-    var Acsa, fn, parts, indexedKeyNum = [13];
+    var indexedKeyNum = [13],
+        Acsa, fn, parts;
     for(var strKeyNum in asocKey){
       parts = strKeyNum.split(",");
       if( parts && parts[1] )
@@ -8504,23 +8541,22 @@ function finalizeTPL(){
 
 
 function slideAttach(that, cb, params){
-  var landed, $QR, $row, $tgt, topPos, destination, scOffset, prehide, isclosed, delay;
-  $QR = $('#'+gvar.qID);
-  $row = $(that).closest('.row');
-  $tgt = $row.next();
+  var $QR = $('#'+gvar.qID),
+      $row = $(that).closest('.row'),
+      $tgt = $row.next(),
+      isclosed = !$QR.find('#formqr').is(':visible'),
+      prehide = ($QR.closest('.ajax_qr_area').attr('id').replace("ajax_qr_area_","") != $row.attr('id').replace("post","") ),
+      delay = 350,
+      landed, topPos;
 
-  prehide = ($QR.closest('.ajax_qr_area').attr('id').replace("ajax_qr_area_","") != $row.attr('id').replace("post","") );
-  isclosed = !$QR.find('#formqr').is(':visible');
-  delay = 350;
   clog("isclosed="+isclosed);
+  clog("prehide="+prehide);
   
   if( prehide )
     $QR.hide();
   else
     delay = 100;
 
-  // destination = $(that).offset().top
-  // scOffset = Math.floor(gvar.$w.innerHeight / 5) * 2;
   topPos = null;
   landed = 0;
   if( params ){
@@ -8531,23 +8567,28 @@ function slideAttach(that, cb, params){
   if( topPos === null )
     topPos = ($(that).offset().top - (Math.floor(gvar.$w.innerHeight / 5) * 2));
 
-  // $("html:not(:animated), body:not(:animated)").animate({ scrollTop: (destination-scOffset)}, delay, function() {
   $("html:not(:animated), body:not(:animated)").animate({ scrollTop: topPos}, delay, function() {
+    var $QR = $('#'+gvar.qID);
     if( !prehide && !isclosed ) {
-      if(landed) return;
+      if(landed) return true;
       $('#'+gvar.tID).focus();
       if( typeof cb == 'function') cb(that);
       landed = 1;
-      return;
+
+      if( $('#'+gvar.qID).offset().top - topPos > 279 )
+        setTimeout(function(){
+          slideAttach( that, cb, params )
+        }, 0);
+
+      return true;
     }
 
     QR_put_after( $row );
 
-    var $QR = $('#'+gvar.qID);
     if(isclosed) toggleTitle();
     $QR.find('#formqr').show();
     $QR.slideDown(220, function(){
-      if(landed) return;
+      if(landed) return true;
       $QR.find('#'+gvar.tID).focus();
       if( typeof cb == 'function') cb(that);
       landed = 1;
@@ -8728,37 +8769,39 @@ function start_Main(){
           // event for quick reply
           $me.find('.button_qr').click(function(ev){
             do_an_e(ev);
-            var dothat = function(){
-              slideAttach(that)
-            }, that = $(this);
+            var $that = $(this),
+                doThat = function(){ return slideAttach($that) }
+            ;
             if( gvar.edit_mode == 1 ){
               if( _AJAX.edit_cancel(false) )
-                dothat();
+                doThat();
               else
                 _TEXT.focus();
-            }else dothat();
+            }else doThat();
           });
           
           // event for quote-quote
           $me.find('.button_qq').click(function(ev){
             do_an_e(ev);
-            var dothat = function(that){
-              slideAttach(that, function(el){
-                gvar.settings.plusquote = (ev ? ev : window.event).shiftKey ? true : null;
+            var $that = $(this),
+                doThat = function(that){
+                  slideAttach(that, function(el){
+                    gvar.settings.plusquote = (ev ? ev : window.event).shiftKey ? true : null;
 
-                _QQparse.init(el, function(){
-                  _TEXT.lastfocus();
-                  gvar.settings.plusquote = null;
-                });
-              });
-            }, that = $(this);
+                    _QQparse.init(el, function(){
+                      _TEXT.lastfocus();
+                      gvar.settings.plusquote = null;
+                    });
+                  });
+                }
+            ;
             
             if( gvar.edit_mode == 1 ){
               if( _AJAX.edit_cancel(false) )
-                dothat( $(this) );
+                doThat( $that );
               else
                 _TEXT.lastfocus();
-            }else dothat( $(this) );
+            }else doThat( $that );
           });
 
           // event for quick edit
