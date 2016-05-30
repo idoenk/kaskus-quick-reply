@@ -11,7 +11,7 @@
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
 // @dtversion      1605305382
-// @timestamp      1464556517795
+// @timestamp      1464604550022
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,7 +31,7 @@
 //
 // -!--latestupdate
 //
-// v5.3.8.2 - 2016-05-30 . 1464556517795
+// v5.3.8.2 - 2016-05-30 . 1464604550022
 //   Patch shortcut BIU;
 //   Patch glitch window keydown;
 //   Patch shortcut [Ctrl+Q] on first time use unreached position (offset top);
@@ -95,11 +95,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.8.1';
+gvar.sversion = 'v' + '5.3.8.2';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1464556517795 // version.timestamp
-  ,dtversion: 1605305381 // version.date
+   timestamp: 1464604550022 // version.timestamp
+  ,dtversion: 1605305382 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
