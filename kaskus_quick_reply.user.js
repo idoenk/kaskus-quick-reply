@@ -8547,6 +8547,7 @@ function slideAttach(that, cb, params){
       isclosed = !$QR.find('#formqr').is(':visible'),
       prehide = ($QR.closest('.ajax_qr_area').attr('id').replace("ajax_qr_area_","") != $row.attr('id').replace("post","") ),
       delay = 350,
+      iTry = 0, mxTry = 5,
       landed, topPos;
 
   clog("isclosed="+isclosed);
@@ -8569,16 +8570,20 @@ function slideAttach(that, cb, params){
 
   $("html:not(:animated), body:not(:animated)").animate({ scrollTop: topPos}, delay, function() {
     var $QR = $('#'+gvar.qID);
+    iTry++;
     if( !prehide && !isclosed ) {
       if(landed) return true;
       $('#'+gvar.tID).focus();
       if( typeof cb == 'function') cb(that);
       landed = 1;
 
-      if( $('#'+gvar.qID).offset().top - topPos > 279 )
+      clog('qID height='+$QR.height()+'; qID offset-top='+$QR.offset().top+'; VS topPos='+topPos);
+      if( ($QR.offset().top - topPos > 300) && iTry < mxTry){
+        clog('Commencing another slideAttach..')
         setTimeout(function(){
           slideAttach( that, cb, params )
         }, 0);
+      }
 
       return true;
     }
