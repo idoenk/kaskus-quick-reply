@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1605305382
-// @timestamp      1464604550022
+// @dtversion      1606055382
+// @timestamp      1465132263631
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,7 +31,8 @@
 //
 // -!--latestupdate
 //
-// v5.3.8.2 - 2016-05-30 . 1464604550022
+// v5.3.8.2 - 2016-06-05 . 1465132263631
+//   Sync css, update cssREV
 //   Open collapsed Editor on click button Fetch/QQ in baloon-notify
 //   Rename social class .fa for [youtube,soundcloud,vimeo]. Thx:[coolkips]
 //   Patch shortcut BIU;
@@ -100,13 +101,13 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.8.2';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1464604550022 // version.timestamp
+   timestamp: 1465132263631 // version.timestamp
   ,dtversion: 1605305382 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1605305380 // css revision date; only change this when you change your external css
+  ,cssREV: 1606055380 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
