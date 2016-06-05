@@ -32,6 +32,7 @@
 // -!--latestupdate
 //
 // v5.3.8.2 - 2016-05-30 . 1464604550022
+//   Rename social class .fa for [youtube,soundcloud,vimeo]. Thx:[coolkips]
 //   Patch shortcut BIU;
 //   Patch glitch window keydown;
 //   Patch shortcut [Ctrl+Q] on first time use unreached position (offset top);
@@ -516,9 +517,9 @@ var rSRC = {
         {id:52, 'cat': 'ev_custom', bb: 'NOPARSE', title: 'Wrap [NOPARSE] around text'},
         {id:53, 'cat': 'ev_custom', bb: 'STRIKE', title: 'Strikethrough text'},
         {id:null}, // spacer
-        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-youtube', bb:'YOUTUBE', title: 'Embedding video from Youtube'},
-        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-vimeo-square', bb:'VIMEO', title: 'Embedding video from Vimeo'},
-        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-soundcloud', bb:'SOUNDCLOUD', title: 'Embedding audio from Soundcloud'},
+        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-kqr-ytube', bb:'YOUTUBE', title: 'Embedding video from Youtube'},
+        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-kqr-vimeo', bb:'VIMEO', title: 'Embedding video from Vimeo'},
+        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-kqr-scloud', bb:'SOUNDCLOUD', title: 'Embedding audio from Soundcloud'},
       ])
 
       + _sp 
