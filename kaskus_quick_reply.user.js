@@ -32,6 +32,7 @@
 // -!--latestupdate
 //
 // v5.3.8.2 - 2016-05-30 . 1464604550022
+//   Open collapsed Editor on click button Fetch/QQ in baloon-notify
 //   Rename social class .fa for [youtube,soundcloud,vimeo]. Thx:[coolkips]
 //   Patch shortcut BIU;
 //   Patch glitch window keydown;
@@ -5745,6 +5746,12 @@ var _QQparse = {
     this.cb = cb;
     this.mqs_id = mqs_id;
     this.title = false; // {icon:'{SRC}', text:'{TEXT}'}
+
+    if( !$('#formqr').is(':visible') ){
+      $('#formqr').show();
+      toggleTitle();
+    }
+
     this.start();
   },
   start:function(){
@@ -7776,10 +7783,18 @@ function eventsTPL(){
   });
   $XK.find('#squote_post').click(function(){
     _AJAX.quote( $(this), function(){
-      func = function(){
-        gvar.sTryRequest && gvar.sTryRequest.abort();
-      };
-      _NOFY.init({msg:'Fetching... <a class="btn-dismiss" href="javascript:;">Dismiss</a>', cb:func, btnset:false});
+      if( !$('#formqr').is(':visible') ){
+        $XK.find('#formqr').show();
+        toggleTitle();
+      }
+
+      _NOFY.init({
+        msg:'Fetching... <a class="btn-dismiss" href="javascript:;">Dismiss</a>',
+        cb: function(){
+          gvar.sTryRequest && gvar.sTryRequest.abort();
+        },
+        btnset:false
+      });
     }, function(){
       var $him = $('#notify_msg .btn-dismiss');
       clear_quoted($him);
