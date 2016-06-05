@@ -107,7 +107,7 @@ gvar.scriptMeta = {
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1606055380 // css revision date; only change this when you change your external css
+  ,cssREV: 1606055381 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
