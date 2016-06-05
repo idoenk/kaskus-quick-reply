@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1606055380
+ cssREV:1606055381
 */
 
 /**
@@ -1625,14 +1625,14 @@ ul {
     margin: 15px auto -50px;
     padding: 0 0 5px 0;
     width: 260px;
-    box-shadow: rgba(0, 0, 0, 0.15) 0 12px 25px;
+    box-shadow: rgba(0, 0, 0, 0.15) 0 36px 35px;
     .goog-btn {
       margin: 0 4px;
       font-size: 13px;
     }
   }
   &.modal-dialog-main {
-    padding-bottom: 10px;
+    padding-bottom: 11px;
     margin-left: -12px;
   }
 }
@@ -1645,7 +1645,6 @@ ul {
   font-weight: 400;
   position: relative;
   z-index: 1;
-  height: 40px;
   transition: all 0.2s linear;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -1724,18 +1723,19 @@ ul {
 }
 .popbox {
   position: absolute;
-  right: 10px;
-  top: 7px;
-  padding: 12px;
+  right: 0;
+  top: 0;
+  padding: 18px;
   &:after {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 12px;
+    right: 12px;
   }
 }
 
 #box_wrap {
   margin-top: 0;
+  min-height: 32px;
   position: relative;
   .g_notice {
     margin-bottom: 4px;
