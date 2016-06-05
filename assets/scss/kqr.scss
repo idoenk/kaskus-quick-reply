@@ -530,13 +530,13 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
           a {
             opacity: 1;
             .fa{
-              &.fa-youtube{
+              &.fa-kqr-ytube{
                 color: red;
               }
-              &.fa-vimeo-square{
+              &.fa-kqr-vimeo{
                 color: #4bf;
               }
-              &.fa-soundcloud{
+              &.fa-kqr-scloud{
                 color: #f50;
               }
             }
@@ -555,8 +555,21 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
               line-height: 16px;
               display: inline-block;
               color: #555;
-              &.fa-soundcloud{
+              &.fa-kqr-ytube{
+                &:before{
+                  content: '\e856';
+                }
+              }
+              &.fa-kqr-vimeo{
+                &:before{
+                  content: '\e855';
+                }
+              }
+              &.fa-kqr-scloud{
                 font-size: 1.5em;
+                &:before{
+                  content: '\e853';
+                }
               }
             }
           }
