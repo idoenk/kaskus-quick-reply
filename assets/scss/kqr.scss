@@ -2410,8 +2410,13 @@ ul.qrset_mnu li {
   margin-top: 2px;
 }
 
-#modal_setting_box .modal-dialog-title-text {
-  padding-left: 10px;
+#modal_setting_box {
+  .modal-dialog-title{
+    height: 36px;
+  }
+  .modal-dialog-title-text {
+    padding-left: 10px;
+  }
 }
 
 ul.settingmnu li.qrt .unitli {
