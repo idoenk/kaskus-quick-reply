@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.8.2
+// @version        5.3.8.3
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1606055382
-// @timestamp      1465132263631
+// @dtversion      1606075383
+// @timestamp      1465242759758
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,6 +31,12 @@
 //
 // -!--latestupdate
 //
+// v5.3.8.3 - 2016-06-07 . 1465242759758
+//   [Hotfix] indefinite slideAttach to QR
+//   
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.8.2 - 2016-06-05 . 1465132263631
 //   Sync css, update cssREV
 //   Open collapsed Editor on click button Fetch/QQ in baloon-notify
@@ -38,9 +44,6 @@
 //   Patch shortcut BIU;
 //   Patch glitch window keydown;
 //   Patch shortcut [Ctrl+Q] on first time use unreached position (offset top);
-//
-// -/!latestupdate---
-// ==/UserScript==
 //
 // v5.3.8.1 - 2016-05-30 . 1464556517795
 //   Minor patch, malfunction kaskus-uploader;
@@ -98,11 +101,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.8.2';
+gvar.sversion = 'v' + '5.3.8.3';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1465132263631 // version.timestamp
-  ,dtversion: 1605305382 // version.date
+   timestamp: 1465242759758 // version.timestamp
+  ,dtversion: 1606075383 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -8564,14 +8567,14 @@ function slideAttach(that, cb, params){
       isclosed = !$QR.find('#formqr').is(':visible'),
       prehide = ($QR.closest('.ajax_qr_area').attr('id').replace("ajax_qr_area_","") != $row.attr('id').replace("post","") ),
       delay = 350,
+      qrInitAbove = ($QR.offset().top < $(that).offset().top),
       iTry = 0, mxTry = 5,
-      landed, topPos;
+      landed, topPos
+  ;
 
-  clog("isclosed="+isclosed);
-  clog("prehide="+prehide);
-  
-  if( prehide )
+  if( prehide ){
     $QR.hide();
+  }
   else
     delay = 100;
 
@@ -8583,37 +8586,37 @@ function slideAttach(that, cb, params){
   }
 
   if( topPos === null )
-    topPos = ($(that).offset().top - (Math.floor(gvar.$w.innerHeight / 5) * 2));
+    topPos = ($(that).offset().top - (Math.floor(gvar.$w.innerHeight / 5) * 2) );
 
-  $("html:not(:animated), body:not(:animated)").animate({ scrollTop: topPos}, delay, function() {
-    var $QR = $('#'+gvar.qID);
+  $("html:not(:animated), body:not(:animated)").animate({ scrollTop: topPos }, delay, function() {
     iTry++;
+    var $QR = $('#'+gvar.qID),
+        defaultAct = function(that, cb){
+          $('#'+gvar.tID).focus();
+          if( typeof cb == 'function')
+            cb( that );
+          return 1;
+        }
+    ;
     if( !prehide && !isclosed ) {
-      if(landed) return true;
-      $('#'+gvar.tID).focus();
-      if( typeof cb == 'function') cb(that);
-      landed = 1;
+      if( landed )
+        return true;
 
-      clog('qID height='+$QR.height()+'; qID offset-top='+$QR.offset().top+'; VS topPos='+topPos);
-      if( ($QR.offset().top - topPos > 300) && iTry < mxTry){
-        clog('Commencing another slideAttach..')
-        setTimeout(function(){
-          slideAttach( that, cb, params )
-        }, 0);
-      }
+      landed = defaultAct(that, cb);
 
       return true;
     }
-
     QR_put_after( $row );
 
-    if(isclosed) toggleTitle();
+    if( isclosed )
+      toggleTitle();
+
     $QR.find('#formqr').show();
     $QR.slideDown(220, function(){
-      if(landed) return true;
-      $QR.find('#'+gvar.tID).focus();
-      if( typeof cb == 'function') cb(that);
-      landed = 1;
+      if( landed )
+        return true;
+
+      landed = defaultAct(that, cb);
     });
   });
 }
