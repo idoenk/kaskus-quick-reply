@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.8.3
+// @version        5.3.8.4
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1606075383
-// @timestamp      1465242759758
+// @dtversion      1607275384
+// @timestamp      1469362477704
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,12 +31,15 @@
 //
 // -!--latestupdate
 //
-// v5.3.8.3 - 2016-06-07 . 1465242759758
-//   [Hotfix] indefinite slideAttach to QR
+// v5.3.8.4 - 2016-07-27 . 1469362477704
+//   [Hotfix] stringify autocomplete smilies, escape the apostrophe
 //   
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.8.3 - 2016-06-07 . 1465242759758
+//   [Hotfix] indefinite slideAttach to QR
+//   
 // v5.3.8.2 - 2016-06-05 . 1465132263631
 //   Sync css, update cssREV
 //   Open collapsed Editor on click button Fetch/QQ in baloon-notify
@@ -101,11 +104,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.8.3';
+gvar.sversion = 'v' + '5.3.8.4';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1465242759758 // version.timestamp
-  ,dtversion: 1606075383 // version.date
+   timestamp: 1469362477704 // version.timestamp
+  ,dtversion: 1607275384 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -1436,7 +1439,7 @@ var rSRC = {
 
       +  'var kPlusBBcodeIMG = '+(gvar.settings.kaskusplus_bbcode_img ? '1' : '!1')+';' + nn
       +  'var textarea_selector = "#'+gvar.tID+'";' + nn
-      +  'var smilies_ = \''+JSON.stringify(smilies_)+'\';' + nn
+      +  'var smilies_ = \''+JSON.stringify(smilies_).replace(/\'/g, '\\')+'\';' + nn
       +  'var smilies = (smilies_ ? JSON.parse(smilies_) : []);' + nn
       +  'var kskemojis = $.map(smilies, function(item, i){' + nn
       +    'var set = {' + nn
