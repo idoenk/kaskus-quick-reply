@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.8.4
+// @version        5.3.9
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1607275384
-// @timestamp      1469362477704
+// @dtversion      1610075390
+// @timestamp      1475839323914
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,12 +31,15 @@
 //
 // -!--latestupdate
 //
-// v5.3.8.4 - 2016-07-27 . 1469362477704
-//   [Hotfix] stringify autocomplete smilies, escape the apostrophe
+// v5.3.9 - 2016-10-07 . 1475839323914
+//   [Hotfix] Patch quick-quote ordered list
 //   
 // -/!latestupdate---
 // ==/UserScript==
 //
+// v5.3.8.4 - 2016-07-27 . 1469362477704
+//   [Hotfix] stringify autocomplete smilies, escape the apostrophe
+//   
 // v5.3.8.3 - 2016-06-07 . 1465242759758
 //   [Hotfix] indefinite slideAttach to QR
 //   
@@ -104,11 +107,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.8.4';
+gvar.sversion = 'v' + '5.3.9';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1469362477704 // version.timestamp
-  ,dtversion: 1607275384 // version.date
+   timestamp: 1475839323914 // version.timestamp
+  ,dtversion: 1610075390 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -5972,7 +5975,11 @@ var _QQparse = {
         clog('parse list UL');
         mct = [];
         if( $2.indexOf('decimal;')!=-1 ){
-          mct = ['','LIST=1']; // numbering...
+          var cucok, startfrom = 1;
+          if( cucok = /\bstart=[\'\"]([^\'\"]+)/i.exec($2) )
+            startfrom = cucok[1];
+
+          mct = ['','LIST='+startfrom]; // numbering...
         }else
         if( $2.indexOf(':disc;')!=-1 ){
           mct = ['', 'LIST']; // list
