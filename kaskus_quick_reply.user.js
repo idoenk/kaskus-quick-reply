@@ -34,6 +34,7 @@
 // v5.3.9 - 2016-10-07 . 1475839323914
 //   [Hotfix] Patch quick-quote ordered list specific startfrom
 //   [Hotfix] Patch quick-quote parsing lazy-image
+//   [Hotfix] Patch fixed toolbar top position
 //   
 // -/!latestupdate---
 // ==/UserScript==
@@ -3116,10 +3117,11 @@ var _TEXT = {
 
     if( enabled ){
       var resizeEv = function( isforced ){
-        var yPos, a = gID(gvar.tID);
-
-        var selisih = 10;
-        var isTyping = (a.getAttribute("data-istyping") == 1);
+        var a         = gID(gvar.tID),
+            isTyping  = (a.getAttribute("data-istyping") == 1),
+            selisih   = 10,
+            yPos
+        ;
 
         if( !isforced && isTyping ) return !1;
 
@@ -3138,11 +3140,14 @@ var _TEXT = {
         if( !isNaN(yPos) && yPos > 0 && getCurrentYPos() != yPos )
           $('html,body').scrollTop(yPos);
       };
+      // end: resizeEv
+
 
       // [Enter, Backspace, Delete]
-      var sC = [13, 8, 46];
-      var _f = null;
-      var $a = $("#"+gvar.tID);
+      var _f = null,
+          sC = [13, 8, 46],
+          $a = $("#"+gvar.tID)
+      ;
 
       if( !$a.hasClass("events-keys") ){
         clog("activating event events-keys");
@@ -7382,29 +7387,31 @@ function click_BIU($el){
 // event watch for window scroll vs position of markItUp top position
 function fixed_markItUp(){
   // shorthand for .XKQR wrapper
-  var $target, $XK = $("#"+gvar.qID);
-  var $editor = $XK.find("#"+gvar.tID);
-  var eH = $editor.height();
-  var treshold_minHeight_editor = 82; // def: 82
-  var treshold_fixed_top = 0;
-  var fixed_reset = function(){
-    $XK.removeClass("fixed_markItUp");
-    $XK.find(".markItUpContainer").css("width", "auto");
-  };
+  var $XK     = $("#"+gvar.qID),
+      $target = $XK.find("#markItUpReply-messsage"),
+      $editor = $XK.find("#"+gvar.tID),
+      eH      = $editor.height(),
+      treshold_minHeight_editor = 82, // def: 82
+      treshold_fixed_top        = 0,
+      fixed_reset = function(){
+        $XK.removeClass("fixed_markItUp");
+        $XK.find(".markItUpContainer").css("width", "auto");
+      }
+  ;
 
   // clog("tick eH="+eH+'; treshold_minHeight_editor='+treshold_minHeight_editor);
   if( eH >= treshold_minHeight_editor ){
 
-    var $ustick = $(".navbar-fixed-top").first(),
-      isus = ($ustick.is(":visible") && $ustick.css("position") == 'fixed'),
-      ustickFixPos = {top:0}, ustickH = 0,
-      tgtH, sTop, tgtTop;
+    var $ustick   = $(".navbar .site-header").first(),
+        isus      = ($ustick.is(":visible") && $ustick.css("position") == 'fixed'),
+        ustickH   = 0,
+        tgtH, tgtL, sTop, tgtTop
+    ;
     
     sTop = $(window).scrollTop();
-    $target = $XK.find("#markItUpReply-messsage");
     tgtH = $target.height();
     
-    ustickH = (isus ? ($ustick.height() + $ustick.position().top) : $(".site-header.navbar-fixed-top").height());
+    ustickH = (isus ? ($ustick.height() + $ustick.position().top) : 0);
     tgtTop = $target.offset().top - ustickH - treshold_fixed_top/2;
 
     if( (tgtTop + tgtH) <= sTop && (tgtTop + $XK.find("#"+gvar.tID).height() - treshold_minHeight_editor) > sTop ){
@@ -7414,7 +7421,7 @@ function fixed_markItUp(){
 
         $XK.addClass("fixed_markItUp");
         $XK.find(".markItUpContainer")
-          .css("top", ustickH + (isus ? treshold_fixed_top : 0)) //treshold_fixed_top
+          .css("top", ustickH + (isus ? treshold_fixed_top : 0))
           .css("left", tgtL)
           .css("width", $target.width())
       }
