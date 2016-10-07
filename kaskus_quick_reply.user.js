@@ -32,7 +32,8 @@
 // -!--latestupdate
 //
 // v5.3.9 - 2016-10-07 . 1475839323914
-//   [Hotfix] Patch quick-quote ordered list
+//   [Hotfix] Patch quick-quote ordered list specific startfrom
+//   [Hotfix] Patch quick-quote parsing lazy-image
 //   
 // -/!latestupdate---
 // ==/UserScript==
@@ -5830,13 +5831,13 @@ var _QQparse = {
   },
   parseMSG: function(x){
 
-    var _QQ = this;
-    var $pCon,pCon,els,el,el2,eIner,cucok,openTag,sBox,nLength,LT,pairedEmote;
-    var ret, contentsep, pos;
-    
-    LT = {'font':[],'sp':[],'a':[],'align':[],'coder':[],'list':[]};
-    pairedEmote = false;
-    
+    var _QQ = this,
+        LT  = {'font':[], 'sp':[], 'a':[], 'align':[], 'coder':[], 'list':[]},
+        pairedEmote = false,
+        $pCon, pCon, els, el, el2, eIner, cucok, openTag, sBox, nLength,
+        ret, contentsep, pos
+    ;
+
     var 
     cleanup_quote = function(innerquote_html){
       clog('inside cleanup_quote');
@@ -6139,8 +6140,13 @@ var _QQparse = {
       
       // parse img
       if( /\sSRC=/i.test(_2up) ){
-        clog('parse SRC');
-        mct = $2.match(/\ssrc=['"]([^'"]+)/i);
+        clog('parse DATA-SRC');
+        mct = $2.match(/\sdata-src=[\'\"]([^\'\"]+)/i);
+
+        if( !(mct && mct.length) ){
+          clog('parse SRC');
+          mct = $2.match(/\ssrc=['"]([^'"]+)/i);
+        }
         
         if( mct && isDefined(mct[1]) ){
 
