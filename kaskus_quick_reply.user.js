@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.9
+// @version        5.3.9.1
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1611265390
-// @timestamp      1480096973423
+// @dtversion      1611265391
+// @timestamp      1480108151475
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,6 +31,12 @@
 //
 // -!--latestupdate
 //
+// v5.3.9.1 - 2016-11-26 . 1480108151475
+//   [Hotfix] Patch Quick-quote in image-thread
+//
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.9 - 2016-11-26 . 1480096973423
 //   [Hotfix] Patch smilies sync-endpoint inherited protocol (HTTPS)
 //   Patch perfomance issue on huge textarea in export-import settings
@@ -40,16 +46,13 @@
 //   [Hotfix] Patch quick-quote ordered list specific startfrom
 //   [Hotfix] Patch quick-quote parsing lazy-image
 //   [Hotfix] Patch fixed toolbar top position
-//   
-// -/!latestupdate---
-// ==/UserScript==
 //
 // v5.3.8.4 - 2016-07-27 . 1469362477704
 //   [Hotfix] stringify autocomplete smilies, escape the apostrophe
-//   
+//
 // v5.3.8.3 - 2016-06-07 . 1465242759758
 //   [Hotfix] indefinite slideAttach to QR
-//   
+//
 // v5.3.8.2 - 2016-06-05 . 1465132263631
 //   Sync css, update cssREV
 //   Open collapsed Editor on click button Fetch/QQ in baloon-notify
@@ -57,48 +60,6 @@
 //   Patch shortcut BIU;
 //   Patch glitch window keydown;
 //   Patch shortcut [Ctrl+Q] on first time use unreached position (offset top);
-//
-// v5.3.8.1 - 2016-05-30 . 1464556517795
-//   Minor patch, malfunction kaskus-uploader;
-//
-// v5.3.8 - 2016-05-30 . 1464545253904
-//   Patch onclick Draft button: Save Now
-//   Rollback minimized QR-Editor, patch editor got focus onkeypress onload
-//   Manageable uploader services
-//   Get rid inline style on list of fonts
-//   Fix broken onclick: [Font,Size,Color]
-//   Patch jump around textarea on [enter,backspace,delete]
-//   Keep notify_wrap visible on minimized QR
-//   Init QR minimized to avoid getting focused
-//   Add @connect host: [githubusercontent.com, greasyfork.org]
-//   Hide QuickQuote button when no quoted post in current page
-//   Autocomplete KPlus emotes with [IMG][/IMG]
-//   Fix broken link: Kaskus Hotkeys
-//   Open collapsed QR editor on-click Draft button
-//   Fix broken icon: youtube,vimeo,soundcloud
-//   Add window.onbeforeunload on appending iframe
-//   Simplify uploader services in `gvar.service_uploader`
-//
-// v5.3.7.5 - 2016-03-11 . 1457608034623
-//   Patch QuickQuote parse shortcode kaskus smilies; store full-path smilies to localstorage;
-//
-// v5.3.7.4 - 2016-03-10 . 1457559140131
-//   Default use img bbcode for kaskus plus exclusive
-//
-// v5.3.7.3 - 2016-03-10 . 1457556636122
-//   Reactivate KPlus Exclusive with IMG BBCode
-//   Patch FJB preview_post_ajax not rendering smilies
-//
-// v5.3.7.2 - 2016-03-10 . 1457555538331
-//   Hotfix: match/unmatch find smilies
-//
-// v5.3.7 - 2016-03-10 . 1457549755373
-//   Autocomplete smiley settings;
-//   css update.
-//   AtWho switch to IMG BBCode on kplus smilies (regular user);
-//   At.js, a github-like autocomplete library :s
-//   deprecated key:IMGBBCODE_KASKUS_PLUS; non-donat will always be with imgbbcode;
-//   normalize asset sub-domain for smilies.
 //
 //
 // v0.1 - 2010-06-29
@@ -114,11 +75,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.9';
+gvar.sversion = 'v' + '5.3.9.1';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1480096973423 // version.timestamp
-  ,dtversion: 1611265390 // version.date
+   timestamp: 1480108151475 // version.timestamp
+  ,dtversion: 1611265391 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -5785,7 +5746,7 @@ var _QQparse = {
     var ret, buff, $entry, entrycontent, post_id, _QQ = this;
     $.each( _QQ.mqs_id, function(){
       post_id = this;
-      $entry = $('#'+post_id).find('.entry');
+      $entry = $('#'+post_id).find('[itemprop=text]');
       if( $entry.length ){
         
         // entrycontent = ($entry.hasClass("product-detail") ? $entry.find() )
