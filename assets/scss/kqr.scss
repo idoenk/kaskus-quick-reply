@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1606055382
+ cssREV:1611265390
 */
 
 /**
@@ -511,6 +511,7 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
     }
   }
   .markItUpHeader {
+    display: block;
     padding: 2px 5px;
     padding-bottom: 0;
     border: 0;
