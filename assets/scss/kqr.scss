@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1606055382
+ cssREV:1611265390
 */
 
 /**
@@ -511,6 +511,7 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
     }
   }
   .markItUpHeader {
+    display: block;
     padding: 2px 5px;
     padding-bottom: 0;
     border: 0;
@@ -678,9 +679,6 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
       margin-left: 10px;
       padding-bottom: 36px;
       padding-top: $dialog_setting_paddingTop;
-      &[data-tab=exim] {
-        border-top: 1px solid #ddd;
-      }
     }
     .form-horizontal {
       .form-group {
@@ -1381,7 +1379,6 @@ ul {
     }
   }
   &.settingmnu {
-    border-top: 1px solid #ddd;
     li:first-child {
       margin-top: -1px;
     }

@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1610075390
-// @timestamp      1475839323914
+// @dtversion      1611265390
+// @timestamp      1480096973423
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,7 +31,9 @@
 //
 // -!--latestupdate
 //
-// v5.3.9 - 2016-10-07 . 1475839323914
+// v5.3.9 - 2016-11-26 . 1480096973423
+//   [Hotfix] Patch smilies sync-endpoint inherited protocol (HTTPS)
+//   Patch get_userdetail info
 //   [Hotfix] Patch quick-quote ordered list specific startfrom
 //   [Hotfix] Patch quick-quote parsing lazy-image
 //   [Hotfix] Patch fixed toolbar top position
@@ -112,13 +114,13 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.9';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1475839323914 // version.timestamp
-  ,dtversion: 1610075390 // version.date
+   timestamp: 1480096973423 // version.timestamp
+  ,dtversion: 1611265390 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1606055382 // css revision date; only change this when you change your external css
+  ,cssREV: 1611265390 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
@@ -1656,13 +1658,14 @@ var rSRC = {
 */
 var _BOX = {
   e: {
-     dialogname: 'qr-modalBoxFaderLayer' // [modalBoxFaderLayer, modal_dialog]
-    ,boxpreview: 'modal_dialog_box'
-    ,boxcapcay: 'modal_capcay_box'
-    ,lastbuff: ''
-    ,boxaction: ''
-    ,ishalted: false
-    ,isdiff: false
+    // [modalBoxFaderLayer, modal_dialog]
+    dialogname: 'qr-modalBoxFaderLayer',
+    boxpreview: 'modal_dialog_box',
+    boxcapcay: 'modal_capcay_box',
+    lastbuff: '',
+    boxaction: '',
+    ishalted: false,
+    isdiff: false
   },
   init: function(e){
     if( trimStr( $('#'+gvar.tID).val() ).length < 5 ){
@@ -2339,11 +2342,11 @@ var _BOX = {
     }
   },
   attach_userphoto: function(target, dt_ori){
-    var neim = gvar.user.name + (gvar.user.isDonatur ? ' [$]' : '');
+    var name = gvar.user.name;
     !dt_ori && (dt_ori = 'Post as ');
     $(target)
       .html('')
-      .append('<img src="'+ gvar.user.photo +'" title="'+ dt_ori + neim +'" title="'+dt_ori + neim +'" />');
+      .append('<img src="'+ gvar.user.photo +'" title="'+ dt_ori + name +'" title="'+dt_ori + name +'" />');
   }
 };
 
@@ -8277,24 +8280,27 @@ function eventsTPL(){
 
 function get_userdetail($sparent) {
   clog("inside get_userdetail..");
-  var a={}, b, $p, $c, $e, d;
   if("undefined" == typeof $sparent)
     $sparent = $('body');
 
-  $p = $('#after-login', $sparent);
-  $c = $p.find('#menu-accordion ul a[href*="/profile/about"]');
-  $e = $p.find('>.dropdown-toggle');
-  b = /\/profile\/aboutme\/(\d+)/.exec($c.attr('href'));
-  d = /\b(http\:\/\/[^\'\"]+)/.exec($e.find('>.user-avatar').attr('style'));
-  a = {
-     id: (b && "undefined" != typeof b[1] ? b[1] : false)
-    ,name: trimStr( String($p.find('>.dropdown-toggle').text()).replace(/^Hi,\s/,'') )
-    ,photo: (d && "undefined" != typeof d[1] ? d[1] : '')
-    // ,isDonatur: ($('#quick-reply').get(0) ? true : false)
-    ,isDonatur: ($('#quick-reply .capctha').length ? false : true)
-  };
-  clog(a);
-  return a
+  var $umenu    = $('#after-login', $sparent),
+      $aboutme  = $umenu.find('>.dropdown-menu li>a[href*="profile/aboutme"]').first(),
+      $avatar   = $umenu.find('.user-avatar').first(),
+      user      = {
+        id:'',name:'',photo:'',isDonatur: !1
+      },
+      cucok
+  ;
+  if( cucok = /\/aboutme\/(\d+)/.exec($aboutme.attr('href')) )
+    user.id = cucok[1];
+
+  if( cucok = /und-image\s*\:\s*url\(\s*[\'\"]?\s*(https?\:\/\/[^\'\"\)]+)/i.exec($avatar.attr('style')) )
+    user.photo = cucok[1];
+  
+  user.name = trimStr( $umenu.find('>.dropdown-menu>ul>li:first-child>a').text() );
+  user.isDonatur = ($('#quick-reply .capctha').length ? false : true);
+
+  return user
 }
 
 function getSettings(stg){
@@ -8656,8 +8662,18 @@ function QR_put_after($el){
   }
 
   var $ajaxqr = $el.next(),
-    clasname = 'ajax_qr_area',
-    $QR = $('#'+gvar.qID);
+      clasname = 'ajax_qr_area',
+      $QR = $('#'+gvar.qID),
+      ajax_area_id
+  ;
+
+  if( !($ajaxqr.length && $ajaxqr.hasClass(clasname)) ){
+    ajax_area_id = 'ajax_qr_area_'+$el.attr("id").replace("post","")
+    $ajaxqr = $('<div class="'+clasname+'" id="'+ajax_area_id+'"></div>');
+    $ajaxqr.insertAfter( $el );
+  }
+
+
 
   if( $ajaxqr.hasClass(clasname) ){
     if( !$QR.length )
@@ -8666,18 +8682,6 @@ function QR_put_after($el){
       if( !$('#'+gvar.qID, $ajaxqr).length )
         $ajaxqr.html('').append( $('#'+gvar.qID) );
     }
-  }
-  else{
-    var ajax_area_id = 'ajax_qr_area_'+$el.attr("id").replace("post","");
-    
-    $('<div class="'+clasname+'" id="'+ajax_area_id+'"></div>')
-      .insertAfter( $el );
-
-    $ajaxqr = $("#"+ajax_area_id);
-    if( $QR.length )
-      $ajaxqr.append( $('#'+gvar.qID) );
-    else
-      $ajaxqr.html( rSRC.getTPL() );
   }
   $("."+clasname).hide();
   $ajaxqr.show();
@@ -8747,12 +8751,21 @@ function start_Main(){
           // *.kaskus.*/show_post/{pID}/9121/-
           // *.kaskus.*/group/reply_discussion/{pID}
           // *.kaskus.*/post_reply/{pID}
-          var cck, href, tt = gvar.thread_type;
+          var cck, href, $thread_list;
           if( gvar.thread_type == 'forum' ){
             href = $('#act-post').attr('href');
             cck = /\/post_reply\/([^\/]+)\b/.exec( href );
+            $thread_list = $('#thread_post_list');
 
-            $_1stlanded = $('#thread_post_list > [class*="row"][id]').last();
+            if( $thread_list.hasClass('image-thread') ){
+              // hide original quick-reply
+              $thread_list.find('#image-post-reply').hide();
+
+              $thread_list = $thread_list.next().find('.reply-section').first();
+            }
+
+            // $_1stlanded = $('#thread_post_list > [class*="row"][id]').last();
+            $_1stlanded = $thread_list.find('>[class*="nor-post"][id]').last();
           }
           else if( gvar.thread_type == 'singlepost' ){
             
@@ -8961,7 +8974,7 @@ function start_Main(){
 
           var olmode = !( !gvar.force_live_css && gvar.__DEBUG__ ),
               base_path = 'http://'+(
-                olmode?'ichord.github.io/At.js/dist/':'localhost/GITs/github/idoenk/kaskus-quick-reply/assets/vendor/'
+                olmode?'ichord.github.io/At.js/dist/' : gvar.local_apppath+'assets/vendor/'
               )
           ;
           GM_addGlobalStyle(base_path+(olmode ? 'css/':'')+'jquery.atwho.css', 'css-AtWho');
@@ -9120,7 +9133,19 @@ function init(){
   gvar.kaskus_domain = 'www.kaskus.co.id';
   gvar.kask_domain = kdomain.prot+'//kask.us/';
   gvar.kkcdn = kdomain.prot + '//'+ kdomain.assets + '/';
-  gvar.getsmilies_url = 'http://'+gvar.kaskus_domain+'/misc/getsmilies/';
+
+  // Smilies endpoint
+  gvar.getsmilies_url = kdomain.prot+'//'+gvar.kaskus_domain+'/misc/getsmilies';
+  // gvar.getsmilies_url = 'http://idoenk.github.io/kaskus-quick-reply/getsmilies.html';
+
+
+  // Local repository, debug-purpose
+  // unix
+  // gvar.local_apppath = 'localhost/GITs/github/idoenk/';
+  // w32
+  gvar.local_apppath = 'localhost/github.local/idoenk/';
+  gvar.local_apppath += 'kaskus-quick-reply/';
+
 
   // set true to simulate using css from googlecode, [debug-purpose]
   gvar.force_live_css = null;
@@ -9140,7 +9165,7 @@ function init(){
   // Are you developing/forking this script?
   // make sure your local asset is accessible with correct path.
   gvar.kqr_static = 'http://' + (!gvar.force_live_css && gvar.__DEBUG__ ? 
-    'localhost/GITs/github/idoenk/kaskus-quick-reply/assets/css/' : 
+    gvar.local_apppath+'assets/css/' : 
     'raw.githubusercontent.com/idoenk/kaskus-quick-reply/master/assets/css/'
   );
 
