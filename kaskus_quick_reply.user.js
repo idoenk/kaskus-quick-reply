@@ -33,7 +33,10 @@
 //
 // v5.3.9 - 2016-11-26 . 1480096973423
 //   [Hotfix] Patch smilies sync-endpoint inherited protocol (HTTPS)
+//   Patch perfomance issue on huge textarea in export-import settings
+//   Patch allow keydown on button
 //   Patch get_userdetail info
+//   Patch QR functionality image-thread
 //   [Hotfix] Patch quick-quote ordered list specific startfrom
 //   [Hotfix] Patch quick-quote parsing lazy-image
 //   [Hotfix] Patch fixed toolbar top position
@@ -927,10 +930,11 @@ var rSRC = {
        + '</div>' // cls_cont
        +'</div>' // fg
        +'<div class="form-group fg-fixed_toolbar'+(GVS.elastic_editor ? '' : ' hide')+'">'
-       + '<label class="'+cls_label+'" for="misc_fixed_toolbar">Fixed BBCode Toolbar'+gen_helplink("fixedtoolbar")+'</label>'
+       + '<label class="'+cls_label+'" for="misc_fixed_toolbar">&nbsp;&nbsp;Fixed BBCode Toolbar'+gen_helplink("fixedtoolbar")+'</label>'
        + '<div class="'+cls_cont+'">'
        +  '<div class="checkbox">'
-       +   '<input id="misc_fixed_toolbar" class="optchk" type="checkbox" '+(GVS.fixed_toolbar ? 'checked="checked"':'')+'/>'
+           // GVS.fixed_toolbar
+       +   '<input id="misc_fixed_toolbar" class="optchk" type="checkbox" checked="checked" disabled style="opacity:.45; cursor:default;" />'
        +  '</div>'
        + '</div>' // cls_cont
        +'</div>' // fg
@@ -1079,7 +1083,7 @@ var rSRC = {
      +'<div class="form-group fg-exim">'
      +'<p>To export your settings, copy the text below and save it in a file.</p>'
      +'<p>To import your settings later, overwrite the text below with the text you saved previously and click "<b>Import</b>".</p>'
-     +'<textarea id="textarea_rawdata" class="twt-glow kqr-txta_editor textarea_rawdata" readonly="readonly"></textarea>'
+     +'<textarea id="textarea_rawdata" class="twt-glow kqr-txta_editor textarea_rawdata" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="white-space: pre-line;"></textarea>'
      +'</div>' // fg
      +'<div class="form-group fg-exim">'
      +'<a id="exim_select_all" class="goog-btn goog-btn-default goog-btn-xs" href="javascript:;">Select All</a>'
@@ -4644,18 +4648,19 @@ var _STG = {
   design:function(){
     swapCol();
 
-    var mnus, mL, idx=0, tpl = '';
-    var $box_setting = $('#qr-box_setting');
-    mnus = {
-       gen:  ['General', rSRC._TPLSettingGeneral()]
-      ,exim: ['Export \/ Import', rSRC._TPLSettingExim()]
-      ,kbs:  ['Keyboard Shortcut', rSRC._TPLSettingShortcut()]
-      ,abt:  ['About', rSRC._TPLSettingAbout()]
-    };
-    mL = 4; // n tab menus
-    tpl='<ul id="ul_group" class="qrset_mnu settingmnu">'
+    var $box_setting = $('#qr-box_setting'),
+        mnus = {
+          gen:  ['General', rSRC._TPLSettingGeneral()],
+          exim: ['Export \/ Import', rSRC._TPLSettingExim()],
+          kbs:  ['Keyboard Shortcut', rSRC._TPLSettingShortcut()],
+          abt:  ['About', rSRC._TPLSettingAbout()]
+        },
+        mL  = 4,
+        idx = 0,
+        tpl = '<ul id="ul_group" class="qrset_mnu settingmnu">'
+    ;
     $box_setting.find('.cs_right').html('');
-    for(tipe in mnus){
+    for(var tipe in mnus){
       if(typeof tipe!='string') continue;
       
       tpl+= '<li data-ref="'+tipe+'" class="qrt'+(idx==0 ? ' curent': (idx==(mL-1) ? ' qrset_lasttab' : '')) +'"><div class="unitli">'+mnus[tipe][0]+'</div></li>';
@@ -4683,21 +4688,19 @@ var _STG = {
     // menus
     $box.find('.qrt').each(function(){
       $(this).click(function(){
-        var $btn, $tgt,
-          $me = $(this),
-          tipe = $me.attr('data-ref'),
-          disb, par;
-        par = $(this).parent();
+        var $me   = $(this),
+            tipe  = $me.attr('data-ref'),
+            $tgt  = $('#stg_content_' + tipe),
+            $btn  = $('#box_action'),
+            disb  = 'goog-btn-disabled'
+        ;
         $box.find('.isopen').removeClass('isopen').hide();
-        $tgt = $('#stg_content_' + tipe);
         $tgt.addClass('isopen').show();
         $tgt.parent().attr("data-tab", tipe);
         $me.parent().find('.curent').removeClass('curent');
         $me.addClass('curent');
         $('#box_preview_subtitle').html( ' ' + '&#187; ' +  $(this).find('div').html() );
         
-        disb = 'goog-btn-disabled';
-        $btn = $('#box_action');
         $btn.html('Save');
         if(tipe == 'exim'){
           if( !$box.find('#textarea_rawdata').val() )
@@ -4713,10 +4716,11 @@ var _STG = {
     });
     $box.find('.optchk').each(function(){
       $(this).click(function(){
-        var $tgt, chked, $me = $(this), id = $me.attr('id');
-        chked = $me.is(':checked');
-        $tgt = $me.closest('.stg_content').find('#'+id + '_child');
-
+        var $me   = $(this),
+            chked = $me.is(':checked'),
+            id    = $me.attr('id'),
+            $tgt  = $me.closest('.stg_content').find('#'+id + '_child')
+        ;
         if( $tgt.length ) {
           $tgt[chked ? 'removeClass' : 'addClass']("hide");
           
@@ -4733,9 +4737,10 @@ var _STG = {
       $miscauto.removeAttr('checked');
     });
     $box.find('#misc_elastic_editor').click(function(){
-      var $me = $(this);
-      var $par = $me.closest("#tabs-itemstg-general");
-      var $tgt = $par.find(".fg-fixed_toolbar");
+      var $me   = $(this),
+          $par  = $me.closest("#tabs-itemstg-general"),
+          $tgt  = $par.find(".fg-fixed_toolbar")
+      ;
       if( $me.is(":checked") )
         $tgt.removeClass("hide");
       else
@@ -4743,25 +4748,26 @@ var _STG = {
     });
     $box.find('.goog-tab').each(function(){
       $(this).click(function(){
-        var $me = $(this),
-          $par = $me.closest(".form-group"),
-          target = $me.attr("data-target");
+        var $me     = $(this),
+            $par    = $me.closest(".form-group")
+        ;
         $par.find('.goog-tab-selected').removeClass('goog-tab-selected');
         $par.find('.itemtabcon').removeClass('active');
         $me.addClass('goog-tab-selected');
-        $par.find('#'+target).addClass('active');
+        $par.find('#'+$me.attr("data-target")).addClass('active');
       });
     });
 
     $box.find('#misc_smiley_kplus').click(function(){
-      var $me = $(this), $tgtkplus = $box.find(".kplus_first");
-      if( $me.is(":checked") )
+      var $tgtkplus = $box.find(".kplus_first");
+      if( $(this).is(":checked") )
         $tgtkplus.removeClass('hide');
       else
         $tgtkplus.addClass('hide');
     });
 
-    if( !gvar.noCrossDomain ) {// unavailable on some browser T_T
+    // unavailable on some browser T_T
+    if( !gvar.noCrossDomain ) {
       $box.find('#chk_upd_now').click(function(){
         $box.find('#chk_upd_load').show();
         $(this).hide();
@@ -4938,11 +4944,14 @@ var _STG = {
         _TEXT.setElastic(null, true);
 
         // FIXED_TOOLBAR
-        if( gvar.settings.elastic_editor )
-          $box.find('#misc_fixed_toolbar').prop("checked", true);
-        else
-          $box.find('#misc_fixed_toolbar').prop("checked", false);
-        value = (isChk( '#misc_fixed_toolbar' ) ? '1' : '0');
+        if( $box.find('#misc_fixed_toolbar').is(':disabled') )
+        $box.find('#misc_fixed_toolbar')
+          .prop('disabled', !1)
+          .prop("checked", true)
+          .prop('disabled', true)
+        ;
+        // value = (isChk( '#misc_fixed_toolbar' ) ? '1' : '0');
+        value = (isChk( '#misc_elastic_editor' ) ? '1' : '0');
         setValue(KS+'FIXED_TOOLBAR', String( value ));
         gvar.settings.fixed_toolbar = (value == '1' ? true : false);
 
@@ -5095,8 +5104,8 @@ var _STG = {
       close_popup()
     });
     
-    do_click( $box.find('.curent').get(0) );
     $('#'+gvar.tID).blur();
+    do_click( $box.find('.curent').get(0) );
   },
   cold_boot: function(){
     var cscontainer = 'tcustom';
@@ -5112,7 +5121,7 @@ var _STG = {
     var keys  = [
        'UPDATES','UPDATES_INTERVAL','SHOW_KASKUS_PLUS'
       ,'QR_HOTKEY_KEY','QR_HOTKEY_CHAR','QR_DRAFT'
-      ,'TXTCOUNTER','ELASTIC_EDITOR','FIXED_TOOLBAR','THEME_FIXUP','HIDE_GREYLINK','ALWAYS_NOTIFY'
+      ,'TXTCOUNTER','ELASTIC_EDITOR','THEME_FIXUP','HIDE_GREYLINK','ALWAYS_NOTIFY'
       ,'SHOW_SMILE','TABFIRST_SMILE','AUTOCOMPLETE_SML','LAYOUT_CONFIG','LAYOUT_TPL','SCUSTOM_NOPARSE','CUSTOM_SMILEY'
       ,'IMGBBCODE_KASKUS_PLUS','SERVICE_UPLOADER'
     ];
@@ -5122,7 +5131,6 @@ var _STG = {
       ,'QR_DRAFT':'Mode QR-Draft; validValue=[1,0]'
       ,'TXTCOUNTER':'Mode Text Couter; validValue=[1,0]'
       ,'ELASTIC_EDITOR':'Keep editor in elastic mode; validValue=[1,0]'
-      ,'FIXED_TOOLBAR':'Auto Fixed toolbar; validValue=[1,0]'
       ,'THEME_FIXUP':'Theme Fixed thread; validValue=[centered,c1024px,fullwidth]'
       ,'HIDE_GREYLINK':'Hide grey origin link; validValue=[1,0]'
       ,'ALWAYS_NOTIFY':'Trigger Notification of Quoted Post; validValue=[1,0]'
@@ -7993,7 +8001,7 @@ function eventsTPL(){
         pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0'),
         pCSA_Code = pCSA+'_'+A
     ;
-    // clog('pCSA_Code='+pCSA_Code+'; A='+A);
+    clog('pCSA_Code='+pCSA_Code+'; A='+A);
 
 
     if( !doThi )
@@ -8004,7 +8012,7 @@ function eventsTPL(){
       }
 
       doThi = 1;
-      // clog('doThi enabled, coz of A==27');
+      clog('doThi enabled, coz of A==27');
     }
 
     // Force open editor on readonly mode: view single post
@@ -8014,7 +8022,7 @@ function eventsTPL(){
       $('.button_qrmod,.button_qq,.xkqr').removeClass('hide');
 
       doThi = 1;
-      // clog('doThi enabled, coz of pCSA_Code==1,0,0_192');
+      clog('doThi enabled, coz of pCSA_Code==1,0,0_192');
 
       scrollToQR();
     }
@@ -8026,14 +8034,14 @@ function eventsTPL(){
       _STG.reset_settings( true );
 
       doThi = 1;
-      // clog('doThi enabled, coz of pCSA_Code==1,1,0_192');
+      clog('doThi enabled, coz of pCSA_Code==1,1,0_192');
     }
 
 
     if( !doThi )
     if( pCSA=='0,0,0' || pCSA=='0,1,0' )
-    if( ['INPUT', 'TEXTAREA'].indexOf( (ev.target||ev).nodeName) == -1 ){
-      //Avoid textarea weirdly got focus en keyChar being sent
+    if( ['BUTTON', 'INPUT', 'TEXTAREA'].indexOf( (ev.target||ev).nodeName ) == -1 ){
+      // Avoid textarea weirdly got focus en keyChar being sent
       // clog('not writable element!');
 
       // Printable char (0 - 9)|(A - Z)|(,./`)|([\]'')|[NumpadKeys]|(Tab,Enter,Space,Delete)
@@ -8045,7 +8053,7 @@ function eventsTPL(){
           [9,13,32,46].indexOf(A) !== -1 ){
 
         doThi = 1;
-        // clog('doThi enabled, coz of (A > 47 && A < 58) || (A > 64 && A < 91) || [13,32,46].indexOf(A) !== -1');
+        clog('doThi enabled, coz of (A > 47 && A < 58) || (A > 64 && A < 91) || [13,32,46].indexOf(A) !== -1');
       }
     }
 
@@ -8068,7 +8076,7 @@ function eventsTPL(){
 
 
     if( doThi ){
-      // clog('doThi detected, locking event');
+      clog('doThi detected, locking event');
       do_an_e(ev);
     }
     else{
@@ -8753,8 +8761,6 @@ function start_Main(){
           // *.kaskus.*/post_reply/{pID}
           var cck, href, $thread_list;
           if( gvar.thread_type == 'forum' ){
-            href = $('#act-post').attr('href');
-            cck = /\/post_reply\/([^\/]+)\b/.exec( href );
             $thread_list = $('#thread_post_list');
 
             if( $thread_list.hasClass('image-thread') ){
@@ -8762,7 +8768,13 @@ function start_Main(){
               $thread_list.find('#image-post-reply').hide();
 
               $thread_list = $thread_list.next().find('.reply-section').first();
+
+              href = $('#qr_form').attr('action');
             }
+            else{
+              href = $('#act-post').attr('href');
+            }
+            cck = /\/post_reply\/([^\/]+)\b/.exec( href );
 
             // $_1stlanded = $('#thread_post_list > [class*="row"][id]').last();
             $_1stlanded = $thread_list.find('>[class*="nor-post"][id]').last();
