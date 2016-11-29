@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1611265390
+ cssREV:1611265392
 */
 
 /**
@@ -13,6 +13,9 @@
 * data-uris
 */
 
+$data_uri_bb_embed: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWBAMAAAA2mnEIAAAAMFBMVEVHcEw4P008Q1FKUV03P0z+///4+vqQlZ2anqVqcHpBSFWytrtWXWnq7O1zeYLW2twJ76dgAAAABXRSTlMALi4wLrPFjmoAAAB/SURBVBjTY2AgBpgoCYKAkjOQfXxmOQjMrAGyn+4IBYHuOJD4jLS9aWlpnSDx+R2pr7ampXX8BKtJnXs8LQ2sZtWK1GnhZ9O6VgHZcztSp6X92dZxE86eX3ETrmb/qlUwvanbquNgZt5vA5sJsit31bNOuBvuQ92A5DZkNxMGAPP/Sm5bijJYAAAAAElFTkSuQmCC";
+$data_uri_bb_dmotion: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARBAMAAADJQ1rJAAAAMFBMVEUAZdwAZtwAVf8AZdwAZNwBZtwAYdv///8ccN8AWdm30/ZWluh5rO2ixfLc6frt8/xGizh+AAAABXRSTlPukQaQibHbNOIAAABySURBVAjXY1BkDQUBRgUGUxAdNi3UgQEitDuUgQHMiP7VFgBihc2cUwVhzdjdA2FF7vv+DsLKeP7rOYQ1p76zC8wKy62aBtUxt64zFsKaXb7mOoQVdry8HMqKvnv6TlgAyN7M0LRQoL0gt6QBoQMD3H0ArZc+XOWLHTUAAAAASUVORK5CYII=";
+$data_uri_bb_smule: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAANlBMVEVHcEyhpuyGzfmH0fJ+k+HBvPO6jO6XduSx1/aiot11btfHyOn2+PtosuRxx/NmltNdcspQVr5V3R0wAAAACXRSTlMAoua93kbz/iWjK/vyAAAAnklEQVR4Xk3QSRLDIAxEUTEFtySm+182DbZT+eUFeiUWWE5XSDGmUORX6r23ztL1rFAa2xavPxmtx9eODGbutMSlG+YE3I23iwQKYS0YrTWuJcomA43HliXfAndMNgbpiLrbWuugZFWdFFCOZQmb3FWBSVENUkgwfhUGZUX2msFMmaHWvB+UtQL19KmfItvqM7NbaIHj3SVvJez5+YVf+lgLRNfNQ2QAAAAASUVORK5CYII=";
 $data_uri_bb_forecolor: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAVCAYAAABCIB6VAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAJFJREFUOMtjYBgFgwUIMDAwvIdiAWI0MBFpcALUQAEomyBgJNLg+wwMDBegbAMGBgZFagRDAAMDw38ojcymGOyHuhjZ9fspNdQA6sIGJLEGqJgBJQbPhxqCDc8n11AFqAH7GRgYHNDwfqicAjkGw7ycgCP5oQcR0QCWIciVpw3AlkF6yDSrhJwsTTJgYhgFtAYAn8MjLYLJYoUAAAAASUVORK5CYII=";
 $data_uri_bb_size: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAADlJREFUOMtjYBgFIxcwEqHmP6lmMQ0W3/0n5HqauJSFhDBkJNZQurmUEc3FjKQaShOXDh1DR8EQAQDI5gUVIb0QgAAAAABJRU5ErkJggg==";
 $data_uri_bb_html: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVBAMAAABbObilAAAAAXNSR0IArs4c6QAAAA9QTFRFZXQtAAMAUVJQmZuY19nWovyXywAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAASElEQVQI12NgQAaMgkAggMQWRBYXQGIzIqsXQGIzIvRCdBPFNjR2MRZRgbAdHQ1NVKBsEyDbBCFu7IJgOzqbGCLMESLaLgQAAFOFDIrpvL90AAAAAElFTkSuQmCC";
@@ -517,10 +520,6 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
     border: 0;
     border-bottom: 1px solid #ccc;
     > ul {
-      .markItUpSeparator {
-        margin: 4px 5px;
-        height: 22px;
-      }
       > li {
         margin-bottom: 0;
         height: 26px;
@@ -548,6 +547,32 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
           height: 26px;
           opacity: .785;
         }
+      }
+      ul.markItUpButton-embed-wrapper{
+        width: 100px;
+        >li.markItUpButton.markItUpButton-fa{
+          float: left;
+          border-bottom:0;
+          a {
+            width: auto;
+            min-width: 32px;
+            padding: 4px 5px 0;
+            text-indent: 0;
+            background-position: center center;
+            &.mnu-kqr-dailymotion{
+              background-image: url($data_uri_bb_dmotion);
+            }
+            &.mnu-kqr-smule{
+              background-image: url($data_uri_bb_smule);
+            }
+          }
+        }
+      }
+      .markItUpSeparator {
+        margin: 4px 5px;
+        height: 22px;
+      }
+      .markItUpButton{
         &.markItUpButton-fa{
           a {
             text-indent: -6px;
@@ -574,6 +599,15 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
               }
             }
           }
+        }
+      }
+      .markItUpDropMenu{
+        &.markItUpButton20,
+        &.markItUpButton-embed{
+          margin-right: 0;
+        }
+        li {
+          text-align: center;
         }
       }
     }
@@ -1213,6 +1247,15 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
       background-image: url($data_uri_bb_size);
       width: 32px;
       margin-top: -4px;
+    }
+  }
+  .markItUpButton-embed {
+    width: 30px;
+    > ul{
+      height: auto;
+    }
+    > a {
+      background-image: url($data_uri_bb_embed);
     }
   }
   .markItUpButton96 > a {
