@@ -5766,13 +5766,15 @@ var _QQparse = {
     this.start();
   },
   start:function(){
-    var ret, buff, $entry, entrycontent, post_id, _QQ = this;
+    var ret, buff, _QQ = this;
     $.each( _QQ.mqs_id, function(){
-      post_id = this;
-      $entry = $('#'+post_id).find('[itemprop=text]');
+      var post_id = this,
+          $row = $('#'+post_id),
+          $entry,
+          entrycontent
+      ;
+      $entry = $row.find('[itemprop='+( $row.hasClass('first-post') ? 'articleBody':'text')+']');
       if( $entry.length ){
-        
-        // entrycontent = ($entry.hasClass("product-detail") ? $entry.find() )
         if( $entry.hasClass("product-detail") ){
           $entry = $entry.find(".tab-pane.active").clone();
           $entry.find(".row").first().remove();
