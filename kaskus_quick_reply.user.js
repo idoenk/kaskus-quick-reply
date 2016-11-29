@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.9.1
+// @version        5.3.9.2
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1611265391
-// @timestamp      1480108151475
+// @dtversion      1611305392
+// @timestamp      1480444439692
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,11 +31,15 @@
 //
 // -!--latestupdate
 //
-// v5.3.9.1 - 2016-11-26 . 1480108151475
-//   [Hotfix] Patch Quick-quote in image-thread
+// v5.3.9.2 - 2016-11-30 . 1480444439692
+//   [Hotfix] Patch failed attach QR-Dom on thread w/o replies. Thx:[zackad]
+//   Embed bbcode dropdown menu
 //
 // -/!latestupdate---
 // ==/UserScript==
+//
+// v5.3.9.1 - 2016-11-26 . 1480108151475
+//   [Hotfix] Patch Quick-quote in image-thread
 //
 // v5.3.9 - 2016-11-26 . 1480096973423
 //   [Hotfix] Patch smilies sync-endpoint inherited protocol (HTTPS)
@@ -75,16 +79,16 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.9.1';
+gvar.sversion = 'v' + '5.3.9.2';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1480108151475 // version.timestamp
-  ,dtversion: 1611265391 // version.date
+   timestamp: 1480444439692 // version.timestamp
+  ,dtversion: 1611305392 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1611265390 // css revision date; only change this when you change your external css
+  ,cssREV: 1611265392 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
@@ -284,6 +288,27 @@ var rSRC = {
     buff+='</ul></li>';
     return buff;
   },
+  menuEmbed: function(id){
+    var li_cls = rSRC.mCls,
+        svcs = [
+          {'class': 'mnu-fa-kqr-ytube', bb:'YOUTUBE', title:'Embedding video from Youtube'},
+          {'class': 'mnu-fa-kqr-vimeo', bb:'VIMEO', title:'Embedding video from Vimeo'},
+          {'class': 'mnu-fa-kqr-scloud', bb:'SOUNDCLOUD', title:'Embedding video from Soundcloud'},
+          {'class': 'mnu-kqr-dailymotion', bb:'DAILYMOTION', title:'Embedding video from Dailymotion'},
+          {'class': 'mnu-kqr-smule', bb:'SMULE', title:'Embedding video from Smule'},
+        ],
+        buff = ''
+          +'<li class="'+li_cls[0] + ' ' + li_cls[0] + id + ' ' + li_cls[1]+'"><a title="Embed" href="" data-noevent="1">Embed</a>'
+          +'<ul class="markItUpButton'+id+'-wrapper mtarrow">'
+        ;
+    ;
+    for(var i=0, iL=svcs.length; i<iL; i++){
+      var fa_cls = (svcs[i].class ? svcs[i].class.replace(/^mnu-/i,'') : '');
+      buff += '<li class="'+li_cls[0]+' '+li_cls[0]+'-fa"><a href="javascript:;" title="'+svcs[i].title+'" class="'+svcs[i].class+'" data-cat="ev_custom" data-bb="'+svcs[i].bb+'"><i class="fa '+fa_cls+'"></i></a></li>';
+    }
+    buff+='</ul></li>';
+    return buff;
+  },
   menuGen: function(mnuData){
     var mCls = rSRC.mCls;
     var mnu, addcls, cucok,
@@ -326,7 +351,7 @@ var rSRC = {
     }
     return buff;
   },
-  menuIcon: function () {
+  menuIcon: function(){
     var c = rSRC.mCls, d = "", e = 0, f = "img/icons/new/", g = rSRC.getSetOf('posticon');
     d = '<ul id="menu_posticon" class="mnu-icons relative mtarrow" style="display:none;">';
     for (icon in g) {
@@ -496,9 +521,7 @@ var rSRC = {
         {id:52, 'cat': 'ev_custom', bb: 'NOPARSE', title: 'Wrap [NOPARSE] around text'},
         {id:53, 'cat': 'ev_custom', bb: 'STRIKE', title: 'Strikethrough text'},
         {id:null}, // spacer
-        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-kqr-ytube', bb:'YOUTUBE', title: 'Embedding video from Youtube'},
-        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-kqr-vimeo', bb:'VIMEO', title: 'Embedding video from Vimeo'},
-        {id:'-fa', 'cat': 'ev_custom', 'class': 'mnu-fa-kqr-scloud', bb:'SOUNDCLOUD', title: 'Embedding audio from Soundcloud'},
+        {id:'-embed', 'cat': 'ev_embed', cb: rSRC.menuEmbed},
       ])
 
       + _sp 
@@ -7159,16 +7182,19 @@ function do_insertCustomTag($el){
   clog('do_insertCustomTag');
   _TEXT.init();
   
-  var BBCode = ( "string" !== typeof $el && $el  ? $el.attr("data-bb") : $el );
-  var text, prehead, tagprop, ptitle, selected, ret, prmpt;
-  var wrapped_bb = 'INDENT,QUOTE,CODE,HTML,PHP'.split(",");
+  var BBCode = ( "string" !== typeof $el && $el  ? $el.attr("data-bb") : $el ),
+      wrapped_bb = 'INDENT,QUOTE,CODE,HTML,PHP'.split(","),
+      endFocus = function(){
+        _TEXT.focus(); return
+      },
+      tagprop = '',
+      text, prehead, ptitle, selected, ret, prmpt
+  ;
 
-  var endFocus = function(){ _TEXT.focus(); return};
-  if("undefined" == typeof BBCode) return endFocus();
-
+  if("undefined" == typeof BBCode)
+    return endFocus();
 
   selected = _TEXT.getSelectedText();
-  tagprop = '';
 
   if( wrapped_bb.indexOf(BBCode) !== -1 )
     _TEXT.wrapValue( BBCode );
@@ -7261,6 +7287,9 @@ function do_insertCustomTag($el){
             case 'SOUNDCLOUD':
               ret.text = prompt('Please enter [Soundcloud widget code, ID, API-URL]\neg.https:/'+'/api.soundcloud.com/tracks/#######', '');
             break;
+            default:
+              ret.text = prompt('Please enter the link of media, '+BBCode, '');
+            break;
           }
           return ret;
         };
@@ -7287,8 +7316,12 @@ function do_insertCustomTag($el){
               if( ['YOUTUBE','SOUNDCLOUD','VIMEO'].indexOf(BBCode) !== -1 ){
                 text = is_mediaembed(BBCode, text);
                 text = (text ? text : null);
-              }else if(BBCode=='URL' || BBCode=='IMG')
+              }else if(BBCode=='URL' || BBCode=='IMG'){
                 text = (isLink(text) ? text : null);
+              }else if( !text ){
+                text = null;
+              }
+
 
               // prompting text check...
               if(text==null) return endFocus();
@@ -8693,8 +8726,8 @@ function start_Main(){
       gvar.$w.setTimeout(function(){ wait_settings_done() }, 100);
       iTry++;
     }else{
-      clog("all settings loaded.");
       // setting done? lets roll..
+      clog("all settings loaded.");
       clog(gvar.settings);
 
       var $_1stlanded, mq_class = 'multi-quote';
@@ -8720,7 +8753,7 @@ function start_Main(){
           // *.kaskus.*/show_post/{pID}/9121/-
           // *.kaskus.*/group/reply_discussion/{pID}
           // *.kaskus.*/post_reply/{pID}
-          var cck, href, $thread_list;
+          var cck, href, $thread_list, lastpost_selector;
           if( gvar.thread_type == 'forum' ){
             $thread_list = $('#thread_post_list');
 
@@ -8731,20 +8764,21 @@ function start_Main(){
               $thread_list = $thread_list.next().find('.reply-section').first();
 
               href = $('#qr_form').attr('action');
+              lastpost_selector = '>[id][class*="nor-post"]';
             }
             else{
               href = $('#act-post').attr('href');
+              lastpost_selector = '>[id].row';
             }
             cck = /\/post_reply\/([^\/]+)\b/.exec( href );
 
-            // $_1stlanded = $('#thread_post_list > [class*="row"][id]').last();
-            $_1stlanded = $thread_list.find('>[class*="nor-post"][id]').last();
+            $_1stlanded = $thread_list.find(lastpost_selector).last();
           }
           else if( gvar.thread_type == 'singlepost' ){
             
             cck = /\/show_post\/([^\/]+)\b/.exec( location.href );
 
-            $_1stlanded = $('.container > section > .row').last();
+            $_1stlanded = $('.container>section>.row').last();
           }
           // [group]
           else{
@@ -8757,10 +8791,11 @@ function start_Main(){
               $_1stlanded = $_1stlanded.prev();
 
             // initialise the row-id
-            $_1stlanded.attr("id", 'grpost_'+$('.listing-wrapper > .row').length);
+            $_1stlanded.attr("id", 'grpost_'+$('.listing-wrapper>.row').length);
           }
           return (cck ? cck[1] : false);
         })();
+        clog('get_thread_id='+gvar.pID);
 
 
         // prevent appending if we found dom-wrapper
@@ -9114,9 +9149,9 @@ function init(){
 
   // Local repository, debug-purpose
   // unix
-  // gvar.local_apppath = 'localhost/GITs/github/idoenk/';
+  gvar.local_apppath = 'localhost/GITs/github/idoenk/';
   // w32
-  gvar.local_apppath = 'localhost/github.local/idoenk/';
+  // gvar.local_apppath = 'localhost/github.local/idoenk/';
   gvar.local_apppath += 'kaskus-quick-reply/';
 
 
@@ -9139,7 +9174,7 @@ function init(){
   // make sure your local asset is accessible with correct path.
   gvar.kqr_static = 'http://' + (!gvar.force_live_css && gvar.__DEBUG__ ? 
     gvar.local_apppath+'assets/css/' : 
-    'raw.githubusercontent.com/idoenk/kaskus-quick-reply/master/assets/css/'
+    'raw.githubusercontent.com/idoenk/kaskus-quick-reply/'+(gvar.__DEBUG__ ? 'develop':'master')+'/assets/css/'
   );
 
   if( !/(?:www\.|)kaskus\./.test(location.hostname) ){
