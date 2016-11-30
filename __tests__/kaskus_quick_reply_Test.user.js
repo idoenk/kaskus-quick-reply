@@ -666,9 +666,6 @@ function main(window, $){
         return location.reload();
       });
     }, 1234);
-
-    // Immediate run?
-    // mocha.run();
   }
 
   // wait till KQR DOM done rendered
@@ -774,25 +771,5 @@ function main(window, $){
   css.setAttribute('href', location.protocol+'\/\/cdnjs.cloudflare.com\/ajax\/libs\/mocha\/2.5.3\/mocha.css');
   css.setAttribute('rel', 'stylesheet');
   document.body.insertBefore(css, document.body.firstChild);
-
-  // script = document.createElement("script");
-  // script.setAttribute("src", location.protocol + "\/\/cdnjs.cloudflare.com\/ajax\/libs\/mocha\/2.5.3\/mocha.js");
-  // document.body.appendChild(script);
-
-  // script.addEventListener('load', function() {
-  //   var script_ = document.createElement("script");
-  //   script_.setAttribute("src", location.protocol + "\/\/cdnjs.cloudflare.com\/ajax\/libs\/chai\/3.5.0\/chai.js");
-
-  //   script_.addEventListener('load', function() {
-  //     var scr = document.createElement("script");
-  //     scr.textContent = "(" + callback.toString() + ")(window, jQuery);";
-  //     document.body.appendChild(scr);
-  //   }, false);
-
-  //   setTimeout(function(){
-  //     document.body.appendChild(script_);
-  //   }, 1200)
-  // });
-
 }( main );
 })();
