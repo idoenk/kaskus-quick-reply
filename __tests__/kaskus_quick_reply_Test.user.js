@@ -35,6 +35,7 @@
 function main(window, $){
   var gvar = {
       debug: 1,
+      timeout_wait: 10,
       qrID: '#qr-content-wrapper',
       qrEditor: '#kqr-reply-messsage',
       getCSS: function(){
@@ -73,6 +74,7 @@ function main(window, $){
   function testClickQuickReply(){
     clog('[testClickQuickReply]');
     var $QR = $(gvar.qrID),
+        expect = chai.expect,
         $editor = $QR.find(gvar.qrEditor),
         $postBit = $QR.closest(".ajax_qr_area").prev(),
         isMoreThanOnePost = ($(".row.nor-post").length > 1)
@@ -91,7 +93,8 @@ function main(window, $){
 
       it('qr-should-have-focus-last-postbit?', function(){
 
-        $editor.should.have.focus();
+        expect($editor.closest('.ajax_qr_area').next())
+          .not.to.have.attr('id');
       });
     });
 
@@ -109,7 +112,11 @@ function main(window, $){
 
       it('qr-should-have-focus-on-1st-postbit?', function(){
 
-        $editor.should.have.focus();
+        var $row = $editor.closest('.ajax_qr_area').prev();
+        expect($row).to.have.attr('id');
+
+        expect($row.prev())
+          .not.to.have.attr('id');
       });
     });
   }
@@ -222,6 +229,8 @@ function main(window, $){
         $btnYoutube = $wrapHead.find("[data-bb=YOUTUBE]"),
         $btnVimeo = $wrapHead.find("[data-bb=VIMEO]"),
         $btnSCloud = $wrapHead.find("[data-bb=SOUNDCLOUD]"),
+        $btnDMotion = $wrapHead.find("[data-bb=DAILYMOTION]"),
+        $btnSmule = $wrapHead.find("[data-bb=SMULE]"),
         $btnAddTitle = $wrapHead.find("#mnu_add_title"),
         $wrapColor = $wrapHead.find(".markItUpButton95-wrapper"),
         $btnColorRandom = null,
@@ -320,9 +329,12 @@ function main(window, $){
       it('BBCODE: [EMAIL]', function(){
         
         SimulateMouse($btnClear.get(0), 'click', true);
+
+        var email = 'abc@example.com';
+        $editor.val(email).focus().select();
         SimulateMouse($btnEmail.get(0), 'click', true);
 
-        expect($editor).to.have.value('[EMAIL][/EMAIL]');
+        expect($editor).to.have.value('[EMAIL]'+email+'[/EMAIL]');
 
         SimulateMouse($btnClear.get(0), 'click', true);
       });
@@ -496,6 +508,26 @@ function main(window, $){
 
         SimulateMouse($btnClear.get(0), 'click', true);
       });
+      it('BBCODE: [DAILYMOTION]Foo', function(){
+        
+        SimulateMouse($btnClear.get(0), 'click', true);
+        $editor.val('Foobar').focus().select();
+        SimulateMouse($btnDMotion.get(0), 'click', true);
+
+        expect($editor).to.have.value('[DAILYMOTION]Foobar[/DAILYMOTION]');
+
+        SimulateMouse($btnClear.get(0), 'click', true);
+      });
+      it('BBCODE: [SMULE]Foo', function(){
+        
+        SimulateMouse($btnClear.get(0), 'click', true);
+        $editor.val('Foobar').focus().select();
+        SimulateMouse($btnSmule.get(0), 'click', true);
+
+        expect($editor).to.have.value('[SMULE]Foobar[/SMULE]');
+
+        SimulateMouse($btnClear.get(0), 'click', true);
+      });
     });
 
     $btnColorRandom = $wrapColor.find(">li:eq("+Math.floor(Math.random() * $wrapColor.find(">li").length)+") > a");
@@ -575,6 +607,7 @@ function main(window, $){
   function startMain(){
     clog("Inside startMain..");
 
+
     mocha.setup({
       ui: 'bdd', // [tdd,bdd]
       ignoreLeaks: true,
@@ -640,72 +673,126 @@ function main(window, $){
 
   // wait till KQR DOM done rendered
   function waitForQR(){
-    var fetchChaiJquery = function(){
-        var targetUrl = location.protocol+'//raw.githubusercontent.com/chaijs/chai-jquery/master/chai-jquery.js';
-        // var targetUrl = location.protocol+'//raw.githubusercontent.com/FormidableLabs/chai-jq/master/chai-jq.js';
-
-        clog('Fetching chai plugin:'+targetUrl);
-        gvar.cjReq = $.get(targetUrl, function(sourceCode){
-          sourceCode = sourceCode.trim();
-          if( sourceCode ){
-            var scr = document.createElement("script");
-            scr.textContent = sourceCode.toString();
-            document.body.appendChild(scr);
-            
-            clog('chai plugin injected..');
-
-            gvar.chaiPluginInjected = true;
+    var retry_ms = 250,
+        retryLater = function(){
+          if( gvar.is_timeout ){
+            clog('Test failed. Waiting QR-DOM to load is taking too long, '+gvar.timeout_wait+' secs');
+            return !1;
           }
-        });
-      },
-      retryLater = function(){
-        return setTimeout(function(){
-          waitForQR();
-        }, 123);
-      };
-
-    if( !gvar.chaiPluginInjected ){
-      if( !gvar.cjReq )
-        fetchChaiJquery();
+          return setTimeout(function(){
+            waitForQR();
+          }, retry_ms);
+        }
+    ;
+    if( !$(gvar.qrID).length ){
+      clog('QR Not loaded yet, retry in '+retry_ms+'ms..');
       return retryLater();
     }
     else{
-      if( !$(gvar.qrID).length ){
-        clog('QR Not loaded yet, retry in 123ms..');
-        return retryLater();
-      }
-      else{
-        clog("QR DOM Loaded");
-        clog("chai: "+typeof chai+'; $='+typeof $+'; mocha='+typeof mocha);
+      clog("QR DOM Loaded");
+      clog("chai: "+typeof chai+'; $='+typeof $+'; mocha='+typeof mocha);
 
-        startMain();
-      }
+      startMain();
     }
   }
-  waitForQR();
+  gvar.is_timeout = false;
+  
+
+  // these script smust be applied on document
+  var script_toload = [
+        "//bowercdn.net/c/chai-jquery-2.0.0/chai-jquery.js",
+        // "//cdnjs.cloudflare.com/ajax/libs/localforage/1.4.3/localforage.min.js"
+      ],
+      script_loaded = [],
+      script_index = 0,
+      script, css
+  ;
+  var cb_script_loaded = function(){
+    setTimeout(function(){
+      gvar.is_timeout = true;
+    }, gvar.timeout_wait * 1000);
+    return waitForQR();
+  };
+  var loadScript = function(url){
+    var _script = document.createElement("script");
+    _script.setAttribute("src", (/^https?\:\/\//.test(url) ? '' : location.protocol) + url);
+    document.body.appendChild(_script);
+
+    _script.addEventListener('load', function() {
+      console.info('<script:loaded>::'+url);
+      script_index++;
+      script_loaded.push( url );
+
+      if( script_loaded.length < script_toload.length )
+        loadScript( script_toload[script_index] );
+      else
+        cb_script_loaded();
+    });
+  };
+  loadScript( script_toload[script_index] );
 }
 // eof-script: `main`
 
 +function injectScript(callback) {
-  var script, css;
+  var script_toload = [
+        "//cdnjs.cloudflare.com/ajax/libs/mocha/2.5.3/mocha.min.js",
+        "//cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.min.js",
+        // "//bowercdn.net/c/chai-jquery-2.0.0/chai-jquery.js",
+        // "//cdnjs.cloudflare.com/ajax/libs/localforage/1.4.3/localforage.min.js"
+      ],
+      script_loaded = [],
+      script_index = 0,
+      script, css
+  ;
+  var cb_script_loaded = function(){
+    console.info('all script-dependency loaded..');
+
+    var main_script = document.createElement("script");
+    main_script.textContent = "(" + callback.toString() + ")(window, jQuery);";
+    document.body.appendChild( main_script );
+  };
+  var loadScript = function(url){
+    var _script = document.createElement("script");
+    _script.setAttribute("src", (/^https?\:\/\//.test(url) ? '' : location.protocol) + url);
+    document.body.appendChild(_script);
+
+    _script.addEventListener('load', function() {
+      console.info('<script:loaded>::'+url);
+      script_index++;
+      script_loaded.push( url );
+
+      if( script_loaded.length < script_toload.length )
+        loadScript( script_toload[script_index] );
+      else
+        cb_script_loaded();
+    });
+  };
+  loadScript( script_toload[script_index] );
+
 
   css = document.createElement("link");
   css.setAttribute('href', location.protocol+'\/\/cdnjs.cloudflare.com\/ajax\/libs\/mocha\/2.5.3\/mocha.css');
   css.setAttribute('rel', 'stylesheet');
   document.body.insertBefore(css, document.body.firstChild);
 
-  script = document.createElement("script");
-  script.setAttribute("src", location.protocol + "\/\/cdnjs.cloudflare.com\/ajax\/libs\/mocha\/2.5.3\/mocha.js");
-  document.body.appendChild(script);
+  // script = document.createElement("script");
+  // script.setAttribute("src", location.protocol + "\/\/cdnjs.cloudflare.com\/ajax\/libs\/mocha\/2.5.3\/mocha.js");
+  // document.body.appendChild(script);
 
-  script = document.createElement("script");
-  script.setAttribute("src", location.protocol + "\/\/cdnjs.cloudflare.com\/ajax\/libs\/chai\/3.5.0\/chai.js");
+  // script.addEventListener('load', function() {
+  //   var script_ = document.createElement("script");
+  //   script_.setAttribute("src", location.protocol + "\/\/cdnjs.cloudflare.com\/ajax\/libs\/chai\/3.5.0\/chai.js");
 
-  script.addEventListener('load', function() {
-    var scr = document.createElement("script");
-    scr.textContent = "(" + callback.toString() + ")(window, jQuery);";
-    document.body.appendChild(scr);
-  }, false);
-  document.body.appendChild(script);
+  //   script_.addEventListener('load', function() {
+  //     var scr = document.createElement("script");
+  //     scr.textContent = "(" + callback.toString() + ")(window, jQuery);";
+  //     document.body.appendChild(scr);
+  //   }, false);
+
+  //   setTimeout(function(){
+  //     document.body.appendChild(script_);
+  //   }, 1200)
+  // });
+
 }( main );
 })();
