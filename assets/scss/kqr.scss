@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1611265392
+ cssREV:1612015393
 */
 
 /**
@@ -37,6 +37,9 @@ $data_uri_down_right: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAqCAY
 $dialog_setting_paddingTop: 12px;
 
 
+$entry_headbar_bkgcolor: #0073b9;
+$entry_headbar_bkgcolor_fjb: #1da89f;
+
 /**
 * urls
 */
@@ -51,19 +54,19 @@ body{
   }
   &.fjb{
     .xkqr .entry-head {
-      background-color: #57cd81;
+      background-color: $entry_headbar_bkgcolor_fjb;
       box-shadow: 0 2px 0 #2f973f;
     }
     .kqr-dialog-base{
       .modal-dialog-title.swpcolor{
-        background-color: #57cd81;
+        background-color: $entry_headbar_bkgcolor_fjb;
       }
     }
   }
   &.forum{
     .kqr-dialog-base{
       .modal-dialog-title.swpcolor{
-        background-color: #0073b9;
+        background-color: $entry_headbar_bkgcolor;
       }
     }
   }
@@ -362,7 +365,7 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
   .entry-head {
     border-left: 0;
     padding: 0;
-    background-color: #0073b9;
+    background-color: $entry_headbar_bkgcolor;
     color: #fff;
     zoom: 1;
     filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0,startColorstr='#FF1484CE',endColorstr='#FF1274B5');
@@ -931,7 +934,7 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
   &.stage-help {
     color: #fff;
     font-weight: bold;
-    background: #0073b9;
+    background: $entry_headbar_bkgcolor;
     border-radius: 50%;
     padding: 0 4px;
     opacity: .25;
@@ -2502,7 +2505,7 @@ ul.settingmnu li.qrt .unitli {
   margin-bottom: 1px;
   line-height: 16px;
   border-radius: 2px;
-  color: #0073b9;
+  color: $entry_headbar_bkgcolor;
   text-shadow: 1px 1px #fff;
   padding: 5px 10px;
   &:hover {
