@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.9.2
+// @version        5.3.9.3
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1611305392
-// @timestamp      1480444439692
+// @dtversion      1612015393
+// @timestamp      1480538826851
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,12 +31,17 @@
 //
 // -!--latestupdate
 //
-// v5.3.9.2 - 2016-11-30 . 1480444439692
-//   [Hotfix] Patch failed attach QR-Dom on thread w/o replies. Thx:[zackad]
-//   Embed bbcode dropdown menu
+// v5.3.9.3 - 2016-12-01 . 1480538826851
+//   Patch failed append QR on fjb first post
+//   Patch failed QQ: [group, fjb]
+//   [minor] CSS fjb
 //
 // -/!latestupdate---
 // ==/UserScript==
+//
+// v5.3.9.2 - 2016-11-30 . 1480444439692
+//   [Hotfix] Patch failed attach QR-Dom on thread w/o replies. Thx:[zackad]
+//   Embed bbcode dropdown menu
 //
 // v5.3.9.1 - 2016-11-26 . 1480108151475
 //   [Hotfix] Patch Quick-quote in image-thread
@@ -79,16 +84,16 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.9.2';
+gvar.sversion = 'v' + '5.3.9.3';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1480444439692 // version.timestamp
-  ,dtversion: 1611305392 // version.date
+   timestamp: 1480538826851 // version.timestamp
+  ,dtversion: 1612015393 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1611265392 // css revision date; only change this when you change your external css
+  ,cssREV: 1612015393 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
@@ -5774,6 +5779,9 @@ var _QQparse = {
           entrycontent
       ;
       $entry = $row.find('[itemprop='+( $row.hasClass('first-post') ? 'articleBody':'text')+']');
+      if( !$entry.length )
+        $entry = $row.find('.entry-body>.entry');
+
       if( $entry.length ){
         if( $entry.hasClass("product-detail") ){
           $entry = $entry.find(".tab-pane.active").clone();
@@ -8695,8 +8703,18 @@ function start_Main(){
 
   var _url = location.href;
 
-  gvar.thread_type = (_url.match(/\.kaskus\.[^\/]+\/group\/discussion\//) ? 'group' : (_url.match(/\.kaskus\.[^\/]+\/show_post\//) ? 'singlepost' : 'forum') );
-  gvar.classbody = String($('body').attr('class')).trim(); // [fjb,forum,group]
+  // [fjb,forum,group]
+  gvar.classbody = String($('body').attr('class')).trim();
+
+   // [group,singlepost,fjb,forum]
+  if( _url.match(/\.kaskus\.[^\/]+\/group\/discussion\//) )
+    gvar.thread_type = 'group';
+  else if( _url.match(/\.kaskus\.[^\/]+\/show_post\//) )
+    gvar.thread_type = 'singlepost';
+  else if( /\sfjb\s/i.test(' '+gvar.classbody+' ') )
+    gvar.thread_type = 'fjb';
+  else
+    gvar.thread_type = 'forum';
 
   gvar.user = get_userdetail();
   gvar.fresh_st = $('*[id="securitytoken"]').val();
@@ -8755,6 +8773,7 @@ function start_Main(){
           // *.kaskus.*/show_post/{pID}/9121/-
           // *.kaskus.*/group/reply_discussion/{pID}
           // *.kaskus.*/post_reply/{pID}
+          // fjb.kaskus.*/post/{pID}
           var cck, href, $thread_list, lastpost_selector;
           if( gvar.thread_type == 'forum' ){
             $thread_list = $('#thread_post_list');
@@ -8775,6 +8794,13 @@ function start_Main(){
             cck = /\/post_reply\/([^\/]+)\b/.exec( href );
 
             $_1stlanded = $thread_list.find(lastpost_selector).last();
+          }
+          else if( gvar.thread_type == 'fjb' ){
+            $thread_list = $('#main .listing-wrapper [itemscope]');
+            $_1stlanded = $thread_list.find('>[id].row').last();
+
+            href = $('#qr_form').attr('action');
+            cck = /\/post_reply\/([^\/]+)\b/.exec( href );
           }
           else if( gvar.thread_type == 'singlepost' ){
             
