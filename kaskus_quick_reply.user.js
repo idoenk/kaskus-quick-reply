@@ -11,7 +11,7 @@
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
 // @dtversion      1612015393
-// @timestamp      1480538826851
+// @timestamp      1482344891179
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,7 +31,8 @@
 //
 // -!--latestupdate
 //
-// v5.3.9.3 - 2016-12-01 . 1480538826851
+// v5.3.9.3 - 2016-12-01 . 1482344891179
+//   Patch action form fjb
 //   Patch failed append QR on fjb first post
 //   Patch failed QQ: [group, fjb]
 //   [minor] CSS fjb
@@ -87,13 +88,13 @@ var gvar = function(){};
 gvar.sversion = 'v' + '5.3.9.3';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
-   timestamp: 1480538826851 // version.timestamp
+   timestamp: 1482344891179 // version.timestamp
   ,dtversion: 1612015393 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
   ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1612015393 // css revision date; only change this when you change your external css
+  ,cssREV: 1612225393 // css revision date; only change this when you change your external css
 }; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
@@ -1089,7 +1090,7 @@ var rSRC = {
     +'<div class="form-group fg-tabify fg-kbd">'
     +'<div class="goog-tab-bar goog-tab-white">'
      +'<div id="tkbd-qr" data-target="tabs-itemkbd-qr" class="goog-tab goog-tab-selected">KQR Hotkeys</div>'
-     +'<div id="tkbd-kaskus" data-target="tabs-itemkbd-kaskus" class="goog-tab">Kaskus Hotkeys <a target="_blank" href="https://help.kaskus.co.id/kaskus_hotkeys.php" style="float:right; margin:0 4px; line-height: 13px;" title="Help Center: Goto Kaskus Hotkeys.."><i class="fa fa-question-circle"></i></a></div>'
+     +'<div id="tkbd-kaskus" data-target="tabs-itemkbd-kaskus" class="goog-tab with-help">Kaskus Hotkeys <a target="_blank" href="https://help.kaskus.co.id/kaskus_hotkeys.php" style="float:right; margin:0 4px; line-height: 13px;" title="Help Center: Goto Kaskus Hotkeys.."><i class="fa fa-question-circle"></i></a></div>'
      +'<div class="clearfix"></div>'
     +'</div>'
     +'<div class="goog-tab-bar-clear"></div>'
@@ -8576,7 +8577,14 @@ function finalizeTPL(){
   }
   
   gvar._securitytoken = String( sec );
-  $('#formform').attr('action', gvar.domain + (tt=='forum' ? 'post_reply' : 'group/reply_discussion' ) + '/' + gvar.pID + (tt=='forum' ? '/?post=' : '') );
+  $('#formform').attr('action', (function(thread_type){
+    var is_thread = (['forum','fjb'].indexOf(tt) !== -1);
+    return ''
+      +gvar.domain
+      +(is_thread ? 'post_reply' : 'group/reply_discussion' )
+      +'/'+gvar.pID
+      +(is_thread ? '/?post=' : '') 
+  })(tt));
 
   $('#qr-'+st).val(gvar._securitytoken);
   $('#'+gvar.qID+' .message').css('overflow', 'visible');
@@ -8722,7 +8730,7 @@ function start_Main(){
     // groupee has different selector
     gvar.fresh_st = $('*[name="securitytoken"]').val();
   }
-  clog('type:'+gvar.thread_type+'; classbody:'+gvar.classbody+'; fresh_st:'+gvar.fresh_st);
+  clog('thread_type:'+gvar.thread_type+'; classbody:'+gvar.classbody+'; fresh_st:'+gvar.fresh_st);
 
   // do readonly if [not login, locked thread]
   if( !gvar.user.id || $('.fa.fa-lock').length || !gvar.fresh_st || $("#preview-post").length ){
