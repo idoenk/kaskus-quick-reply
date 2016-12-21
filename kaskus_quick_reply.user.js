@@ -10,7 +10,7 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1612015393
+// @dtversion      1612225393
 // @timestamp      1482344891179
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
@@ -31,7 +31,8 @@
 //
 // -!--latestupdate
 //
-// v5.3.9.3 - 2016-12-01 . 1482344891179
+// v5.3.9.3 - 2016-12-22 . 1482344891179
+//   Hide user-control-stick on focus in editor (fjb)
 //   Patch action form fjb
 //   Patch failed append QR on fjb first post
 //   Patch failed QQ: [group, fjb]
@@ -89,7 +90,7 @@ gvar.sversion = 'v' + '5.3.9.3';
 gvar.scriptMeta = {
    // timestamp: 999 // version.timestamp for test update
    timestamp: 1482344891179 // version.timestamp
-  ,dtversion: 1612015393 // version.date
+  ,dtversion: 1612225393 // version.date
 
   ,titlename: 'Quick Reply'
   ,scriptID: 80409 // script-Id
@@ -8135,7 +8136,9 @@ function eventsTPL(){
         }
       }
 
-      $('body').removeClass('kqr-editorfocus');
+      return setTimeout(function(){
+        $('body').removeClass('kqr-editorfocus');
+      }, 567);
     })
     .on('keydown', function(ev){
       var B, pCSA_Code,
