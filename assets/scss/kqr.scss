@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1612015393
+ cssREV:1612225393
 */
 
 /**
@@ -1042,7 +1042,7 @@ body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
 
 .goog-btn-xs {
   height: 19px;
-  line-height: 16px;
+  line-height: 18px;
 }
 
 .goog-btn-primary {
@@ -1535,6 +1535,14 @@ ul {
   &.green-tab {
     background-color: #109618;
     color: #fff;
+  }
+  &.with-help{
+    padding-right: 32px;
+    a {
+      position: absolute;
+      top: 4px;
+      right: 5px;
+    }
   }
 }
 
@@ -2113,13 +2121,13 @@ ul.qrset_mnu li {
     left: 0;
     width: 25px;
     height: 26px;
-    line-height: 22px;
+    line-height: 26px;
     color: rgba(38, 38, 38, 0.6);
     border-left: 0!important;
   }
   .btn-addservice{
     top: 6px;
-    right: 10px;
+    right: 4px;
     height: 26px;
     line-height: 2.2em;
   }
