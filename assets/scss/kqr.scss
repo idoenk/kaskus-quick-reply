@@ -70,6 +70,16 @@ body{
       }
     }
   }
+  &.kqr-editorfocus{
+    .user-control-stick{
+      display: none;
+    }
+  }
+}
+
+body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"],
+.hide {
+  display: none;
 }
 
 /* layer order confirmation dialog vs modal-qr-layer  */
@@ -282,11 +292,6 @@ ul.qrset_mnu li.qrt.curent {
   width: 32px;
   height: 32px;
   background-image: url($data_uri_kaskus_throbber);
-}
-
-.hide,
-body.kqr-nogreylink span[style*="font-size:10px"][style*="#888"] {
-  display: none;
 }
 
 .relative {

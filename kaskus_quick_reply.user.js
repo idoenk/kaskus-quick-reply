@@ -8097,130 +8097,141 @@ function eventsTPL(){
 
   // editor events: [focus,blur,keydown,keyup]
   // assigning several action, eg. watch draft, fixed toolbar martItUp,
-  $XK.find('#'+gvar.tID).on('focus', function(e){
-    if( gvar.settings.txtcount ){
-      $XK.find('.counter').first().addClass('kereng');
-      _TEXTCOUNT.init('#'+gvar.qID+' .counter')
-    }
-
-    // fixed_markItUp
-    if( gvar.settings.fixed_toolbar ){
-      clog("activating onfocus event");
-      gvar.sTryWatchWinScroll &&
-        clearInterval(gvar.sTryWatchWinScroll);
-      gvar.sTryWatchWinScroll = setInterval(function(){
-        fixed_markItUp()
-      }, 50);
-    }
-  }).on('blur', function(){
-    if( gvar.settings.txtcount ){
-      $XK.find('.counter').first().removeClass('kereng');
-      _TEXTCOUNT.dismiss();
-    }
-
-    if( gvar.settings.fixed_toolbar ){
-      if( gvar.sTryWatchWinScroll ){
-        clog("deactivate onfocus event");
-        clearInterval(gvar.sTryWatchWinScroll);
-
-        gvar.sTryPreUnFixed_markItUp = setTimeout(function(){
-
-          $XK.removeClass("fixed_markItUp");
-        }, 789);
+  $XK.find('#'+gvar.tID)
+    .on('focus', function(e){
+      if( gvar.settings.txtcount ){
+        $XK.find('.counter').first().addClass('kereng');
+        _TEXTCOUNT.init('#'+gvar.qID+' .counter')
       }
-    }
-  }).on('keydown', function(ev){
-    var B, pCSA_Code,
-        A = ev.keyCode || ev.keyChar,
-        pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0');
 
-    if(A === 9){
-      do_an_e(ev);
-      gvar.$w.setTimeout(function(){
-        if( $XK.find('.edit-reason').is(':visible') )
-          $XK.find('.edit-reason input[type="text"]:first').focus()
-        else
-          $XK.find('#sbutton').focus()
-      }, 50);
-    }
-    
-    // area kudu dg CSA
-    if( (pCSA=='0,0,0' || pCSA=='0,1,0') || (A < 65 && (A!=13 && A!=9)) || A > 90 )
-      return;
-
-    pCSA_Code = pCSA+'_'+A;
-
-    if( "undefined" != typeof CSA_index_reserved[pCSA_Code] ){
-      clog("intercept global shortcut.");
-      CSA_index_reserved[pCSA_Code]();
-      return;
-    }
-    
-    var asocKey = {
-          '001,83':'sbutton',   // [Alt+S] Submit post
-          '001,80':'spreview',  // [Alt+P] Preview
-          '001,88':'sadvanced' // [Alt+X] Advanced
-        },
-        dsL = DScuts.length,
-        ds
-    ;
-    if( dsL ){
-      for(var j=0; j<dsL; j++){
-        for(var kn in DScuts[j])
-          asocKey[String(kn)] = {
-            bb  : DScuts[j][kn]["bb"],
-            el  : DScuts[j][kn]["el"],
-            csa : DScuts[j][kn]["csa"],
-            fn  : DScuts[j][kn]["fn"]
-          };
+      // fixed_markItUp
+      if( gvar.settings.fixed_toolbar ){
+        clog("activating onfocus event");
+        gvar.sTryWatchWinScroll &&
+          clearInterval(gvar.sTryWatchWinScroll);
+        gvar.sTryWatchWinScroll = setInterval(function(){
+          fixed_markItUp()
+        }, 50);
       }
-    }
+
+      // to hide sticky-bar
+      $('body').addClass('kqr-editorfocus');
+    })
+    .on('blur', function(){
+      if( gvar.settings.txtcount ){
+        $XK.find('.counter').first().removeClass('kereng');
+        _TEXTCOUNT.dismiss();
+      }
+
+      if( gvar.settings.fixed_toolbar ){
+        if( gvar.sTryWatchWinScroll ){
+          clog("deactivate onfocus event");
+          clearInterval(gvar.sTryWatchWinScroll);
+
+          gvar.sTryPreUnFixed_markItUp = setTimeout(function(){
+
+            $XK.removeClass("fixed_markItUp");
+          }, 789);
+        }
+      }
+
+      $('body').removeClass('kqr-editorfocus');
+    })
+    .on('keydown', function(ev){
+      var B, pCSA_Code,
+          A = ev.keyCode || ev.keyChar,
+          pCSA = (ev.ctrlKey ? '1':'0')+','+(ev.shiftKey ? '1':'0')+','+(ev.altKey ? '1':'0');
+
+      if(A === 9){
+        do_an_e(ev);
+        gvar.$w.setTimeout(function(){
+          if( $XK.find('.edit-reason').is(':visible') )
+            $XK.find('.edit-reason input[type="text"]:first').focus()
+          else
+            $XK.find('#sbutton').focus()
+        }, 50);
+      }
+      
+      // area kudu dg CSA
+      if( (pCSA=='0,0,0' || pCSA=='0,1,0') || (A < 65 && (A!=13 && A!=9)) || A > 90 )
+        return;
+
+      pCSA_Code = pCSA+'_'+A;
+
+      if( "undefined" != typeof CSA_index_reserved[pCSA_Code] ){
+        clog("intercept global shortcut.");
+        CSA_index_reserved[pCSA_Code]();
+        return;
+      }
+      
+      var asocKey = {
+            '001,83':'sbutton',   // [Alt+S] Submit post
+            '001,80':'spreview',  // [Alt+P] Preview
+            '001,88':'sadvanced' // [Alt+X] Advanced
+          },
+          dsL = DScuts.length,
+          ds
+      ;
+      if( dsL ){
+        for(var j=0; j<dsL; j++){
+          for(var kn in DScuts[j])
+            asocKey[String(kn)] = {
+              bb  : DScuts[j][kn]["bb"],
+              el  : DScuts[j][kn]["el"],
+              csa : DScuts[j][kn]["csa"],
+              fn  : DScuts[j][kn]["fn"]
+            };
+        }
+      }
 
 
-    // indexing keys
-    var indexedKeyNum = [13],
-        Acsa, fn, parts;
-    for(var strKeyNum in asocKey){
-      parts = strKeyNum.split(",");
-      if( parts && parts[1] )
-        indexedKeyNum.push(parseInt(parts[1]));
-    }
+      // indexing keys
+      var indexedKeyNum = [13],
+          Acsa, fn, parts;
+      for(var strKeyNum in asocKey){
+        parts = strKeyNum.split(",");
+        if( parts && parts[1] )
+          indexedKeyNum.push(parseInt(parts[1]));
+      }
 
-    if(ev.ctrlKey){
-      if( $.inArray( A, indexedKeyNum ) != -1 ){
-        Acsa = '100,'+A;
+      if(ev.ctrlKey){
+        if( $.inArray( A, indexedKeyNum ) != -1 ){
+          Acsa = '100,'+A;
 
-        if(A===13){
-          if( gvar.readonly )
-            return;
-          _BOX.init(ev);
-          _BOX.presubmit();
-        }else{
+          if(A===13){
+            if( gvar.readonly )
+              return;
+            _BOX.init(ev);
+            _BOX.presubmit();
+          }else{
 
-          if( asocKey[Acsa] && asocKey[Acsa]["csa"] == '100') {
-            try{
-              fn = regs_fn[ asocKey[Acsa]["fn"] ];
-            }catch(e){ clog("ERR:"+e.message) }
+            if( asocKey[Acsa] && asocKey[Acsa]["csa"] == '100') {
+              try{
+                fn = regs_fn[ asocKey[Acsa]["fn"] ];
+              }catch(e){ clog("ERR:"+e.message) }
 
-            if( "function" === typeof fn ){
-              fn( asocKey[Acsa]["el"] );
-              do_an_e(ev);
+              if( "function" === typeof fn ){
+                fn( asocKey[Acsa]["el"] );
+                do_an_e(ev);
+              }
             }
           }
         }
+      }else if(ev.altKey){
+        if( gvar.readonly )
+          return;
+
+        Acsa = '001,'+A;
+        do_an_e(ev);
+        do_click( $XK.find('#' + asocKey[Acsa]).get(0));
       }
-    }else if(ev.altKey){
-      if( gvar.readonly )
-        return;
+    })
+    .on('keyup', function(ev){
 
-      Acsa = '001,'+A;
-      do_an_e(ev);
-      do_click( $XK.find('#' + asocKey[Acsa]).get(0));
-    }
-  }).on('keyup', function(ev){
-
-    $XK.find('#clear_text').toggle( $(this).val()!=="" );
-  }).blur();
+      $XK.find('#clear_text').toggle( $(this).val()!=="" );
+    })
+    .blur()
+  ;
     
 
 
