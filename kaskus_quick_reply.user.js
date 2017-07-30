@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.3.9.3
+// @version        5.4
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1612225393
-// @timestamp      1482344891179
+// @dtversion      1707315400
+// @timestamp      1501430660442
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,15 +31,19 @@
 //
 // -!--latestupdate
 //
+// v5.4 - 2017-07-31 . 1501430660442
+//   Patch parse new segment kaskus-smilies
+//   +Kaskus Video Card Embed
+//
+// -/!latestupdate---
+// ==/UserScript==
+//
 // v5.3.9.3 - 2016-12-22 . 1482344891179
 //   Hide user-control-stick on focus in editor (fjb)
 //   Patch action form fjb
 //   Patch failed append QR on fjb first post
 //   Patch failed QQ: [group, fjb]
 //   [minor] CSS fjb
-//
-// -/!latestupdate---
-// ==/UserScript==
 //
 // v5.3.9.2 - 2016-11-30 . 1480444439692
 //   [Hotfix] Patch failed attach QR-Dom on thread w/o replies. Thx:[zackad]
@@ -58,20 +62,6 @@
 //   [Hotfix] Patch quick-quote parsing lazy-image
 //   [Hotfix] Patch fixed toolbar top position
 //
-// v5.3.8.4 - 2016-07-27 . 1469362477704
-//   [Hotfix] stringify autocomplete smilies, escape the apostrophe
-//
-// v5.3.8.3 - 2016-06-07 . 1465242759758
-//   [Hotfix] indefinite slideAttach to QR
-//
-// v5.3.8.2 - 2016-06-05 . 1465132263631
-//   Sync css, update cssREV
-//   Open collapsed Editor on click button Fetch/QQ in baloon-notify
-//   Rename social class .fa for [youtube,soundcloud,vimeo]. Thx:[coolkips]
-//   Patch shortcut BIU;
-//   Patch glitch window keydown;
-//   Patch shortcut [Ctrl+Q] on first time use unreached position (offset top);
-//
 //
 // v0.1 - 2010-06-29
 //   Init
@@ -86,24 +76,24 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.3.9.3';
+gvar.sversion = 'v' + '5.4';
 gvar.scriptMeta = {
-   // timestamp: 999 // version.timestamp for test update
-   timestamp: 1482344891179 // version.timestamp
-  ,dtversion: 1612225393 // version.date
+  // timestamp: 999 // version.timestamp for test update
+  timestamp: 1501430660442, // version.timestamp
+  dtversion: 1707315400, // version.date
 
-  ,titlename: 'Quick Reply'
-  ,scriptID: 80409 // script-Id
-  ,scriptID_GF: 96 // script-Id @Greasyfork
-  ,cssREV: 1612225393 // css revision date; only change this when you change your external css
-}; gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
+  titlename: 'Quick Reply',
+  scriptID: 80409, // script-Id
+  scriptID_GF: 96, // script-Id @Greasyfork
+  cssREV: 1707315400 // css revision date; only change this when you change your external css
+};
+
+gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
 
 // Define uploader services simply by its url
 // Might saved this in localstorage for user to manage
 gvar.service_uploader_default = [
-  'http://cubeupload.com/',
-  'http://imagevenue.com/host.php',
-  'http://www.imagebam.com/',
+  'https://www.imageupload.co.uk',
 ];
 
 /*
@@ -303,6 +293,7 @@ var rSRC = {
           {'class': 'mnu-fa-kqr-scloud', bb:'SOUNDCLOUD', title:'Embedding video from Soundcloud'},
           {'class': 'mnu-kqr-dailymotion', bb:'DAILYMOTION', title:'Embedding video from Dailymotion'},
           {'class': 'mnu-kqr-smule', bb:'SMULE', title:'Embedding video from Smule'},
+          {'class': 'mnu-ksk-videoembed', bb:'VIDEOCARD', title:'Embedding video from KASKUS Video Card'},
         ],
         buff = ''
           +'<li class="'+li_cls[0] + ' ' + li_cls[0] + id + ' ' + li_cls[1]+'"><a title="Embed" href="" data-noevent="1">Embed</a>'
@@ -359,7 +350,11 @@ var rSRC = {
     return buff;
   },
   menuIcon: function(){
-    var c = rSRC.mCls, d = "", e = 0, f = "img/icons/new/", g = rSRC.getSetOf('posticon');
+    var c = rSRC.mCls, d = "",
+        e = 1,
+        f = "themes_3.0/img/icon/new/",
+        g = rSRC.getSetOf('posticon')
+    ;
     d = '<ul id="menu_posticon" class="mnu-icons relative mtarrow" style="display:none;">';
     for (icon in g) {
       d += '<li><a title="'+icon+'" href="javascript:;" data-id="' + e + '">' 
@@ -1528,20 +1523,33 @@ var rSRC = {
       case "posticon" :
       return {
         None: null,
-        Post: "posting.gif",
-        Video: "video.png",
-        Lightbulb: "lightbulb.png",
-        Exclamation: "exclamation.png",
-        Star: "star.png",
-        Cool: "smile3.png",
-        Smile: "smile5.png",
-        Angry: "repost.png",
-        Unhappy: "smile4.png",
-        Talking: "smile2.png",
-        Heart: "heart.png",
-        Wink: "smile.png",
-        "Thumbs down": "thumbsdown.png",
-        "thumbs up": "thumbsup.png"
+        // Post: "posting.gif",
+        // Video: "video.png",
+        // Lightbulb: "lightbulb.png",
+        // Exclamation: "exclamation.png",
+        // Star: "star.png",
+        // Cool: "smile3.png",
+        // Smile: "smile5.png",
+        // Angry: "repost.png",
+        // Unhappy: "smile4.png",
+        // Talking: "smile2.png",
+        // Heart: "heart.png",
+        // Wink: "smile.png",
+        // "Thumbs down": "thumbsdown.png",
+        // "thumbs up": "thumbsup.png"
+        "Breaking News!" : "icon-hot-news.png",
+        "Video & Image" : "movie.png",
+        "Inspiratif" : "light-bulb.png",
+        "Peringatan!" : "warning.png",
+        "Cool" : "cool.png",
+        "Smile" : "smile.png",
+        "Sedih" : "icon-sedih.png",
+        "Kesel" : "angry.png",
+        "Ngakak" : "laugh.png",
+        "Love" : "heart.png",
+        "Hepi" : "grin.png",
+        "Thumbs down" : "thumb-down.png",
+        "Thumbs up" : "thumb-up.png"
       };
       break;
 
@@ -4476,8 +4484,14 @@ var _SML_ = {
             itemLabel = {
               label: smlset.labels[j].label
             };
-            if( smlset.labels[j].offset ){
+            if( smlset.labels[j].start ){
+              itemLabel.index = smlset.labels[j].start;
+            }
+            else{
               itemLabel.index = 0;
+            }
+
+            if( smlset.labels[j].offset ){
               itemLabel.n = smlset.labels[j].offset;
               lastIndex = itemLabel.n;
             }
@@ -5290,6 +5304,10 @@ var _UPD_SMILIES = {
             match: 'Only in',
             unmatch: 'small',
             name: 'besar',
+          },
+          {
+            match: '*',
+            name: '__auto__',
           }
         ]
     ;
@@ -5315,32 +5333,60 @@ var _UPD_SMILIES = {
 
           $page.find("tr").each(function(){
             var $tr = $(this), $isTH, $imgs, $th, lastText;
-            $isTH = $tr.find(">th");
+            $isTH = $tr.find(">th:first-child");
             if( $isTH.length > 0 ){
               $th = $isTH.first();
-              lastText = $th.text();
+              lastText = trimStr( $th.text() );
+              if( !lastText ){
+                // iTr++;
+                return true;
+              }
               clog("collecting head of: "+lastText);
               // find-match bucket
               for(var b=0, bL=match_map.length; b<bL; b++){
-                var regx = new RegExp(match_map[b]['match']),
-                    regx_unmatch = (match_map[b]['unmatch'] ? new RegExp(match_map[b]['unmatch']) : null)
-                ;
-                if( regx_unmatch !== null )
-                  regx_unmatch = !regx_unmatch.test(lastText)
-                else
-                  regx_unmatch = true;
+                var regx,
+                    assigned_name = '',
+                    regx_unmatch = null,
+                    is_unmatch   = !1;
 
-                if( regx.test(lastText) && regx_unmatch && 'undefined' != typeof Buckets[match_map[b]['name']] ){
-                  last_bucket_name = match_map[b]['name'];
+                if( match_map[b]['match'] == '*' ){
+                  regx = new RegExp("[\\w+\\d\\.\\-]+");
+                }
+                else{
+                  regx = new RegExp(match_map[b]['match']);
+                  regx_unmatch = (match_map[b]['unmatch'] ? new RegExp(match_map[b]['unmatch']) : null);
+                }
+
+                if( regx_unmatch && 'object' == typeof regx_unmatch )
+                  is_unmatch = !regx_unmatch.test(lastText)
+                else
+                  is_unmatch = true;
+
+                if( '__auto__' == match_map[b]['name'] ){
+                  if( 'kplus' == last_bucket_name )
+                    assigned_name = 'besar';
+                  else
+                    assigned_name = last_bucket_name;
+                }
+                else{
+
+                  assigned_name = match_map[b]['name'];
+                }
+
+                if( regx.test(lastText) && is_unmatch && 'undefined' != typeof Buckets[assigned_name] ){
+                  last_bucket_name = assigned_name;
 
                   if( 'undefined' != typeof Buckets[last_bucket_name]['labels'] ){
-                    Buckets[match_map[b]['name']]['labels'].push({
-                      label: lastText,
-                      offset: iTr
+                    var prevLabels = Buckets[last_bucket_name]['labels'];
+
+                    prevLabels[prevLabels.length-1]['offset'] = iTr;
+                    prevLabels.push({
+                      label: lastText
                     });
+                    Buckets[last_bucket_name]['labels'] = prevLabels;
                   }
                   else if( 'undefined' == typeof Buckets[last_bucket_name]['label'] ){
-                    Buckets[last_bucket_name]['name'] = last_bucket_name;
+                    Buckets[last_bucket_name]['name']  = last_bucket_name;
                     Buckets[last_bucket_name]['label'] = lastText;
                   }
                   else{
@@ -5353,21 +5399,27 @@ var _UPD_SMILIES = {
                       offset: iTr
                     });
                     Buckets[last_bucket_name]['labels'].push({
-                      label: lastText
+                      label: lastText,
+                      start: (iTr+1)
                     });
 
                     delete Buckets[last_bucket_name]['label'];
                   }
 
-                  // reset offset
-                  iTr = 0;
+
+                  if( !Buckets[last_bucket_name]['smilies'].length ){
+                    // reset offset
+                    iTr = 0;
+                  }
 
                   // continue
                   return true;
                 }
               }
+              // end: for
             }
             else{
+              clog('collecting image of: '+last_bucket_name);
               // collecting image
               $tr.find("img").each(function(){
                 var $img = $(this);
@@ -5421,7 +5473,6 @@ var _UPD_SMILIES = {
       clog('dismissing dialog smiley...');
       _UPD_SMILIES.dialog_dismiss();
     });
-
   },
   run: function(cb_run){
     var ME = this;
@@ -7496,7 +7547,7 @@ function eventsController(){
 
   $XK.find("#pick_icon").click(function () {
     gvar.$w.clearTimeout(gvar.sTryEvent);
-    $("#menu_posticon").slideToggle(81, function () {
+    $("#menu_posticon").slideToggle(0, function () {
       var editmode = $('.edit-options').is(':visible');
       if ($("#menu_posticon").is(":visible")){
         editmode && $('.edit-options .add-on').css('visibility', 'hidden');
