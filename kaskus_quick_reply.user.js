@@ -5296,6 +5296,10 @@ var _UPD_SMILIES = {
             match: 'Only in',
             unmatch: 'small',
             name: 'besar',
+          },
+          {
+            match: '*',
+            name: '__auto__',
           }
         ]
     ;
@@ -5321,26 +5325,55 @@ var _UPD_SMILIES = {
 
           $page.find("tr").each(function(){
             var $tr = $(this), $isTH, $imgs, $th, lastText;
-            $isTH = $tr.find(">th");
+            $isTH = $tr.find(">th:first-child");
             if( $isTH.length > 0 ){
               $th = $isTH.first();
-              lastText = $th.text();
+              lastText = trimStr( $th.text() );
+              if( !lastText ){
+                // iTr++;
+                return true;
+              }
               clog("collecting head of: "+lastText);
               // find-match bucket
               for(var b=0, bL=match_map.length; b<bL; b++){
-                var regx = new RegExp(match_map[b]['match']),
-                    regx_unmatch = (match_map[b]['unmatch'] ? new RegExp(match_map[b]['unmatch']) : null)
-                ;
-                if( regx_unmatch !== null )
-                  regx_unmatch = !regx_unmatch.test(lastText)
-                else
-                  regx_unmatch = true;
+                var regx,
+                    assigned_name = '',
+                    regx_unmatch = null,
+                    is_unmatch   = !1;
+                clog(match_map[b]);
 
-                if( regx.test(lastText) && regx_unmatch && 'undefined' != typeof Buckets[match_map[b]['name']] ){
-                  last_bucket_name = match_map[b]['name'];
+                if( match_map[b]['match'] == '*' ){
+                  regx = new RegExp("[\\w+\\d\\.\\-]+");
+                }
+                else{
+                  regx = new RegExp(match_map[b]['match']);
+                  regx_unmatch = (match_map[b]['unmatch'] ? new RegExp(match_map[b]['unmatch']) : null);
+                }
+                clog('regx='+regx+'; regx_unmatch='+regx_unmatch);
+
+                if( regx_unmatch && 'object' == typeof regx_unmatch )
+                  is_unmatch = !regx_unmatch.test(lastText)
+                else
+                  is_unmatch = true;
+                clog('regx='+regx+'; is_unmatch='+is_unmatch);
+
+                if( '__auto__' == match_map[b]['name'] ){
+                  if( 'kplus' == last_bucket_name )
+                    assigned_name = 'besar';
+                  else
+                    assigned_name = last_bucket_name;
+                }
+                else{
+
+                  assigned_name = match_map[b]['name'];
+                }
+
+                if( regx.test(lastText) && is_unmatch && 'undefined' != typeof Buckets[assigned_name] ){
+                  last_bucket_name = assigned_name;
+                  clog('head: `'+lastText+'`; match on bucket: '+last_bucket_name);
 
                   if( 'undefined' != typeof Buckets[last_bucket_name]['labels'] ){
-                    Buckets[match_map[b]['name']]['labels'].push({
+                    Buckets[last_bucket_name]['labels'].push({
                       label: lastText,
                       offset: iTr
                     });
@@ -5365,15 +5398,21 @@ var _UPD_SMILIES = {
                     delete Buckets[last_bucket_name]['label'];
                   }
 
-                  // reset offset
-                  iTr = 0;
+
+                  if( !Buckets[last_bucket_name]['smilies'].length ){
+                    // reset offset
+                    iTr = 0;
+                    clog('iTr is reseted.');
+                  }
 
                   // continue
                   return true;
                 }
               }
+              // end: for
             }
             else{
+              clog('collecting image of: '+last_bucket_name);
               // collecting image
               $tr.find("img").each(function(){
                 var $img = $(this);
@@ -5427,7 +5466,6 @@ var _UPD_SMILIES = {
       clog('dismissing dialog smiley...');
       _UPD_SMILIES.dialog_dismiss();
     });
-
   },
   run: function(cb_run){
     var ME = this;
