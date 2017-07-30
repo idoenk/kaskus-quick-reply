@@ -32,7 +32,7 @@
 // -!--latestupdate
 //
 // v5.4 - 2017-07-30 . 1501430660442
-//   
+//   Patch parse new segment kaskus-smilies
 //
 // -/!latestupdate---
 // ==/UserScript==
@@ -4482,8 +4482,14 @@ var _SML_ = {
             itemLabel = {
               label: smlset.labels[j].label
             };
-            if( smlset.labels[j].offset ){
+            if( smlset.labels[j].start ){
+              itemLabel.index = smlset.labels[j].start;
+            }
+            else{
               itemLabel.index = 0;
+            }
+
+            if( smlset.labels[j].offset ){
               itemLabel.n = smlset.labels[j].offset;
               lastIndex = itemLabel.n;
             }
@@ -5340,7 +5346,6 @@ var _UPD_SMILIES = {
                     assigned_name = '',
                     regx_unmatch = null,
                     is_unmatch   = !1;
-                clog(match_map[b]);
 
                 if( match_map[b]['match'] == '*' ){
                   regx = new RegExp("[\\w+\\d\\.\\-]+");
@@ -5349,13 +5354,11 @@ var _UPD_SMILIES = {
                   regx = new RegExp(match_map[b]['match']);
                   regx_unmatch = (match_map[b]['unmatch'] ? new RegExp(match_map[b]['unmatch']) : null);
                 }
-                clog('regx='+regx+'; regx_unmatch='+regx_unmatch);
 
                 if( regx_unmatch && 'object' == typeof regx_unmatch )
                   is_unmatch = !regx_unmatch.test(lastText)
                 else
                   is_unmatch = true;
-                clog('regx='+regx+'; is_unmatch='+is_unmatch);
 
                 if( '__auto__' == match_map[b]['name'] ){
                   if( 'kplus' == last_bucket_name )
@@ -5370,16 +5373,18 @@ var _UPD_SMILIES = {
 
                 if( regx.test(lastText) && is_unmatch && 'undefined' != typeof Buckets[assigned_name] ){
                   last_bucket_name = assigned_name;
-                  clog('head: `'+lastText+'`; match on bucket: '+last_bucket_name);
 
                   if( 'undefined' != typeof Buckets[last_bucket_name]['labels'] ){
-                    Buckets[last_bucket_name]['labels'].push({
-                      label: lastText,
-                      offset: iTr
+                    var prevLabels = Buckets[last_bucket_name]['labels'];
+
+                    prevLabels[prevLabels.length-1]['offset'] = iTr;
+                    prevLabels.push({
+                      label: lastText
                     });
+                    Buckets[last_bucket_name]['labels'] = prevLabels;
                   }
                   else if( 'undefined' == typeof Buckets[last_bucket_name]['label'] ){
-                    Buckets[last_bucket_name]['name'] = last_bucket_name;
+                    Buckets[last_bucket_name]['name']  = last_bucket_name;
                     Buckets[last_bucket_name]['label'] = lastText;
                   }
                   else{
@@ -5392,7 +5397,8 @@ var _UPD_SMILIES = {
                       offset: iTr
                     });
                     Buckets[last_bucket_name]['labels'].push({
-                      label: lastText
+                      label: lastText,
+                      start: (iTr+1)
                     });
 
                     delete Buckets[last_bucket_name]['label'];
@@ -5402,7 +5408,6 @@ var _UPD_SMILIES = {
                   if( !Buckets[last_bucket_name]['smilies'].length ){
                     // reset offset
                     iTr = 0;
-                    clog('iTr is reseted.');
                   }
 
                   // continue
