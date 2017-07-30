@@ -10,7 +10,7 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1707305400
+// @dtversion      1707315400
 // @timestamp      1501430660442
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
@@ -31,8 +31,9 @@
 //
 // -!--latestupdate
 //
-// v5.4 - 2017-07-30 . 1501430660442
+// v5.4 - 2017-07-31 . 1501430660442
 //   Patch parse new segment kaskus-smilies
+//   +Kaskus Video Card Embed
 //
 // -/!latestupdate---
 // ==/UserScript==
@@ -79,12 +80,12 @@ gvar.sversion = 'v' + '5.4';
 gvar.scriptMeta = {
   // timestamp: 999 // version.timestamp for test update
   timestamp: 1501430660442, // version.timestamp
-  dtversion: 1707305400, // version.date
+  dtversion: 1707315400, // version.date
 
   titlename: 'Quick Reply',
   scriptID: 80409, // script-Id
   scriptID_GF: 96, // script-Id @Greasyfork
-  cssREV: 1612225393 // css revision date; only change this when you change your external css
+  cssREV: 1707315400 // css revision date; only change this when you change your external css
 };
 
 gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
@@ -100,7 +101,7 @@ window.alert(new Date().getTime());
 */
 //=-=-=-=--=
 //========-=-=-=-=--=========
-gvar.__DEBUG__ = 1; // development debug, author purpose
+gvar.__DEBUG__ = !1; // development debug, author purpose
 gvar.__CLIENTDEBUG__ = !1; // client debug, w/o using local assets
 gvar.$w = window;
 
@@ -292,6 +293,7 @@ var rSRC = {
           {'class': 'mnu-fa-kqr-scloud', bb:'SOUNDCLOUD', title:'Embedding video from Soundcloud'},
           {'class': 'mnu-kqr-dailymotion', bb:'DAILYMOTION', title:'Embedding video from Dailymotion'},
           {'class': 'mnu-kqr-smule', bb:'SMULE', title:'Embedding video from Smule'},
+          {'class': 'mnu-ksk-videoembed', bb:'VIDEOCARD', title:'Embedding video from KASKUS Video Card'},
         ],
         buff = ''
           +'<li class="'+li_cls[0] + ' ' + li_cls[0] + id + ' ' + li_cls[1]+'"><a title="Embed" href="" data-noevent="1">Embed</a>'
