@@ -1,6 +1,6 @@
 # Kaskus Quick Reply
 Kaskus Quick Reply is a userscript designed for donatur or regular user in Kaskus forum. Enhance your experience/ engagement to reply post with lot of features.
- <a class="btn btn-primary" href="kaskus_quick_reply.user.js?raw=true" title="Install Dev.Version KQR"><img src="https://dl.dropboxusercontent.com/u/33009152/btn-install-min.png"/ alt="Install Script"></a>
+ <a class="btn btn-primary" href="kaskus_quick_reply.user.js?raw=true" title="Install Dev.Version KQR"><img src="https://dl.dropboxusercontent.com/s/xxc73r4ktajn7ux/btn-install-min.png?dl=0" alt="Install Script"></a>
 
 # About this branch 
 This master branch is development stage of [Kaskus Quick Reply - Greasyfork](https://greasyfork.org/en/scripts/96-kaskus-quick-reply-evo).
