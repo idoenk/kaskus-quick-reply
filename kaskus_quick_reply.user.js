@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.4
+// @version        5.4.0.1
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1707315400
-// @timestamp      1501430660442
+// @dtversion      1710255401
+// @timestamp      1508871850995
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,12 +31,15 @@
 //
 // -!--latestupdate
 //
-// v5.4 - 2017-07-31 . 1501430660442
-//   Patch parse new segment kaskus-smilies
-//   +Kaskus Video Card Embed
+// v5.4.0.1 - 2017-10-25 . 1508871850995
+//   Patch quick-quote: remove script tags of .entry
 //
 // -/!latestupdate---
 // ==/UserScript==
+//
+// v5.4 - 2017-07-31 . 1501430660442
+//   Patch parse new segment kaskus-smilies
+//   +Kaskus Video Card Embed
 //
 // v5.3.9.3 - 2016-12-22 . 1482344891179
 //   Hide user-control-stick on focus in editor (fjb)
@@ -76,11 +79,11 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.4';
+gvar.sversion = 'v' + '5.4.0.1';
 gvar.scriptMeta = {
   // timestamp: 999 // version.timestamp for test update
-  timestamp: 1501430660442, // version.timestamp
-  dtversion: 1707315400, // version.date
+  timestamp: 1508871850995, // version.timestamp
+  dtversion: 1710255401, // version.date
 
   titlename: 'Quick Reply',
   scriptID: 80409, // script-Id
@@ -5841,6 +5844,9 @@ var _QQparse = {
           $entry.find(".row").first().remove();
           $entry.find("h3").first().remove();
         }
+        // always remove script tags
+        $entry.find("script").remove();
+        
         entrycontent = $entry.html();
 
         buff = String( entrycontent ).replace(/(\r\n|\n|\r|\t|\s{2,})+/gm, "");
