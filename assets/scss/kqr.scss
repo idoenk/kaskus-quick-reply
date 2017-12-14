@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
  kqr-css
- cssREV:1707315400
+ cssREV:1712145402
 */
 
 /**
@@ -1602,18 +1602,26 @@ ul {
     line-height: 26px;
   }
   .goog-btn {
+    &.btn-edit {
+      margin-right: 5px;
+    }
     &.button_qr {
       margin-left: 5px;
       border-bottom-right-radius: 0 !important;
       border-top-right-radius: 0 !important;
     }
-    &.button_qq {
-      margin-left: -1px;
+    &.btn-group2left{
+      margin-left: -5px;
       padding: 0 10px 0 12px;
       border-bottom-left-radius: 0;
       border-top-left-radius: 0;
+    }
+    &.button_qq {
       > .fa.fa-mail-forward {
         transform: rotate(180deg);
+      }
+      &.btn-group2left{
+        margin-left: -1px;
       }
     }
   }
