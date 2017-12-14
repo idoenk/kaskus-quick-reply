@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.4.0.1
+// @version        5.4.0.2
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,7 +10,7 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1710255401
+// @dtversion      1712145402
 // @timestamp      1508871850995
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
@@ -31,11 +31,15 @@
 //
 // -!--latestupdate
 //
-// v5.4.0.1 - 2017-10-25 . 1508871850995
-//   Patch quick-quote: remove script tags of .entry
+// v5.4.0.2 - 2017-12-14 . 1513252293699
+//   Patch re-create edit-post button  in user-tools
+//   Patch css
 //
 // -/!latestupdate---
 // ==/UserScript==
+//
+// v5.4.0.1 - 2017-10-25 . 1508871850995
+//   Patch quick-quote: remove script tags of .entry
 //
 // v5.4 - 2017-07-31 . 1501430660442
 //   Patch parse new segment kaskus-smilies
@@ -79,16 +83,16 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.4.0.1';
+gvar.sversion = 'v' + '5.4.0.2';
 gvar.scriptMeta = {
   // timestamp: 999 // version.timestamp for test update
-  timestamp: 1508871850995, // version.timestamp
-  dtversion: 1710255401, // version.date
+  timestamp: 1513252293699, // version.timestamp
+  dtversion: 1712145402, // version.date
 
   titlename: 'Quick Reply',
   scriptID: 80409, // script-Id
   scriptID_GF: 96, // script-Id @Greasyfork
-  cssREV: 1707315400 // css revision date; only change this when you change your external css
+  cssREV: 1712145402 // css revision date; only change this when you change your external css
 };
 
 gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
@@ -2481,8 +2485,12 @@ var _AJAX = {
       if(typeof(cb_before)=='function') cb_before();
 
       gvar.edit_mode = 1;
-      var uri, href; 
-      href = trimStr( obj.attr('href').toString() );
+      var uri = '',
+          href = trimStr( obj.attr('href').toString() );
+
+      if(/\#/.test(href) || /\bjavascript\b/.test(href))
+        href = trimStr( obj.attr('data-href').toString() );
+
       uri = (href.indexOf(gvar.domain)==-1 ? gvar.domain.substring(0, gvar.domain.length-1) : '') + href;
       
       gvar.sTryRequest = $.get( uri, function(data) {
@@ -5803,15 +5811,19 @@ var _UPD = {
 */
 var _QQparse = {
   init:function(calee, cb){
-    var par, mqs_id = [];
+    var $par, mqs_id = [];
+
     $('a[data-btn="multi-quote"].btn-orange').each(function(){
-      par = $(this).closest('.row');
-      if( $(par).get(0) ) mqs_id.push( $(par).attr('id') );
+      $par = $(this).closest('.row');
+      if( $par.length )
+        mqs_id.push( $par.attr('id') );
     });
-    if(mqs_id.length == 0){
+
+    if (mqs_id.length == 0){
       clog('no multiquote, perform to this calee');
-      par = $(calee).closest('.row');
-      if( $(par).get(0) ) mqs_id.push( $(par).attr('id') );
+      $par = $(calee).closest('.row');
+      if( $par.length )
+        mqs_id.push( $par.attr('id') );
     }else{
       do_click($('#sdismiss_quote').get(0));
     }
@@ -7131,7 +7143,8 @@ function remove_log_uploader(options){
 
 function clear_quoted($el){
   do_click($('#qr_remoteDC').get(0));
-  $('a[data-btn="multi-quote"].btn-orange').removeClass('btn-orange active');
+  $('a[data-btn="multi-quote"].btn-orange')
+    .removeClass('btn-orange active');
   clog("class removed...? btn-orange active");
 
   $el.length && $el.addClass('events');
@@ -8928,7 +8941,12 @@ function start_Main(){
         
 
         $('.user-tools').each(function(idx){
-          var $btn, $me = $(this);
+          var $me = $(this),
+              $postlist = $me.closest('.postlist'),
+              $edit_post = $postlist.find('.entry-head .forum-setting.dropdown .dropdown-menu a[href*="/edit_post/"]'),
+              is_mypost = $edit_post.length,
+              $btn;
+
           if( isInGroup )
             $me.closest('.row').attr('id', 'grpost_' + idx);
             
@@ -8936,11 +8954,24 @@ function start_Main(){
           
           // leave quote button alone, for donatur we kill their default button element
           $me.find('.button_qr').remove();
-          $me.find("a.bar5").addClass("goog-btn goog-btn-default");
+
+          if (is_mypost){
+            $me
+              .prepend('<a href="javascript:;" data-href="'+$edit_post.attr('href')+'" class="bar5 goog-btn goog-btn-default btn-edit" rel="nofollow"><i class="fa fa-pencil"></i> Edit Post</a>');
+          }
+
+          $me.find("a."+mq_class)
+            .attr('href', 'javascript:;');
+
+          $me.find("a.bar5")
+            .addClass("goog-btn goog-btn-default")
+
+          $me.find('a[href*="/post_reply/"]')
+            .addClass("btn-group2left");
 
           $me
-            .append('<a href="#" id="button_qr_'+ entry_id +'" class="goog-btn goog-btn-default goog-btn-set button_qr button_qrmod'+(gvar.readonly ? ' hide':'')+'" rel="nofollow" onclick="return !1"> Quick Reply</a>')
-            .append('<a href="#" id="button_qq_'+ entry_id +'" class="goog-btn goog-btn-default goog-btn-set button_qq'+(gvar.readonly ? ' hide':'')+'" title="Quick Quote" onclick="return !1"><i class="fa fa-mail-forward"></i> </a>')
+            .append('<a href="javascript:;" id="button_qr_'+ entry_id +'" class="goog-btn goog-btn-default goog-btn-set button_qr button_qrmod'+(gvar.readonly ? ' hide':'')+'" rel="nofollow" onclick="return !1"> Quick Reply</a>')
+            .append('<a href="javascript:;" id="button_qq_'+ entry_id +'" class="goog-btn goog-btn-default goog-btn-set btn-group2left button_qq'+(gvar.readonly ? ' hide':'')+'" title="Quick Quote" onclick="return !1"><i class="fa fa-mail-forward"></i> </a>')
           ;
           // event for quick reply
           $me.find('.button_qr').click(function(ev){
@@ -8981,7 +9012,7 @@ function start_Main(){
           });
 
           // event for quick edit
-          $me.find('a[href*="/edit_"]').click(function(ev){
+          $me.find('.btn-edit').click(function(ev){
             do_an_e(ev);
             var $me = $(this);
             _AJAX.edit($me, function(){
