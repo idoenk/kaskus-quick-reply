@@ -9012,7 +9012,6 @@ function start_Main(){
           });
 
           // event for quick edit
-          // $me.find('a[href*="/edit_"]').click(function(ev){
           $me.find('.btn-edit').click(function(ev){
             do_an_e(ev);
             var $me = $(this);
