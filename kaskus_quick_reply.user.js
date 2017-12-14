@@ -691,8 +691,8 @@ var rSRC = {
       // -=-=-=eof-tpl
 
       // debug-text fontawesome
-      + '<div class="clearfix"><br/><br/></div>'
-      + '<div style="font-size:14px">'+rSRC.menuTestFoo()+'</div>'
+      // + '<div class="clearfix"><br/><br/></div>'
+      // + '<div style="font-size:14px">'+rSRC.menuTestFoo()+'</div>'
     ;
   },
 
