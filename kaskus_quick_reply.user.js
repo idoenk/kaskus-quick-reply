@@ -33,6 +33,7 @@
 //
 // v5.4.0.3 - 2018-02-19 . 1519043641439
 //   Patch broken quick-quote #8. Blame: new structure of quote, test spoiler-case. Thx: [zackad];
+//   Patch clear_quote of class o-btn--multi-quoted;
 //
 // -/!latestupdate---
 // ==/UserScript==
