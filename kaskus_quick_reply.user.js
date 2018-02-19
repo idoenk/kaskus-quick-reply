@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Kaskus Quick Reply (Evo)
 // @icon           https://github.com/idoenk/kaskus-quick-reply/raw/master/assets/img/kqr-logo.png
-// @version        5.4.0.2
+// @version        5.4.0.3
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
@@ -10,8 +10,8 @@
 // @connect        githubusercontent.com
 // @connect        greasyfork.org
 // @namespace      http://userscripts.org/scripts/show/KaskusQuickReplyNew
-// @dtversion      1712145402
-// @timestamp      1508871850995
+// @dtversion      1802195403
+// @timestamp      1519043641439
 // @homepageURL    https://greasyfork.org/scripts/96
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @description    provide a quick reply feature, under circumstances capcay required.
@@ -31,12 +31,15 @@
 //
 // -!--latestupdate
 //
-// v5.4.0.2 - 2017-12-14 . 1513252293699
-//   Patch re-create edit-post button  in user-tools
-//   Patch css
+// v5.4.0.3 - 2018-02-19 . 1519043641439
+//   Patch broken quick-quote #8. Blame: new structure of quote, test spoiler-case. Thx: [zackad];
 //
 // -/!latestupdate---
 // ==/UserScript==
+//
+// v5.4.0.2 - 2017-12-14 . 1513252293699
+//   Patch re-create edit-post button  in user-tools
+//   Patch css
 //
 // v5.4.0.1 - 2017-10-25 . 1508871850995
 //   Patch quick-quote: remove script tags of .entry
@@ -52,22 +55,6 @@
 //   Patch failed QQ: [group, fjb]
 //   [minor] CSS fjb
 //
-// v5.3.9.2 - 2016-11-30 . 1480444439692
-//   [Hotfix] Patch failed attach QR-Dom on thread w/o replies. Thx:[zackad]
-//   Embed bbcode dropdown menu
-//
-// v5.3.9.1 - 2016-11-26 . 1480108151475
-//   [Hotfix] Patch Quick-quote in image-thread
-//
-// v5.3.9 - 2016-11-26 . 1480096973423
-//   [Hotfix] Patch smilies sync-endpoint inherited protocol (HTTPS)
-//   Patch perfomance issue on huge textarea in export-import settings
-//   Patch allow keydown on button
-//   Patch get_userdetail info
-//   Patch QR functionality image-thread
-//   [Hotfix] Patch quick-quote ordered list specific startfrom
-//   [Hotfix] Patch quick-quote parsing lazy-image
-//   [Hotfix] Patch fixed toolbar top position
 //
 //
 // v0.1 - 2010-06-29
@@ -83,16 +70,16 @@ function main(mothership){
 // Initialize Global Variables
 var gvar = function(){};
 
-gvar.sversion = 'v' + '5.4.0.2';
+gvar.sversion = 'v' + '5.4.0.3';
 gvar.scriptMeta = {
   // timestamp: 999 // version.timestamp for test update
-  timestamp: 1513252293699, // version.timestamp
-  dtversion: 1712145402, // version.date
+  timestamp: 1519043641439, // version.timestamp
+  dtversion: 1802195403, // version.date
 
   titlename: 'Quick Reply',
   scriptID: 80409, // script-Id
   scriptID_GF: 96, // script-Id @Greasyfork
-  cssREV: 1712145402 // css revision date; only change this when you change your external css
+  cssREV: 1802195403 // css revision date; only change this when you change your external css
 };
 
 gvar.scriptMeta.fullname = 'Kaskus ' + gvar.scriptMeta.titlename;
@@ -5919,74 +5906,107 @@ var _QQparse = {
         ret, contentsep, pos
     ;
 
-    var 
-    cleanup_quote = function(innerquote_html){
+    var foovar,
+    cleanup_quote = function(innerquote_html, quote_opts){
       clog('inside cleanup_quote');
-      var cucok, rgx, href, brpos, newhtml_string='', newhtml, $wrapdiv = createEl('div', {}, innerquote_html);
+      var cucok, rgx, href, brpos, newhtml,
+          newhtml_string = '',
+          $wrapdiv = createEl('div', {}, innerquote_html);
+
       $wrapdiv = $($wrapdiv);
-      newhtml_string = $wrapdiv.find('>span').last().html();
 
-      if( innerquote_html.match(/>Original\sPosted\sBy\s/) ){
-        //clog('is original posted by, == '+ newhtml_string);
+      if( innerquote_html.match(/>Original\sPosted\sBy\s/) && $wrapdiv.find('cite').length ){
 
-        $wrapdiv = $( createEl('div', {}, newhtml_string) );
         newhtml = ['','','']; // id,user,content
 
-        newhtml[0] = $wrapdiv.find('>b:first').text();
-        href = $wrapdiv.find('>a:first').attr('href');
-        if( cucok = /\#post([^\b]+)/i.exec(href) )
-          newhtml[1] = cucok[1];
+        if(quote_opts && quote_opts.postid)
+          newhtml[0] = quote_opts.by;
 
-        rgx = new RegExp("^\\bOriginal\\sPosted\\sBy\\s[^\\"+HtmlUnicodeDecode('&#9658;')+"]+.<\\/a>(?:<br\\s*\\/?>)?");
-        newhtml[2] = newhtml_string.replace(rgx, '');
+        if(quote_opts && quote_opts.by)
+          newhtml[1] = quote_opts.postid;
+
+        $wrapdiv.find('cite.sceditor-ignore').remove();
+        newhtml[2] = $wrapdiv.html();
       }
       else{
-        newhtml = newhtml_string;
+
+        newhtml = $wrapdiv.html();
       }
       clog('CLEAN-QUOTE='+dump(newhtml));
       return newhtml;
     },
     revealQuoteCode = function(html){
 
-      var els,el,el2,el2tmp,tag, cucok, XPathStr='.//span[@class="post-quote"]', rvCon = pCon;
+      var els,el,el2,el2tmp,tag,cucok;
+      var rvCon = pCon,
+          XPathStr = './/div[@class="quote expandable" and @data-by]';
+
       if( isDefined(html) ){
         // fix align inside spoiler
         html = String(html).replace(/<(\/?)([^>]+)>/gm, parseSerials );
         rvCon = createEl('div',{style:'display:none'},html);
       }
+
       //clog('inside revealQuoteCode\n' + $(rvCon).html() )
       els = $D(XPathStr, rvCon);
       //clog(' quote objects len = ' + els.snapshotLength)
+
       if(els.snapshotLength) for(var i=0;i<els.snapshotLength; i++){
         el = els.snapshotItem(i);
-        var elhtml = $(el).html();
-        if( elhtml.match(/Quote:/) ){
-          //clog('ada Quote')
-          if( !gvar.settings.plusquote ){
-            el2 = createTextEl('\n');
-            el.parentNode.replaceChild(el2,el);
-          }
-          else{
-            var iner, _newhtml = cleanup_quote( elhtml );
-            if( _newhtml ){
-              _newhtml = ('[QUOTE'+(isString(_newhtml) ? '' : '='+_newhtml[0]+';'+_newhtml[1])+']'
-                +(_newhtml && isString(_newhtml) ? _newhtml : _newhtml[2]) +'[/QUOTE]');
-              iner = double_encode( _newhtml );
-              iner = createTextEl( _QQ.parseMSG( iner ) );
-              el.parentNode.replaceChild(iner, el);
-            }
+        var $el = $(el),
+            elhtml = $el.html();
+
+        // double-check pattern
+        if (!$el.prev().html().match(/Quote/))
+          continue;
+
+        // No matter what this junk of "Quote:", should be removed
+        if ($(el.previousSibling).hasClass('quote-mark')){
+
+          el2 = createTextEl('\n');
+          el.parentNode.replaceChild(el2, el.previousSibling);
+        }
+        // clog('Ada QUOTE..');
+
+        if( !gvar.settings.plusquote ){
+
+          el2 = createTextEl('\n');
+          el.parentNode.replaceChild(el2, el);
+        }
+        else{
+          // Include quoted-post
+          var iner,
+              _newhtml = null,
+              quote_opts = {
+                by: $el.attr('data-by'),
+                postid: $el.attr('data-postid'),
+              };
+
+          if( _newhtml = cleanup_quote( elhtml, quote_opts ) ){
+            _newhtml = ''
+              +('[QUOTE'+(isString(_newhtml) ? '' : '='+_newhtml[0]+';'+_newhtml[1])+']'
+              +(_newhtml && isString(_newhtml) ? _newhtml : _newhtml[2]) +'[/QUOTE]');
+
+            iner = double_encode( _newhtml );
+            iner = createTextEl( _QQ.parseMSG( iner ) );
+            el.parentNode.replaceChild(iner, el);
           }
         }
       }
+      else{
+
+        clog('No QUOTED-POST.');
+      }
+
       // remove last edited
       $('.edited', $(rvCon) ).remove();
       return $(rvCon).html();
-    }
-    ,br2nl = function(text){
+    },
+    br2nl = function(text){
 
       return text.replace(/<br\s*(?:[^>]+|)>/gi, "\n")
-    }
-    ,revealCoders = function(html){
+    },
+    revealCoders = function(html){
       var els,el,cucok, XPathStr = './/div[contains(@style,"margin-bottom")]', rvCon = pCon;
       if( isDefined(html) ){
         // fix align inside spoiler
@@ -6014,8 +6034,8 @@ var _QQparse = {
         }
         try{Dom.remove(el)}catch(e){};
       }
-    }
-    ,parseSerials = function(S,$1,$2){
+    },
+    parseSerials = function(S,$1,$2){
       var mct, parts, pRet, lastIdx, tag, _2up;
       _2up = $2.toUpperCase();
       clog('inside parseSerials 2up=[' + _2up + ']');
@@ -6263,8 +6283,8 @@ var _QQparse = {
       }else{
         return S;
       }
-    }
-    ,parseCleanUpLink = function(S, $1, $2){
+    },
+    parseCleanUpLink = function(S, $1, $2){
       var parts, px_head, px_tail, countTripleDot;
       var mct = $1.match(/\s*(?:(?:target|style|title|linkid)=[\'\"][^\'\"]+.\s*)*(?:\s?href=['"]([^'"]+))?/i);
       
@@ -6287,8 +6307,8 @@ var _QQparse = {
       }
 
       return S;
-    }
-    ,double_encode= function(x){
+    },
+    double_encode= function(x){
       x = br2nl(x);
       return x
         .replace(/\&amp;/gm,'&amp;amp;')
@@ -6341,6 +6361,22 @@ var _QQparse = {
     total_spoilers = this.count_spoilers($pCon);
     clog('total spoilers=' + total_spoilers );
 
+    // re-positioning spoiler-content
+    $pCon.find('.spoiler-content').each(function(){
+      var $me = $(this),
+          $sp = null;
+
+      $sp = $me.prev().prev();
+      if ($sp.hasClass('spoiler')){
+
+        $sp.append($me);
+        clog('spoiler content MOVED');
+      }
+      else{
+        clog('Fail moving spoiler content');
+      }
+    });
+
     /*
     * when spoiler wrapped with any tags like [font,b,...],
     * will fail getting its 1deg spoiler, which might not be cleared in parseSerials
@@ -6349,10 +6385,14 @@ var _QQparse = {
     */
     if(total_spoilers > 0){
       var newhtml = (function($, $_pCon){
-        var selectorSpoiler, selector_1st_child, notfound, threshold=100, step=0;
-        selectorSpoiler = selector_1st_child = '> .spoiler';
+        var step = 0,
+            threshold = 100,
+            selectorSpoiler, selector_1st_child, notfound;
+
         $_pCon.find('input[class^="spoiler_"]').remove();
         clog('indigo...=' + $_pCon.html());
+
+        selectorSpoiler = selector_1st_child = '> .spoiler';
 
         if($(selector_1st_child, $_pCon).length == 0){
           notfound = 1; step = 0;
@@ -6364,17 +6404,31 @@ var _QQparse = {
           }
         }
 
+        clog('selectorSpoiler: '+selectorSpoiler);
+        clog('Looping though selectorSpoiler');
+
         // bbcode_div
         $(selectorSpoiler, $_pCon).each(function(){
-          var title, cucok, newEl, tmptit, _newhtml, iner = $(this).find('#bbcode_inside_spoiler:first').html()
-          title = $(this).find('i:first').html();
+          var $me = $(this),
+              $sp_head = $me.find('.spoiler-head'),
+              $sp_content = $me.find('.spoiler-content'),
+              iner = '',
+              title = '',
+              newEl, _newhtml;
+
+          if ($sp_head.length)
+            title = $sp_head.find('.spoiler-title').text();
+
+          if ($sp_content.length)
+            iner = $sp_content.html();
 
           _newhtml = ('[SPOILER='+ (title ? title : ' ') +']'+ (iner ? iner : ' ') +'[/SPOILER]');
+
           iner = double_encode( _newhtml );
           iner = _QQ.parseMSG( iner );
           
-          newEl = ( createTextEl(entity_decode(iner)) );
-          $(this).replaceWith( $(newEl) );
+          newEl = createTextEl(entity_decode(iner));
+          $me.replaceWith( $(newEl) );
         });
         return $_pCon.html();
       })($, $pCon);
@@ -8445,6 +8499,8 @@ function getSettings(stg){
   // recount smilies;
   rSRC.getSmileyBulkInfo();
 
+  // Only true once upon clicking QQ with Shift
+  // To alse preserve quoted post
   settings.plusquote = null;
   
   gvar.$w.setTimeout(function(){
