@@ -7198,8 +7198,8 @@ function remove_log_uploader(options){
 function clear_quoted($el){
   do_click($('#qr_remoteDC').get(0));
   $('a[data-btn="multi-quote"].btn-orange')
-    .removeClass('btn-orange active');
-  clog("class removed...? btn-orange active");
+    .removeClass('btn-orange o-btn--multi-quoted active');
+  clog("class removed...? btn-orange o-btn--multi-quoted active");
 
   $el.length && $el.addClass('events');
   _NOFY.dismiss();
