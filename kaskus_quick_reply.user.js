@@ -2428,11 +2428,14 @@ var _AJAX = {
       
       gvar.edit_mode = 0;
       _AJAX.e.task = 'post';
+
       $XK.find('#formform')
         .attr('action', '/post_reply/' + gvar.pID )
         .attr('name', 'postreply' );
+
       $XK.find('.inner_title').html( gvar.inner.reply.title );
       $XK.find('#sbutton').val( gvar.inner.reply.submit );
+
       if( !gvar.user.isDonatur )
         $XK.find('#sbutton').removeClass('goog-btn-primary').addClass('goog-btn-red');
       
@@ -5899,7 +5902,6 @@ var _QQparse = {
     };
   },
   parseMSG: function(x){
-
     var _QQ = this,
         LT  = {'font':[], 'sp':[], 'a':[], 'align':[], 'coder':[], 'list':[]},
         pairedEmote = false,
@@ -6264,7 +6266,7 @@ var _QQparse = {
             clog('bbcode recognized: [SOUNDCLOUD]');
             return ( '[SOUNDCLOUD]' + cucok[1] + '[/SOUNDCLOUD]' );
           } else
-          if( cucok = $2.match(/img\s*(?:(?:alt|src|class|border)=['"](?:[^'"]+)?.\s*)*title=['"]([^'"]+)/i)){
+          if( cucok = $2.match(/\s+(?:data-sceditor-emoticon=['"](?:(?:[^'"]+)?['"]+))+/i)){
             // is kaskus emotes?
             if( cucok ){
               tag = mct[1].replace(/[^\w]/g,'').toString();
@@ -6309,7 +6311,7 @@ var _QQparse = {
 
       return S;
     },
-    double_encode= function(x){
+    double_encode = function(x){
       x = br2nl(x);
       return x
         .replace(/\&amp;/gm,'&amp;amp;')
@@ -9116,12 +9118,12 @@ function start_Main(){
                 window.setTimeout(function(){
                   do_click($('#qr_chkcookie').get(0));
                   if( !$dis.hasClass("btn-orange") )
-                    $dis.removeClass("active");
+                    $dis.removeClass("o-btn--multi-quoted");
                 }, 100);
               }
             }).attr('data-btn', mq_class);
 
-            if( $btn.hasClass("active") )
+            if( $btn.hasClass("o-btn--multi-quoted") )
               $btn.addClass("btn-orange");
           }
         });
