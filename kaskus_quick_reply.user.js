@@ -6050,7 +6050,7 @@ var _QQparse = {
         return '[' + ($1 ? '/' : '') + _2up + ']';
       }else
       
-      // parse code
+      // parse: code
       if( /^pre\s/i.test($2) || _2up=='PRE' ){
         clog('parse PRE');
         mct = $2.toLowerCase().match(/\/?pre(?:(?:\s*(?:\w+=['"][^'"]+.\s*)*)?\s?rel=['"]([^'"]+))?/i);
@@ -6061,14 +6061,13 @@ var _QQparse = {
           mct[1] = false;
         }
         
-        openTag= ( mct && mct[1] );
-        if( openTag ){
+        if (openTag = (mct && mct[1])){
           mct[1] = mct[1].toUpperCase();
           clog('bbcode recognized: ['+mct[1].toUpperCase()+']');
         }
         lastIdx = LT.coder.length-1;
         
-        pRet= (openTag ? '['+mct[1]+']' : (isDefined(LT.coder[lastIdx]) ? '['+'/'+LT.coder[lastIdx].toUpperCase()+']' : '') );
+        pRet = (openTag ? '['+mct[1]+']' : (isDefined(LT.coder[lastIdx]) ? '['+'/'+LT.coder[lastIdx].toUpperCase()+']' : '') );
         
         if( !openTag )
           LT.coder.splice(lastIdx,1);
@@ -6122,39 +6121,72 @@ var _QQparse = {
         return pRet;
       }else
       
-      // parse align | color | font | size;
+      // parse: color | font | size;
       if( /^span\s/i.test($2) || _2up=='SPAN'){
         clog('parse SPAN align | color | font | size');
-        if( $2.indexOf('-align:')!=-1 ){
+
+        var attrs = {
+          attr: $2.match(/\s+(?:data-attr=[\'\"]([^\'\"]+))/),
+          value: $2.match(/\s+(?:data-value=[\'\"]([^\'\"]+))/),
+        };
+
+        // if( $2.indexOf('-align:')!=-1 ){
           
-          mct = $2.match(/\/?span(?:(?:[^\-]+).align\:(\w+))?/i);
-          openTag= ( mct && mct[1] );
-        }else 
-        if( $2.indexOf('color:')!=-1 ){
-          mct = $2.match(/\/?span(?:(?:[^\'\"]+).(color)\:([^\!]+))?/i);
-          openTag = (mct[1] && isDefined(mct[2]) && mct[2]);
+        //   mct = $2.match(/\/?span(?:(?:[^\-]+).align\:(\w+))?/i);
+        //   openTag= ( mct && mct[1] );
+        // }else 
+        // if (/\s+(?:data-attr=[\'\"]color[\'\"])/.test($2) ){
+        if ('color' == attrs.attr){
+          // mct = $2.match(/\/?span(?:(?:\s+data-attr=[\'\"][^\'\"]+.)(?:\s+data-value=[\'\"]([^\'\"]+)))?/i);
+          openTag = (attrs.attr && attrs.value);
+          mct = [
+            $2,
+            (attrs.value+'').replace(/^v_/g,''),
+            'COLOR'
+          ];
+          
+          // openTag = (mct && mct[1]);
+          // if (openTag){
+          //   mct[2] = (mct[1]+'').replace(/^v_/g,'');
+          //   mct[1] = 'COLOR';
+          // }
         }
         else
-        if( $2.indexOf('-family') != -1 ){
-          mct = $2.match(/\/?span(?:(?:[^\'\"]+).(font)-family\:([^\!]+))?/);
-          openTag = (mct[1] && isDefined(mct[2]) && mct[2]);
+        // if( $2.indexOf('-family') != -1 ){
+        // if (/\s+(?:data-attr=[\'\"]face[\'\"])/.test($2)){
+        if ('face' == attrs.attr){
+          // mct = $2.match(/\/?span(?:(?:[^\'\"]+).(font)-family\:([^\!]+))?/);
+          // openTag = (mct[1] && isDefined(mct[2]) && mct[2]);
+          openTag = (attrs.attr && attrs.value);
+          mct = [
+            $2,
+            (attrs.value+'').replace(/^v_/g,''),
+            'FONT'
+          ];
         }
         else
-        if( $2.indexOf('-size') != -1 ){
-          mct = $2.match(/\/?span(?:(?:[^\'\"]+).font-(size)\:([\d]+px))?/);
-          openTag = (mct[1] && isDefined(mct[2]) && mct[2]);
-          if( openTag ){
-            var size_maper = {
-              '10px': '1',
-              '12px': '2',
-              '14px': '3',
-              '16px': '4',
-              '20px': '5',
-              '24px': '6',
-              '28px': '7'
-            }
-            mct[2] = ( isDefined(size_maper[mct[2]]) ? size_maper[mct[2]] : '3');
-          }
+        // if( $2.indexOf('-size') != -1 ){
+        if ('size' == attrs.attr){
+          // mct = $2.match(/\/?span(?:(?:[^\'\"]+).font-(size)\:([\d]+px))?/);
+          // openTag = (mct[1] && isDefined(mct[2]) && mct[2]);
+          // if( openTag ){
+          //   var size_maper = {
+          //     '10px': '1',
+          //     '12px': '2',
+          //     '14px': '3',
+          //     '16px': '4',
+          //     '20px': '5',
+          //     '24px': '6',
+          //     '28px': '7'
+          //   }
+          //   mct[2] = ( isDefined(size_maper[mct[2]]) ? size_maper[mct[2]] : '3');
+          // }
+          openTag = (attrs.attr && attrs.value);
+          mct = [
+            $2,
+            (attrs.value+'').replace(/^v_/g,''),
+            'SIZE'
+          ];
         }
         else
         if( $2.indexOf('post-quote') != -1 ){
@@ -6183,28 +6215,34 @@ var _QQparse = {
         return pRet;
       }else
       
-      // parse html | php | indent
+      // parse: align | html | php | indent
       if( /^div\s/i.test($2) || _2up=='DIV'){
-        clog('parse DIV html | php | indent');
-        if( mct = $2.toLowerCase().match(/\s1em\s40px/) )
+        clog('parse DIV: align | html | php | indent');
+
+        var $2low = $2.toLowerCase();
+        // if( mct = $2.toLowerCase().match(/\s1em\s40px/) )
+        if (/\s+(?:class=[\'\"]indented[\'\"])/.test($2low))
           mct = [$2, 'INDENT'];
+        else if ($2.indexOf('-align:') !=- 1)
+          mct = $2.match(/\/?div(?:(?:[^\-]+).align\:\s*(\w+))?/i);
         else
-          mct = $2.toLowerCase().match(/\/?div(?:(?:\s*(?:\w+=['"][^'"]+.\s*)*)?\s?rel=['"]([^'"]+))?/i);
+          mct = $2low.match(/\/?div(?:(?:\s*(?:\w+=['"][^'"]+.\s*)*)?\s?rel=['"]([^'"]+))?/i);
         
         if( isDefined(mct[1]) ){
+
           LT.coder.push( mct[1].toUpperCase() );
-          
         }else{
+
           mct[1] = false;
-        }       
-        openTag= ( mct && mct[1] );
-        if( openTag ){
+        }
+
+        if( openTag = (mct && mct[1]) ){
           mct[1] = mct[1].toUpperCase();
           clog('bbcode recognized: ['+mct[1].toUpperCase()+']');
         }
         lastIdx = LT.coder.length-1;
         
-        pRet= (openTag ? '['+mct[1]+']' : (isDefined(LT.coder[lastIdx]) ? '['+'/'+LT.coder[lastIdx].toUpperCase()+']' : '') );
+        pRet = (openTag ? '['+mct[1]+']' : (isDefined(LT.coder[lastIdx]) ? '['+'/'+LT.coder[lastIdx].toUpperCase()+']' : '') );
         
         if( !openTag )
           LT.coder.splice(lastIdx,1);
@@ -6222,8 +6260,8 @@ var _QQparse = {
         }else{
           mct[1] = false;
         }
-        openTag = (mct && mct[1]);
-        if( openTag ){
+        
+        if (openTag = (mct && mct[1])){
           mct[1] = (isLink(mct[1]) ? mct[1] : mct[1].toUpperCase());
           clog('bbcode recognized: ['+mct[1]+']');
         }
@@ -7427,7 +7465,7 @@ function do_insertCustomTag($el){
               ret.text = prompt('Please enter [Soundcloud widget code, ID, API-URL]\neg.https:/'+'/api.soundcloud.com/tracks/#######', '');
             break;
             default:
-              ret.text = prompt('Please enter the link of media, '+BBCode, '');
+              ret.text = prompt('Please enter the URL or video thread id,'+"\n"+' eg. 5a8118ef1a99756e108b456e, '+BBCode, '');
             break;
           }
           return ret;
